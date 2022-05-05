@@ -1,5 +1,6 @@
 package se.aourell.httpfeeds.example;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.atteo.classindex.ClassIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +10,10 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ResolvableType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Duration;
@@ -34,21 +37,21 @@ public class HttpFeedsAutoConfiguration implements BeanFactoryPostProcessor {
       .getBeansOfType(JdbcTemplate.class)
       .values().stream().findFirst()
       .ifPresent(jdbcTemplate -> {
-        for (Class<?> klass : ClassIndex.getAnnotated(HttpFeed.class)) {
-          final var feedDeclaration = klass.getAnnotation(HttpFeed.class);
+        for (Class<?> feedEventBaseType : ClassIndex.getAnnotated(HttpFeed.class)) {
+          final var feedDeclaration = feedEventBaseType.getAnnotation(HttpFeed.class);
           final var feedName = feedDeclaration.feed();
           final var table = feedDeclaration.table();
 
           final var repository = new JdbcFeedRepository(jdbcTemplate, feedItemRowMapper, table);
           beanFactory.registerSingleton("repository:" + feedName, repository);
 
-          final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, klass);
+          final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
           final var beanDefinition = new RootBeanDefinition();
           beanDefinition.setTargetType(resolvableType);
           beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
           beanDefinition.setAutowireCandidate(true);
 
-          final var eventBus = new EventBusImpl(repository);
+          final var eventBus = new EventBusImpl(feedEventBaseType, repository);
           ((DefaultListableBeanFactory) beanFactory).registerBeanDefinition("eventbus:" + feedName, beanDefinition);
           beanFactory.registerSingleton("eventbus:" + feedName, eventBus);
 
@@ -56,5 +59,11 @@ public class HttpFeedsAutoConfiguration implements BeanFactoryPostProcessor {
           feedRegistry.defineFeed(feedDeclaration, fetcher);
         }
       });
+  }
+
+  @Bean
+  public Jackson2ObjectMapperBuilder objectMapperBuilder() {
+    return new Jackson2ObjectMapperBuilder()
+      .serializationInclusion(JsonInclude.Include.NON_NULL);
   }
 }

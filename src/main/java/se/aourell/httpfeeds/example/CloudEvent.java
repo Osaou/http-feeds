@@ -36,9 +36,9 @@ public class CloudEvent {
     return type;
   }
 
-  public String getSource() {
+  /*public String getSource() {
     return "source";
-  }
+  }*/
 
   public OffsetDateTime getTime() {
     return time;

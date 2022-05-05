@@ -11,8 +11,8 @@ public class CloudEventMapper {
       feedItem.getTime().atOffset(ZoneOffset.UTC),
       feedItem.getSubject(),
       feedItem.getMethod(),
-      "application/json",
-      DataSerializer.toObject(feedItem.getData())
+      feedItem.getMethod() != null ? null : "application/json",
+      feedItem.getMethod() != null ? null : DataSerializer.toObject(feedItem.getData())
     );
   }
 }

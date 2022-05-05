@@ -10,7 +10,7 @@ public class DataSerializer {
   private static final ObjectMapper objectMapper =
     Jackson2ObjectMapperBuilder.json()
       .failOnUnknownProperties(false)
-      .serializationInclusion(Include.NON_EMPTY)
+      .serializationInclusion(Include.NON_NULL)
       .build();
 
   public static String toString(Object object) {
