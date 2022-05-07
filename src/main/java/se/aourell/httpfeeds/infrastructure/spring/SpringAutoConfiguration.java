@@ -1,6 +1,7 @@
 package se.aourell.httpfeeds.infrastructure.spring;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.atteo.classindex.ClassIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,9 @@ import org.springframework.core.ResolvableType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.api.HttpFeed;
-import se.aourell.httpfeeds.core.EventBusImpl;
+import se.aourell.httpfeeds.core.*;
+import se.aourell.httpfeeds.spi.EventSerializer;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
-import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
-import se.aourell.httpfeeds.core.FeedItemServiceImpl;
 import se.aourell.httpfeeds.spi.EventBus;
 
 import java.time.Duration;
@@ -38,6 +38,7 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
     log.info("In postProcessBeanFactory()");
     final var feedRegistry = beanFactory.getBean(HttpFeedRegistry.class);
     final var feedItemRowMapper = beanFactory.getBean(FeedItemRowMapper.class);
+    final var eventSerializer = beanFactory.getBean(EventSerializer.class);
 
     // only set up controller automagically if we can resolve all necessary beans
     beanFactory
@@ -49,10 +50,10 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
           final var feedName = feedDeclaration.feedName();
           final var persistenceName = feedDeclaration.persistenceName();
 
-          final var repository = new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName);
-          beanFactory.registerSingleton("repository:" + feedName, repository);
+          final var feedItemRepository = new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName);
+          beanFactory.registerSingleton("repository:" + feedName, feedItemRepository);
 
-          final var feedItemService = new FeedItemServiceImpl(repository, pollInterval, limit);
+          final var feedItemService = new FeedItemServiceImpl(feedItemRepository, pollInterval, limit);
           beanFactory.registerSingleton("service:" + feedName, feedItemService);
           feedRegistry.defineFeed(feedDeclaration, feedItemService);
 
@@ -62,7 +63,7 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
           beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
           beanDefinition.setAutowireCandidate(true);
 
-          final var eventBus = new EventBusImpl(feedEventBaseType, repository);
+          final var eventBus = new EventBusImpl(feedEventBaseType, feedItemRepository, eventSerializer);
           ((DefaultListableBeanFactory) beanFactory).registerBeanDefinition("eventbus:" + feedName, beanDefinition);
           beanFactory.registerSingleton("eventbus:" + feedName, eventBus);
         }
@@ -73,6 +74,7 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
   @ConditionalOnMissingBean
   public Jackson2ObjectMapperBuilder objectMapperBuilder() {
     return new Jackson2ObjectMapperBuilder()
+      .failOnUnknownProperties(false)
       .serializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
@@ -86,5 +88,17 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
   @ConditionalOnMissingBean
   public FeedItemRowMapper feedItemRowMapper() {
     return new FeedItemRowMapper();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public EventSerializer eventSerializer(ObjectMapper objectMapper) {
+    return new EventSerializerImpl(objectMapper);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CloudEvent.Mapper cloudEventMapper(EventSerializer eventSerializer) {
+    return new CloudEvent.Mapper(eventSerializer);
   }
 }

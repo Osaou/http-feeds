@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import se.aourell.httpfeeds.core.CloudEvent;
-import se.aourell.httpfeeds.core.CloudEventMapper;
 import se.aourell.httpfeeds.core.FeedItem;
 import se.aourell.httpfeeds.core.HttpFeedDefinition;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
@@ -19,9 +18,11 @@ public class HttpFeedsController {
 
   private static final Logger log = LoggerFactory.getLogger(HttpFeedsController.class);
   private final HttpFeedRegistry feedRegistry;
+  private final CloudEvent.Mapper cloudEventMapper;
 
-  public HttpFeedsController(HttpFeedRegistry feedRegistry) {
+  public HttpFeedsController(HttpFeedRegistry feedRegistry, CloudEvent.Mapper cloudEventMapper) {
     this.feedRegistry = feedRegistry;
+    this.cloudEventMapper = cloudEventMapper;
   }
 
   @GetMapping(value = "/feed/{feedName}", produces = {"application/cloudevents-batch+json", "application/json"})
@@ -44,7 +45,7 @@ public class HttpFeedsController {
     }
 
     final List<CloudEvent> cloudEvents = items.stream()
-      .map(CloudEventMapper::toCloudEvent)
+      .map(cloudEventMapper::mapFeedItem)
       .toList();
 
     log.debug("GET feed with lastEventId {} returned {} events", lastEventId, cloudEvents.size());

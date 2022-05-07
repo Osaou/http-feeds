@@ -1,62 +1,31 @@
 package se.aourell.httpfeeds.core;
 
+import se.aourell.httpfeeds.spi.EventSerializer;
+
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
-public class CloudEvent {
+public record CloudEvent(String specversion, String id, String type, OffsetDateTime time, String subject, String method, String datacontenttype, Object data) {
 
-  private final String specversion;
-  private final String id;
-  private final String type;
-  private final OffsetDateTime time;
-  private final String subject;
-  private final String method;
-  private final String datacontenttype;
-  private final Object data;
+  public static class Mapper {
 
-  public CloudEvent(String specversion, String id, String type, OffsetDateTime time, String subject, String method, String datacontenttype, Object data) {
-    this.specversion = specversion;
-    this.id = id;
-    this.type = type;
-    this.time = time;
-    this.subject = subject;
-    this.method = method;
-    this.datacontenttype = datacontenttype;
-    this.data = data;
-  }
+    private final EventSerializer eventSerializer;
 
-  public String getSpecversion() {
-    return specversion;
-  }
+    public Mapper(EventSerializer eventSerializer) {
+      this.eventSerializer = eventSerializer;
+    }
 
-  public String getId() {
-    return id;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  /*public String getSource() {
-    return "source";
-  }*/
-
-  public OffsetDateTime getTime() {
-    return time;
-  }
-
-  public String getSubject() {
-    return subject;
-  }
-
-  public String getMethod() {
-    return method;
-  }
-
-  public String getDatacontenttype() {
-    return datacontenttype;
-  }
-
-  public Object getData() {
-    return data;
+    public CloudEvent mapFeedItem(FeedItem feedItem) {
+      return new CloudEvent(
+        "1.0",
+        feedItem.getId(),
+        feedItem.getType(),
+        feedItem.getTime().atOffset(ZoneOffset.UTC),
+        feedItem.getSubject(),
+        feedItem.getMethod(),
+        feedItem.getMethod() != null ? null : "application/json",
+        feedItem.getMethod() != null ? null : eventSerializer.toEvent(feedItem.getData())
+      );
+    }
   }
 }
