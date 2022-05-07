@@ -2,8 +2,10 @@ package se.aourell.httpfeedsexample;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = {"se.aourell.httpfeeds", "se.aourell.httpfeedsexample"})
+@EnableScheduling
 public class Application {
 
   public static void main(String[] args) {
