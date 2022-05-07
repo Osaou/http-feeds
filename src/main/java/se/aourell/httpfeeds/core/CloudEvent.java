@@ -18,13 +18,13 @@ public record CloudEvent(String specversion, String id, String type, OffsetDateT
     public CloudEvent mapFeedItem(FeedItem feedItem) {
       return new CloudEvent(
         "1.0",
-        feedItem.getId(),
-        feedItem.getType(),
-        feedItem.getTime().atOffset(ZoneOffset.UTC),
-        feedItem.getSubject(),
-        feedItem.getMethod(),
-        feedItem.getMethod() != null ? null : "application/json",
-        feedItem.getMethod() != null ? null : eventSerializer.toEvent(feedItem.getData())
+        feedItem.id(),
+        feedItem.type(),
+        feedItem.time().atOffset(ZoneOffset.UTC),
+        feedItem.subject(),
+        feedItem.method(),
+        feedItem.method() != null ? null : "application/json",
+        feedItem.method() != null ? null : eventSerializer.toEvent(feedItem.data())
       );
     }
   }
