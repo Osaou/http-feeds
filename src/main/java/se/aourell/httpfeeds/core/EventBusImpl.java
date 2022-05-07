@@ -3,7 +3,7 @@ package se.aourell.httpfeeds.core;
 import com.github.f4b6a3.uuid.UuidCreator;
 import se.aourell.httpfeeds.api.DeletionEvent;
 import se.aourell.httpfeeds.spi.EventBus;
-import se.aourell.httpfeeds.spi.FeedRepository;
+import se.aourell.httpfeeds.spi.FeedItemRepository;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -12,9 +12,9 @@ import java.util.List;
 public class EventBusImpl implements EventBus<Object> {
 
   private final List<Class<?>> deletionEventTypes;
-  private final FeedRepository repository;
+  private final FeedItemRepository repository;
 
-  public EventBusImpl(Class<?> eventBaseType, FeedRepository repository) {
+  public EventBusImpl(Class<?> eventBaseType, FeedItemRepository repository) {
     this.repository = repository;
 
     if (eventBaseType.isSealed()) {

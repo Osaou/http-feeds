@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure;
+package se.aourell.httpfeeds.core;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 
@@ -7,37 +7,36 @@ import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.core.FeedItem;
-import se.aourell.httpfeeds.core.FeedService;
-import se.aourell.httpfeeds.spi.FeedRepository;
+import se.aourell.httpfeeds.spi.FeedItemService;
+import se.aourell.httpfeeds.spi.FeedItemRepository;
 
-public class FeedServiceImpl implements FeedService {
+public class FeedItemServiceImpl implements FeedItemService {
 
-  private static final Logger log = LoggerFactory.getLogger(FeedServiceImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(FeedItemServiceImpl.class);
 
-  private final FeedRepository feedRepository;
+  private final FeedItemRepository feedItemRepository;
   private final Duration pollInterval;
   private final long limit;
 
-  public FeedServiceImpl(FeedRepository feedRepository, Duration pollInterval, long limit) {
-    this.feedRepository = feedRepository;
+  public FeedItemServiceImpl(FeedItemRepository feedItemRepository, Duration pollInterval, long limit) {
+    this.feedItemRepository = feedItemRepository;
     this.pollInterval = pollInterval;
     this.limit = limit;
   }
 
   @Override
-  public List<FeedItem> fetchFeedItems(String lastEventId) {
+  public List<FeedItem> fetch(String lastEventId) {
     log.debug("Find items with lastEventId={}", lastEventId);
-    return feedRepository.findByIdGreaterThan(lastEventId, limit);
+    return feedItemRepository.findByIdGreaterThan(lastEventId, limit);
   }
 
   @Override
-  public List<FeedItem> fetchFeedItemsWithPolling(String lastEventId, Long timeoutMillis) {
+  public List<FeedItem> fetchWithPolling(String lastEventId, Long timeoutMillis) {
     log.debug("Long polling for items with lastEventId={} timeoutMillis={}", lastEventId, timeoutMillis);
     Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, MILLIS);
     List<FeedItem> items;
     while (true) {
-      items = feedRepository.findByIdGreaterThan(lastEventId, limit);
+      items = feedItemRepository.findByIdGreaterThan(lastEventId, limit);
 
       int numberOfItems = items.size();
       if (numberOfItems > 0) {

@@ -5,7 +5,7 @@ import se.aourell.httpfeeds.core.FeedItem;
 import java.time.Instant;
 import java.util.List;
 
-public interface FeedRepository {
+public interface FeedItemRepository {
 
   List<FeedItem> findByIdGreaterThan(String lastEventId, long limit);
 

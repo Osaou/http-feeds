@@ -1,8 +1,10 @@
 package se.aourell.httpfeeds.core;
 
+import se.aourell.httpfeeds.spi.FeedItemService;
+
 public record HttpFeedDefinition(
   String feed,
   String path,
   String table,
-  FeedService feedService
+  FeedItemService feedItemService
 ) { }

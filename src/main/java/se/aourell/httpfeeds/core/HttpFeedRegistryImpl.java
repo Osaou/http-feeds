@@ -1,6 +1,8 @@
 package se.aourell.httpfeeds.core;
 
 import se.aourell.httpfeeds.api.HttpFeed;
+import se.aourell.httpfeeds.spi.FeedItemService;
+import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +13,10 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
   private final Map<String, HttpFeedDefinition> feedDefinitions = new HashMap<>();
 
   @Override
-  public void defineFeed(HttpFeed feed, FeedService feedService) {
-    final var feedDefinition = new HttpFeedDefinition(feed.feed(), feed.path(), feed.table(), feedService);
+  public void defineFeed(HttpFeed feed, FeedItemService feedItemService) {
+    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), feed.path(), feed.persistenceName(), feedItemService);
 
-    var path = feed.feed();
+    var path = feed.feedName();
     while (path.startsWith("/")) {
       path = path.substring(1);
     }
@@ -22,7 +24,7 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
       path = path.substring(0, path.length() - 1);
     }
 
-    feedDefinitions.put(feed.feed(), feedDefinition);
+    feedDefinitions.put(feed.feedName(), feedDefinition);
   }
 
   @Override

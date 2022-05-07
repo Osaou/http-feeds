@@ -18,9 +18,9 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.api.HttpFeed;
 import se.aourell.httpfeeds.core.EventBusImpl;
-import se.aourell.httpfeeds.core.HttpFeedRegistry;
+import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
-import se.aourell.httpfeeds.infrastructure.FeedServiceImpl;
+import se.aourell.httpfeeds.core.FeedItemServiceImpl;
 import se.aourell.httpfeeds.spi.EventBus;
 
 import java.time.Duration;
@@ -46,11 +46,15 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
       .ifPresent(jdbcTemplate -> {
         for (Class<?> feedEventBaseType : ClassIndex.getAnnotated(HttpFeed.class)) {
           final var feedDeclaration = feedEventBaseType.getAnnotation(HttpFeed.class);
-          final var feedName = feedDeclaration.feed();
-          final var table = feedDeclaration.table();
+          final var feedName = feedDeclaration.feedName();
+          final var persistenceName = feedDeclaration.persistenceName();
 
-          final var repository = new FeedRepositoryImpl(jdbcTemplate, feedItemRowMapper, table);
+          final var repository = new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName);
           beanFactory.registerSingleton("repository:" + feedName, repository);
+
+          final var feedItemService = new FeedItemServiceImpl(repository, pollInterval, limit);
+          beanFactory.registerSingleton("service:" + feedName, feedItemService);
+          feedRegistry.defineFeed(feedDeclaration, feedItemService);
 
           final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
           final var beanDefinition = new RootBeanDefinition();
@@ -61,9 +65,6 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
           final var eventBus = new EventBusImpl(feedEventBaseType, repository);
           ((DefaultListableBeanFactory) beanFactory).registerBeanDefinition("eventbus:" + feedName, beanDefinition);
           beanFactory.registerSingleton("eventbus:" + feedName, eventBus);
-
-          final var feedService = new FeedServiceImpl(repository, pollInterval, limit);
-          feedRegistry.defineFeed(feedDeclaration, feedService);
         }
       });
   }

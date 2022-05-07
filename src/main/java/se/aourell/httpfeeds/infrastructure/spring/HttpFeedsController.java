@@ -10,7 +10,7 @@ import se.aourell.httpfeeds.core.CloudEvent;
 import se.aourell.httpfeeds.core.CloudEventMapper;
 import se.aourell.httpfeeds.core.FeedItem;
 import se.aourell.httpfeeds.core.HttpFeedDefinition;
-import se.aourell.httpfeeds.core.HttpFeedRegistry;
+import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
 import java.util.List;
 
@@ -32,15 +32,15 @@ public class HttpFeedsController {
   ) {
     log.debug("GET feed {} with lastEventId {}", feedName, lastEventId);
 
-    final var feedService = feedRegistry.getDefinedFeed(feedName)
-      .map(HttpFeedDefinition::feedService)
+    final var feedItemService = feedRegistry.getDefinedFeed(feedName)
+      .map(HttpFeedDefinition::feedItemService)
       .orElseThrow(IllegalArgumentException::new);
 
     List<FeedItem> items;
     if (timeoutMillis == null) {
-      items = feedService.fetchFeedItems(lastEventId);
+      items = feedItemService.fetch(lastEventId);
     } else {
-      items = feedService.fetchFeedItemsWithPolling(lastEventId, timeoutMillis);
+      items = feedItemService.fetchWithPolling(lastEventId, timeoutMillis);
     }
 
     final List<CloudEvent> cloudEvents = items.stream()

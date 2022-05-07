@@ -2,12 +2,12 @@ package se.aourell.httpfeeds.infrastructure.spring;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.core.FeedItem;
-import se.aourell.httpfeeds.spi.FeedRepository;
+import se.aourell.httpfeeds.spi.FeedItemRepository;
 
 import java.time.Instant;
 import java.util.List;
 
-public class FeedRepositoryImpl implements FeedRepository {
+public class FeedItemRepositoryImpl implements FeedItemRepository {
 
   private final JdbcTemplate jdbcTemplate;
   private final FeedItemRowMapper feedItemRowMapper;
@@ -15,7 +15,7 @@ public class FeedRepositoryImpl implements FeedRepository {
   private final String appendSql;
   private final String findSql;
 
-  public FeedRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table) {
+  public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
     this.table = table;
