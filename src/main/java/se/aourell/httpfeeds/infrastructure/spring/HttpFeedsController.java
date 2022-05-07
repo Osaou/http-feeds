@@ -2,9 +2,11 @@ package se.aourell.httpfeeds.infrastructure.spring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import se.aourell.httpfeeds.core.CloudEvent;
-import se.aourell.httpfeeds.core.FeedItem;
 import se.aourell.httpfeeds.core.HttpFeedDefinition;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
@@ -34,14 +36,12 @@ public class HttpFeedsController {
       .map(HttpFeedDefinition::feedItemService)
       .orElseThrow(IllegalArgumentException::new);
 
-    List<FeedItem> items;
-    if (timeoutMillis == null) {
-      items = feedItemService.fetch(lastEventId);
-    } else {
-      items = feedItemService.fetchWithPolling(lastEventId, timeoutMillis);
-    }
+    final var feedItems = switch (timeoutMillis) {
+      case null -> feedItemService.fetch(lastEventId);
+      default -> feedItemService.fetchWithPolling(lastEventId, timeoutMillis);
+    };
 
-    final List<CloudEvent> cloudEvents = items.stream()
+    final var cloudEvents = feedItems.stream()
       .map(cloudEventMapper::mapFeedItem)
       .toList();
 
