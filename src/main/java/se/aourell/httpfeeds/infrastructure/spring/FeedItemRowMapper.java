@@ -1,14 +1,12 @@
-package se.aourell.httpfeeds.infrastructure.jdbc;
+package se.aourell.httpfeeds.infrastructure.spring;
 
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Service;
 import se.aourell.httpfeeds.core.FeedItem;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-@Service
 public class FeedItemRowMapper implements RowMapper<FeedItem> {
 
   @Override

@@ -1,16 +1,11 @@
-package se.aourell.httpfeeds.infrastructure;
+package se.aourell.httpfeeds.core;
 
-import org.springframework.stereotype.Service;
 import se.aourell.httpfeeds.api.HttpFeed;
-import se.aourell.httpfeeds.core.FeedService;
-import se.aourell.httpfeeds.core.HttpFeedDefinition;
-import se.aourell.httpfeeds.core.HttpFeedRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
 public class HttpFeedRegistryImpl implements HttpFeedRegistry {
 
   private final Map<String, HttpFeedDefinition> feedDefinitions = new HashMap<>();

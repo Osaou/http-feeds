@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure;
+package se.aourell.httpfeeds.infrastructure.spring;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.atteo.classindex.ClassIndex;
@@ -17,9 +17,10 @@ import org.springframework.core.ResolvableType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.api.HttpFeed;
+import se.aourell.httpfeeds.core.EventBusImpl;
 import se.aourell.httpfeeds.core.HttpFeedRegistry;
-import se.aourell.httpfeeds.infrastructure.jdbc.FeedRepositoryImpl;
-import se.aourell.httpfeeds.infrastructure.jdbc.FeedItemRowMapper;
+import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
+import se.aourell.httpfeeds.infrastructure.FeedServiceImpl;
 import se.aourell.httpfeeds.spi.EventBus;
 
 import java.time.Duration;
@@ -72,5 +73,17 @@ public class SpringAutoConfiguration implements BeanFactoryPostProcessor {
   public Jackson2ObjectMapperBuilder objectMapperBuilder() {
     return new Jackson2ObjectMapperBuilder()
       .serializationInclusion(JsonInclude.Include.NON_NULL);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public HttpFeedRegistry httpFeedRegistry() {
+    return new HttpFeedRegistryImpl();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public FeedItemRowMapper feedItemRowMapper() {
+    return new FeedItemRowMapper();
   }
 }

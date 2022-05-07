@@ -1,8 +1,7 @@
-package se.aourell.httpfeeds.infrastructure;
+package se.aourell.httpfeeds.core;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import se.aourell.httpfeeds.api.DeletionEvent;
-import se.aourell.httpfeeds.core.EventSerializer;
 import se.aourell.httpfeeds.spi.EventBus;
 import se.aourell.httpfeeds.spi.FeedRepository;
 
