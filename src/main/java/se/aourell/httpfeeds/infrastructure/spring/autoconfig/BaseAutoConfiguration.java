@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import se.aourell.httpfeeds.core.CloudEvent;
 import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
-import se.aourell.httpfeeds.infrastructure.spring.EventSerializerImpl;
+import se.aourell.httpfeeds.core.EventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.spring.FeedItemRowMapper;
 import se.aourell.httpfeeds.spi.EventSerializer;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;

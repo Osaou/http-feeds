@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure.spring;
+package se.aourell.httpfeeds.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
