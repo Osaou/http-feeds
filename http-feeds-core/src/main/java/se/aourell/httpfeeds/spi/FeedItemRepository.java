@@ -11,5 +11,5 @@ public interface FeedItemRepository {
 
   List<FeedItem> findByIdGreaterThan(String lastEventId, long limit);
 
-  void append(String id, String type, Instant time, String subject, String method, String data);
+  void append(String id, String type, String source, Instant time, String subject, String method, String data);
 }

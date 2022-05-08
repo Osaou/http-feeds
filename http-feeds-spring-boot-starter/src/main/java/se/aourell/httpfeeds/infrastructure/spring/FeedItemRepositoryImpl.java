@@ -23,7 +23,7 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
 
     this.findAllSql = String.format("select * from %s order by id limit ?", table);
     this.findByIdGreaterThanSql = String.format("select * from %s where id > ? order by id limit ?", table);
-    this.appendSql = String.format("insert into %s (id, type, time, subject, method, data) values (?, ?, ?, ?, ?, ?)", table);
+    this.appendSql = String.format("insert into %s (id, type, source, time, subject, method, data) values (?, ?, ?, ?, ?, ?, ?)", table);
   }
 
   @Override
@@ -37,8 +37,8 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   }
 
   @Override
-  public void append(String id, String type, Instant time, String subject, String method, String data) {
-    jdbcTemplate.update(appendSql, id, type, time, subject, method, data);
+  public void append(String id, String type, String source, Instant time, String subject, String method, String data) {
+    jdbcTemplate.update(appendSql, id, type, source, time, subject, method, data);
   }
 
   public void deleteAll() {

@@ -13,10 +13,12 @@ import java.util.Optional;
 public class EventBusImpl implements EventBus<Object> {
 
   private final Optional<List<Class<?>>> deletionEventTypes;
+  private final HttpFeedDefinition feedDefinition;
   private final FeedItemRepository feedItemRepository;
   private final EventSerializer eventSerializer;
 
-  public EventBusImpl(Class<?> eventBaseType, FeedItemRepository feedItemRepository, EventSerializer eventSerializer) {
+  public EventBusImpl(Class<?> eventBaseType, HttpFeedDefinition feedDefinition, FeedItemRepository feedItemRepository, EventSerializer eventSerializer) {
+    this.feedDefinition = feedDefinition;
     this.feedItemRepository = feedItemRepository;
     this.eventSerializer = eventSerializer;
 
@@ -34,9 +36,10 @@ public class EventBusImpl implements EventBus<Object> {
 
     final var id = UuidCreator.getTimeOrderedWithRandom().toString();
     final var type = eventType.getName();
+    final var source = feedDefinition.path();
     final var method = isDeleteEvent ? "delete" : null;
     final var dataAsString = eventSerializer.toString(event);
 
-    feedItemRepository.append(id, type, time, subject, method, dataAsString);
+    feedItemRepository.append(id, type, source, time, subject, method, dataAsString);
   }
 }

@@ -13,7 +13,7 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
   private final Map<String, HttpFeedDefinition> feedDefinitions = new HashMap<>();
 
   @Override
-  public void defineFeed(HttpFeed feed, FeedItemService feedItemService) {
+  public HttpFeedDefinition defineFeed(HttpFeed feed, FeedItemService feedItemService) {
     var path = feed.path();
     if (!path.startsWith(HttpFeedDefinition.PATH_PREFIX)) {
       throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.PATH_PREFIX + "\"");
@@ -27,6 +27,8 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
 
     final var feedDefinition = new HttpFeedDefinition(feed.feedName(), feed.path(), feed.persistenceName(), feedItemService);
     feedDefinitions.put(path + "/", feedDefinition);
+
+    return feedDefinition;
   }
 
   @Override

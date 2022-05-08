@@ -38,9 +38,10 @@ public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcess
 
       final var feedItemService = new FeedItemServiceImpl(feedItemRepository);
       beanFactory.registerSingleton("service:" + feedName, feedItemService);
-      feedRegistry.defineFeed(feedDeclaration, feedItemService);
 
-      final var eventBus = new EventBusImpl(feedEventBaseType, feedItemRepository, eventSerializer);
+      final var feedDefinition = feedRegistry.defineFeed(feedDeclaration, feedItemService);
+
+      final var eventBus = new EventBusImpl(feedEventBaseType, feedDefinition, feedItemRepository, eventSerializer);
       final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
       final var beanDefinition = new RootBeanDefinition();
       beanDefinition.setTargetType(resolvableType);

@@ -11,12 +11,13 @@ public class FeedItemRowMapper implements RowMapper<FeedItem> {
 
   @Override
   public FeedItem mapRow(ResultSet rs, int rowNum) throws SQLException {
-    String id = rs.getString("id");
-    String type = rs.getString("type");
-    Timestamp time = rs.getTimestamp("time");
-    String subject = rs.getString("subject");
-    String method = rs.getString("method");
-    String data = rs.getString("data");
-    return new FeedItem(id, type, time == null ? null : time.toInstant(), subject, method, data);
+    String id = rs.getString(1);
+    String type = rs.getString(2);
+    String source = rs.getString(3);
+    Timestamp time = rs.getTimestamp(4);
+    String subject = rs.getString(5);
+    String method = rs.getString(6);
+    String data = rs.getString(7);
+    return new FeedItem(id, type, source, time == null ? null : time.toInstant(), subject, method, data);
   }
 }

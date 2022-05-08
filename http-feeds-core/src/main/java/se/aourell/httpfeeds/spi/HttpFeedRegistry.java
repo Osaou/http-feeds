@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface HttpFeedRegistry {
 
-  void defineFeed(HttpFeed feed, FeedItemService feedItemService);
+  HttpFeedDefinition defineFeed(HttpFeed feed, FeedItemService feedItemService);
 
   Optional<HttpFeedDefinition> getDefinedFeed(String path);
 }

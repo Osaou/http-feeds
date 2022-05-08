@@ -12,7 +12,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-public record CloudEvent(String specversion, String id, String type, @JsonSerialize(using = OffsetDateTimeSerializer.class) OffsetDateTime time, String subject, String method, String datacontenttype, Object data) {
+public record CloudEvent(String specversion, String id, String type, String source, @JsonSerialize(using = OffsetDateTimeSerializer.class) OffsetDateTime time, String subject, String method, String datacontenttype, Object data) {
 
   public static class Mapper {
 
@@ -27,6 +27,7 @@ public record CloudEvent(String specversion, String id, String type, @JsonSerial
         "1.0",
         feedItem.id(),
         feedItem.type(),
+        feedItem.source(),
         feedItem.time().atOffset(ZoneOffset.UTC),
         feedItem.subject(),
         feedItem.method(),
