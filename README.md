@@ -2,7 +2,9 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/se.aourell.httpfeeds/http-feeds-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/se.aourell.httpfeeds/http-feeds-spring-boot-starter)
 
-Spring Boot starter for an [HTTP Feed](http://www.http-feeds.org/).
+Spring Boot starter for implementing [HTTP Feed](http://www.http-feeds.org/) servers.
+
+Compiled against, and requires at least, Java 17 LTS.
 
 
 ## Getting started
