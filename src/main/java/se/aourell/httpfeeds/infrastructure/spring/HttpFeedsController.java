@@ -10,6 +10,7 @@ import se.aourell.httpfeeds.core.CloudEvent;
 import se.aourell.httpfeeds.core.HttpFeedDefinition;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,17 +26,18 @@ public class HttpFeedsController {
     this.cloudEventMapper = cloudEventMapper;
   }
 
-  @GetMapping(value = "/feed/{feedName}", produces = {"application/cloudevents-batch+json", "application/json"})
+  @GetMapping(value = HttpFeedDefinition.pathPrefix + "**", produces = {"application/cloudevents-batch+json", "application/json"})
   public List<CloudEvent> getFeedItems(
-    @PathVariable String feedName,
     @RequestParam(name = "lastEventId", required = false) Optional<String> lastEventId,
-    @RequestParam(name = "timeout", required = false) Optional<Long> timeoutMillis
+    @RequestParam(name = "timeout", required = false) Optional<Long> timeoutMillis,
+    HttpServletRequest request
   ) {
-    log.debug("GET feed {} with lastEventId {}", feedName, lastEventId);
+    final var path = request.getServletPath();
+    log.debug("GET feed {} with lastEventId {}", path, lastEventId);
 
-    final var feedItemService = feedRegistry.getDefinedFeed(feedName)
+    final var feedItemService = feedRegistry.getDefinedFeed(path)
       .map(HttpFeedDefinition::feedItemService)
-      .orElseThrow(IllegalArgumentException::new);
+      .orElseThrow(() -> new IllegalArgumentException(String.format("No feed defined for path \"%s\"", path)));
 
     final var cloudEvents = timeoutMillis
       .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, timeout))

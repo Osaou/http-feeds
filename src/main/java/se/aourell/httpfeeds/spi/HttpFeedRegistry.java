@@ -9,5 +9,5 @@ public interface HttpFeedRegistry {
 
   void defineFeed(HttpFeed feed, FeedItemService feedItemService);
 
-  Optional<HttpFeedDefinition> getDefinedFeed(String name);
+  Optional<HttpFeedDefinition> getDefinedFeed(String path);
 }

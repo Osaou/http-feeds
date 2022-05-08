@@ -14,22 +14,28 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
 
   @Override
   public void defineFeed(HttpFeed feed, FeedItemService feedItemService) {
-    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), feed.path(), feed.persistenceName(), feedItemService);
-
-    var path = feed.feedName();
-    while (path.startsWith("/")) {
-      path = path.substring(1);
+    var path = feed.path();
+    if (!path.startsWith(HttpFeedDefinition.pathPrefix)) {
+      throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.pathPrefix + "\"");
     }
     while (path.endsWith("/")) {
       path = path.substring(0, path.length() - 1);
     }
+    if (path.isEmpty()) {
+      throw new IllegalArgumentException("Feed path must be defined");
+    }
 
-    feedDefinitions.put(feed.feedName(), feedDefinition);
+    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), feed.path(), feed.persistenceName(), feedItemService);
+    feedDefinitions.put(path + "/", feedDefinition);
   }
 
   @Override
-  public Optional<HttpFeedDefinition> getDefinedFeed(String name) {
-    final var feedDefinition = feedDefinitions.get(name);
+  public Optional<HttpFeedDefinition> getDefinedFeed(String path) {
+    if (!path.endsWith("/")) {
+      path = path + "/";
+    }
+
+    final var feedDefinition = feedDefinitions.get(path);
     if (feedDefinition == null) {
       return Optional.empty();
     }
