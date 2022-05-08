@@ -13,23 +13,27 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   private final FeedItemRowMapper feedItemRowMapper;
   private final String table;
   private final String appendSql;
-  private final String findSql;
+  private final String findAllSql;
+  private final String findByIdGreaterThanSql;
 
   public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
     this.table = table;
 
-    this.findSql = String.format("select * from %s where id > ? order by id limit ?", table);
+    this.findAllSql = String.format("select * from %s order by id limit ?", table);
+    this.findByIdGreaterThanSql = String.format("select * from %s where id > ? order by id limit ?", table);
     this.appendSql = String.format("insert into %s (id, type, time, subject, method, data) values (?, ?, ?, ?, ?, ?)", table);
   }
 
   @Override
+  public List<FeedItem> findAll(long limit) {
+    return jdbcTemplate.query(findAllSql, feedItemRowMapper, limit);
+  }
+
+  @Override
   public List<FeedItem> findByIdGreaterThan(String lastEventId, long limit) {
-    if (lastEventId == null) {
-      lastEventId = "";
-    }
-    return jdbcTemplate.query(findSql, feedItemRowMapper, lastEventId, limit);
+    return jdbcTemplate.query(findByIdGreaterThanSql, feedItemRowMapper, lastEventId, limit);
   }
 
   @Override

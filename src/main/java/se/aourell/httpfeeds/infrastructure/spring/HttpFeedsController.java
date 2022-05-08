@@ -11,6 +11,7 @@ import se.aourell.httpfeeds.core.HttpFeedDefinition;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class HttpFeedsController {
@@ -27,8 +28,8 @@ public class HttpFeedsController {
   @GetMapping(value = "/feed/{feedName}", produces = {"application/cloudevents-batch+json", "application/json"})
   public List<CloudEvent> getFeedItems(
     @PathVariable String feedName,
-    @RequestParam(name = "lastEventId", required = false) String lastEventId,
-    @RequestParam(name = "timeout", required = false) Long timeoutMillis
+    @RequestParam(name = "lastEventId", required = false) Optional<String> lastEventId,
+    @RequestParam(name = "timeout", required = false) Optional<Long> timeoutMillis
   ) {
     log.debug("GET feed {} with lastEventId {}", feedName, lastEventId);
 
@@ -36,12 +37,10 @@ public class HttpFeedsController {
       .map(HttpFeedDefinition::feedItemService)
       .orElseThrow(IllegalArgumentException::new);
 
-    final var feedItems = switch (timeoutMillis) {
-      case null -> feedItemService.fetch(lastEventId);
-      default -> feedItemService.fetchWithPolling(lastEventId, timeoutMillis);
-    };
-
-    final var cloudEvents = feedItems.stream()
+    final var cloudEvents = timeoutMillis
+      .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, timeout))
+      .orElseGet(() -> feedItemService.fetch(lastEventId))
+      .stream()
       .map(cloudEventMapper::mapFeedItem)
       .toList();
 
