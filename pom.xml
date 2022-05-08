@@ -3,64 +3,288 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-dependencies</artifactId>
+    <version>2.6.7</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
 
 	<groupId>se.aourell.httpfeeds</groupId>
-	<artifactId>http-feeds-spring-boot-example</artifactId>
+	<artifactId>bom</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-	<name>http-feeds-spring-boot-example</name>
-	<description>HTTP-feeds producer and consumer library for Spring Boot</description>
+	<name>bom</name>
+  <description>HTTP-feeds Bill of Materials parent pom</description>
 
-	<properties>
-    <maven.compiler.source>18</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-	</properties>
+	<modules>
+    <module>http-feeds-core</module>
+		<module>http-feeds-spring-boot-starter</module>
+		<module>example-application</module>
+	</modules>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-    <dependency>
-      <groupId>org.atteo.classindex</groupId>
-      <artifactId>classindex</artifactId>
-      <version>3.11</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.f4b6a3</groupId>
-      <artifactId>uuid-creator</artifactId>
-      <version>4.6.1</version>
-    </dependency>
+  <properties>
+    <se.aourell.httpfeeds.version>0.0.1-SNAPSHOT</se.aourell.httpfeeds.version>
+    <java.version>17</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <scope>runtime</scope>
-    </dependency>
+    <org.atteo.classindex.version>3.11</org.atteo.classindex.version>
+    <com.github.f4b6a3.version>4.6.1</com.github.f4b6a3.version>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <mvn-pmd-version>3.16.0</mvn-pmd-version>
+    <mvn-checkstyle-version>3.1.2</mvn-checkstyle-version>
+  </properties>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>se.aourell.httpfeeds</groupId>
+        <artifactId>http-feeds-core</artifactId>
+        <version>${se.aourell.httpfeeds.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>se.aourell.httpfeeds</groupId>
+        <artifactId>http-feeds-spring-boot-starter</artifactId>
+        <version>${se.aourell.httpfeeds.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.atteo.classindex</groupId>
+        <artifactId>classindex</artifactId>
+        <version>${org.atteo.classindex.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.f4b6a3</groupId>
+        <artifactId>uuid-creator</artifactId>
+        <version>${com.github.f4b6a3.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>${basedir}/src/main/resources</directory>
+        <includes>
+          <include>**/application*.yml</include>
+          <include>**/application*.yaml</include>
+          <include>**/application*.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <excludes>
+          <exclude>**/application*.yml</exclude>
+          <exclude>**/application*.yaml</exclude>
+          <exclude>**/application*.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>${mvn-pmd-version}</version>
+          <configuration>
+            <failOnViolation>true</failOnViolation>
+            <printFailingErrors>true</printFailingErrors>
+          </configuration>
+          <executions>
+            <execution>
+              <id>analyze-compile</id>
+              <phase>compile</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+          <!--<dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.29</version>
+            </dependency>
+          </dependencies>-->
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${mvn-checkstyle-version}</version>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <failsOnError>true</failsOnError>
+            <linkXRef>false</linkXRef>
+
+            <checkstyleRules>
+              <module name="Checker">
+                <property name="severity" value="error"/>
+                <property name="fileExtensions" value="java, properties, xml"/>
+
+                <!-- Excludes all 'module-info.java' files -->
+                <!-- See https://checkstyle.org/config_filefilters.html -->
+                <module name="BeforeExecutionExclusionFileFilter">
+                  <property name="fileNamePattern" value="module\-info\.java$"/>
+                </module>
+
+                <!-- Checks that a package-info.java file exists for each package. -->
+                <!-- See https://checkstyle.org/config_javadoc.html#JavadocPackage -->
+                <!-- <module name="JavadocPackage"/>-->
+
+                <!-- Checks whether files end with a new line. -->
+                <!-- See https://checkstyle.org/config_misc.html#NewlineAtEndOfFile -->
+                <!-- <module name="NewlineAtEndOfFile"/>-->
+
+                <!-- Checks that property files contain the same keys. -->
+                <!-- See https://checkstyle.org/config_misc.html#Translation -->
+                <module name="Translation"/>
+
+                <!-- Checks for Size Violations. -->
+                <!-- See https://checkstyle.org/config_sizes.html -->
+                <module name="FileLength"/>
+                <module name="LineLength">
+                  <property name="fileExtensions" value="java"/>
+                  <property name="max" value="250"/>
+                </module>
+
+                <!-- Checks for whitespace -->
+                <!-- See https://checkstyle.org/config_whitespace.html -->
+                <!-- <module name="FileTabCharacter"/>-->
+
+                <!-- Miscellaneous other checks. -->
+                <!-- See https://checkstyle.org/config_misc.html -->
+                <module name="RegexpSingleline">
+                  <property name="format" value="\s+$"/>
+                  <property name="minimum" value="0"/>
+                  <property name="maximum" value="0"/>
+                  <property name="message" value="Line has trailing spaces."/>
+                </module>
+
+                <!-- Checks for Headers -->
+                <!-- See https://checkstyle.org/config_header.html -->
+                <!-- <module name="Header"> -->
+                <!--   <property name="headerFile" value="${checkstyle.header.file}"/> -->
+                <!--   <property name="fileExtensions" value="java"/> -->
+                <!-- </module> -->
+
+                <module name="SuppressWarningsFilter"/>
+                <module name="TreeWalker">
+                  <module name="SuppressWarningsHolder"/>
+
+                  <!-- Checks for Naming Conventions. -->
+                  <!-- See https://checkstyle.org/config_naming.html -->
+                  <module name="ConstantName"/>
+                  <module name="LocalFinalVariableName"/>
+                  <module name="LocalVariableName"/>
+                  <module name="MemberName"/>
+                  <module name="MethodName"/>
+                  <module name="PackageName"/>
+                  <module name="ParameterName"/>
+                  <module name="StaticVariableName"/>
+                  <module name="TypeName"/>
+
+                  <!-- Checks for imports -->
+                  <!-- See https://checkstyle.org/config_imports.html -->
+                  <!--<module name="AvoidStarImport"/>-->
+                  <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
+                  <module name="RedundantImport"/>
+                  <module name="UnusedImports">
+                    <property name="processJavadoc" value="false"/>
+                  </module>
+
+                  <!-- Checks for Size Violations. -->
+                  <!-- See https://checkstyle.org/config_sizes.html -->
+                  <module name="MethodLength"/>
+                  <module name="ParameterNumber"/>
+
+                  <!-- Checks for whitespace -->
+                  <!-- See https://checkstyle.org/config_whitespace.html -->
+                  <module name="EmptyForIteratorPad"/>
+                  <module name="GenericWhitespace"/>
+                  <module name="MethodParamPad"/>
+                  <module name="NoWhitespaceAfter"/>
+                  <module name="NoWhitespaceBefore"/>
+                  <!--<module name="OperatorWrap"/>-->
+                  <module name="ParenPad"/>
+                  <module name="TypecastParenPad"/>
+                  <module name="WhitespaceAfter"/>
+                  <module name="WhitespaceAround"/>
+
+                  <!-- Modifier Checks -->
+                  <!-- See https://checkstyle.org/config_modifiers.html -->
+                  <module name="ModifierOrder"/>
+                  <module name="RedundantModifier"/>
+
+                  <!-- Checks for blocks. You know, those {}'s -->
+                  <!-- See https://checkstyle.org/config_blocks.html -->
+                  <module name="AvoidNestedBlocks"/>
+                  <module name="EmptyBlock"/>
+                  <module name="LeftCurly"/>
+                  <module name="NeedBraces"/>
+                  <module name="RightCurly"/>
+
+                  <!-- Checks for common coding problems -->
+                  <!-- See https://checkstyle.org/config_coding.html -->
+                  <module name="EmptyStatement"/>
+                  <module name="EqualsHashCode"/>
+                  <!--<module name="HiddenField"/>-->
+                  <module name="IllegalInstantiation"/>
+                  <module name="InnerAssignment"/>
+                  <!--<module name="MagicNumber"/>-->
+                  <module name="MissingSwitchDefault"/>
+                  <module name="MultipleVariableDeclarations"/>
+                  <module name="SimplifyBooleanExpression"/>
+                  <module name="SimplifyBooleanReturn"/>
+
+                  <!-- Checks for class design -->
+                  <!-- See https://checkstyle.org/config_design.html -->
+                  <!--<module name="DesignForExtension"/>-->
+                  <module name="FinalClass"/>
+                  <module name="HideUtilityClassConstructor"/>
+                  <module name="InterfaceIsType"/>
+                  <module name="VisibilityModifier"/>
+
+                  <!-- Miscellaneous other checks. -->
+                  <!-- See https://checkstyle.org/config_misc.html -->
+                  <module name="ArrayTypeStyle"/>
+                  <!--<module name="FinalParameters"/>-->
+                  <module name="TodoComment"/>
+                  <module name="UpperEll"/>
+
+                  <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->
+                  <!-- <module name="SuppressionXpathFilter"> -->
+                  <!--   <property name="file" value="${org.checkstyle.sun.suppressionxpathfilter.config}" -->
+                  <!--     default="checkstyle-xpath-suppressions.xml"/> -->
+                  <!--   <property name="optional" value="true"/> -->
+                  <!-- </module> -->
+
+                </module>
+              </module>
+            </checkstyleRules>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -70,6 +294,6 @@
         </configuration>
       </plugin>
     </plugins>
-	</build>
+  </build>
 
 </project>
