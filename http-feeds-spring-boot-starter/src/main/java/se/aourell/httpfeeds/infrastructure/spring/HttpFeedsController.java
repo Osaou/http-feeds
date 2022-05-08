@@ -16,7 +16,7 @@ import java.util.Optional;
 @RestController
 public class HttpFeedsController {
 
-  private static final Logger log = LoggerFactory.getLogger(HttpFeedsController.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HttpFeedsController.class);
   private final HttpFeedRegistry feedRegistry;
   private final CloudEvent.Mapper cloudEventMapper;
 
@@ -25,14 +25,14 @@ public class HttpFeedsController {
     this.cloudEventMapper = cloudEventMapper;
   }
 
-  @GetMapping(value = HttpFeedDefinition.pathPrefix + "**", produces = {"application/cloudevents-batch+json", "application/json"})
+  @GetMapping(value = HttpFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
   public List<CloudEvent> getFeedItems(
     @RequestParam(name = "lastEventId", required = false) Optional<String> lastEventId,
     @RequestParam(name = "timeout", required = false) Optional<Long> timeoutMillis,
     HttpServletRequest request
   ) {
     final var path = request.getServletPath();
-    log.debug("GET feed {} with lastEventId {}", path, lastEventId);
+    LOG.debug("GET feed {} with lastEventId {}", path, lastEventId);
 
     final var feedItemService = feedRegistry.getDefinedFeed(path)
       .map(HttpFeedDefinition::feedItemService)
@@ -45,7 +45,7 @@ public class HttpFeedsController {
       .map(cloudEventMapper::mapFeedItem)
       .toList();
 
-    log.debug("GET feed with lastEventId {} returned {} events", lastEventId, cloudEvents.size());
+    LOG.debug("GET feed with lastEventId {} returned {} events", lastEventId, cloudEvents.size());
     return cloudEvents;
   }
 }

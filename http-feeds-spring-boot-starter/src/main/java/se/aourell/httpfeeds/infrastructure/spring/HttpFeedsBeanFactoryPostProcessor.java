@@ -21,7 +21,7 @@ import java.util.Objects;
 public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
   @Override
-  public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {System.out.println("post processing!");
+  public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     final var jdbcTemplate = beanFactory.getBean(JdbcTemplate.class);
     final var feedItemRowMapper = beanFactory.getBean(FeedItemRowMapper.class);
     final var feedRegistry = beanFactory.getBean(HttpFeedRegistry.class);

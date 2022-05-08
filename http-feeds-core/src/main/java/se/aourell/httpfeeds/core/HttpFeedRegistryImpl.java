@@ -15,8 +15,8 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
   @Override
   public void defineFeed(HttpFeed feed, FeedItemService feedItemService) {
     var path = feed.path();
-    if (!path.startsWith(HttpFeedDefinition.pathPrefix)) {
-      throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.pathPrefix + "\"");
+    if (!path.startsWith(HttpFeedDefinition.PATH_PREFIX)) {
+      throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.PATH_PREFIX + "\"");
     }
     while (path.endsWith("/")) {
       path = path.substring(0, path.length() - 1);

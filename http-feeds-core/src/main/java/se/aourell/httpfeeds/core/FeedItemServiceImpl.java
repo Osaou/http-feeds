@@ -15,9 +15,9 @@ import se.aourell.httpfeeds.spi.FeedItemRepository;
 
 public class FeedItemServiceImpl implements FeedItemService {
 
-  private static final Logger log = LoggerFactory.getLogger(FeedItemServiceImpl.class);
-  private static final Duration pollInterval = Duration.of(1, ChronoUnit.SECONDS);
-  private static final long limit = 1000;
+  private static final Logger LOG = LoggerFactory.getLogger(FeedItemServiceImpl.class);
+  private static final Duration POLL_INTERVAL = Duration.of(1, ChronoUnit.SECONDS);
+  private static final long LIMIT_COUNT_PER_REQUEST = 1000;
 
   private final FeedItemRepository feedItemRepository;
 
@@ -27,39 +27,39 @@ public class FeedItemServiceImpl implements FeedItemService {
 
   @Override
   public List<FeedItem> fetch(Optional<String> lastEventId) {
-    log.debug("Find items with lastEventId={}", lastEventId);
+    LOG.debug("Find items with lastEventId={}", lastEventId);
     return lastEventId
-      .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
-      .orElseGet(() -> feedItemRepository.findAll(limit));
+      .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, LIMIT_COUNT_PER_REQUEST))
+      .orElseGet(() -> feedItemRepository.findAll(LIMIT_COUNT_PER_REQUEST));
   }
 
   @Override
   public List<FeedItem> fetchWithTimeout(Optional<String> lastEventId, Long timeoutMillis) {
-    log.debug("Long polling for items with lastEventId={} timeoutMillis={}", lastEventId, timeoutMillis);
+    LOG.debug("Long polling for items with lastEventId={} timeoutMillis={}", lastEventId, timeoutMillis);
     final Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, MILLIS);
 
     while (true) {
       final var items = lastEventId
-        .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
-        .orElseGet(() -> feedItemRepository.findAll(limit));
+        .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, LIMIT_COUNT_PER_REQUEST))
+        .orElseGet(() -> feedItemRepository.findAll(LIMIT_COUNT_PER_REQUEST));
 
       int numberOfItems = items.size();
       if (numberOfItems > 0) {
-        log.debug("Returning {} items.", numberOfItems);
+        LOG.debug("Returning {} items.", numberOfItems);
         return items;
       }
 
       if (Instant.now().isAfter(timeoutTimestamp)) {
-        log.debug("Polling timed out. Returning empty response.");
+        LOG.debug("Polling timed out. Returning empty response.");
         return List.of();
       }
 
       try {
-        log.debug("No items found. Wait {} and then retry again.", pollInterval);
+        LOG.debug("No items found. Wait {} and then retry again.", POLL_INTERVAL);
         //noinspection BusyWait
-        Thread.sleep(pollInterval.toMillis());
+        Thread.sleep(POLL_INTERVAL.toMillis());
       } catch (InterruptedException e) {
-        log.debug("Thread was interrupted. Probably a graceful shutdown. Try to send empty response.");
+        LOG.debug("Thread was interrupted. Probably a graceful shutdown. Try to send empty response.");
         return List.of();
       }
     }
