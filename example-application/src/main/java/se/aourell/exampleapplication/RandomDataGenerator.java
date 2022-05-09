@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import se.aourell.exampleapplication.feeds.patient.*;
 import se.aourell.httpfeeds.spi.EventBus;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Random;
 
 @Component
@@ -33,7 +33,7 @@ public class RandomDataGenerator {
   private PatientEvent randomEvent(String id) {
     return switch (new Random().nextInt(0, 4)) {
       case 0 -> new PatientAdded(id, "Scooby", "Doe");
-      case 1 -> new AssessmentStarted(id, "A001", OffsetDateTime.now(), OffsetDateTime.now().plusDays(10));
+      case 1 -> new AssessmentStarted(id, "A001", Instant.now(), Instant.now().plusSeconds(60*60*24*7));
       case 2 -> new AssessmentEnded(id);
       case 3 -> new PatientDeleted(id);
       default -> null;
