@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.api.HttpFeed;
 import se.aourell.httpfeeds.core.EventBusImpl;
 import se.aourell.httpfeeds.core.FeedItemServiceImpl;
+import se.aourell.httpfeeds.infrastructure.spring.autoconfigure.HttpFeedsProperties;
 import se.aourell.httpfeeds.spi.EventBus;
 import se.aourell.httpfeeds.spi.EventSerializer;
 import se.aourell.httpfeeds.spi.FeedItemIdGenerator;
@@ -20,6 +21,12 @@ import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 import java.util.Objects;
 
 public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+
+  private final HttpFeedsProperties properties;
+
+  public HttpFeedsBeanFactoryPostProcessor(HttpFeedsProperties properties) {
+    this.properties = properties;
+  }
 
   @Override
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -41,7 +48,7 @@ public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcess
       beanFactory.registerSingleton("repository:" + feedName, feedItemRepository);
 
       // add bean for this event type's service level needs
-      final var feedItemService = new FeedItemServiceImpl(feedItemRepository);
+      final var feedItemService = new FeedItemServiceImpl(feedItemRepository, properties.getPollInterval(), properties.getLimit());
       beanFactory.registerSingleton("service:" + feedName, feedItemService);
 
       // define the http feed in the registry, so that the http controller can read from it

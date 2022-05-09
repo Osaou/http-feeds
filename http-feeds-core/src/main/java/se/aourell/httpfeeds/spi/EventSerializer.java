@@ -4,5 +4,5 @@ public interface EventSerializer {
 
   String toString(Object object);
 
-  Object toEvent(String string);
+  Object toDomainEvent(String string);
 }

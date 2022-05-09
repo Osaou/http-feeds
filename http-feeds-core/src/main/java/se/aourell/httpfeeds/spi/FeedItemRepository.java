@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface FeedItemRepository {
 
-  List<FeedItem> findAll(long limit);
+  List<FeedItem> findAll(int limit);
 
-  List<FeedItem> findByIdGreaterThan(String lastEventId, long limit);
+  List<FeedItem> findByIdGreaterThan(String lastEventId, int limit);
 
   void append(String id, String type, String source, Instant time, String subject, String method, String data);
 }

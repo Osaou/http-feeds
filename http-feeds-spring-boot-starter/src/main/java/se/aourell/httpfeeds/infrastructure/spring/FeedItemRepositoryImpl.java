@@ -28,12 +28,12 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   }
 
   @Override
-  public List<FeedItem> findAll(long limit) {
+  public List<FeedItem> findAll(int limit) {
     return jdbcTemplate.query(findAllSql, feedItemRowMapper, limit);
   }
 
   @Override
-  public List<FeedItem> findByIdGreaterThan(String lastEventId, long limit) {
+  public List<FeedItem> findByIdGreaterThan(String lastEventId, int limit) {
     return jdbcTemplate.query(findByIdGreaterThanSql, feedItemRowMapper, lastEventId, limit);
   }
 
