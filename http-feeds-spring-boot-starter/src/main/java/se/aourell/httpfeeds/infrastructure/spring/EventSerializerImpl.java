@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.core;
+package se.aourell.httpfeeds.infrastructure.spring;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,25 +6,25 @@ import se.aourell.httpfeeds.spi.EventSerializer;
 
 public class EventSerializerImpl implements EventSerializer {
 
-  private final ObjectMapper objectMapper;
+  private final ObjectMapper domainEventJsonMapper;
 
-  public EventSerializerImpl(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
+  public EventSerializerImpl(ObjectMapper domainEventJsonMapper) {
+    this.domainEventJsonMapper = domainEventJsonMapper;
   }
 
   @Override
   public String toString(Object object) {
     try {
-      return objectMapper.writeValueAsString(object);
+      return domainEventJsonMapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public Object toEvent(String string) {
+  public Object toDomainEvent(String string) {
     try {
-      return objectMapper.readValue(string, Object.class);
+      return domainEventJsonMapper.readValue(string, Object.class);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

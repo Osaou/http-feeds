@@ -1,7 +1,8 @@
-package se.aourell.exampleapplication.feeds.patient;
+package se.aourell.exampleapplication;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import se.aourell.exampleapplication.feeds.patient.*;
 import se.aourell.httpfeeds.spi.EventBus;
 
 import java.time.OffsetDateTime;
@@ -32,7 +33,7 @@ public class RandomDataGenerator {
   private PatientEvent randomEvent(String id) {
     return switch (new Random().nextInt(0, 4)) {
       case 0 -> new PatientAdded(id, "Scooby", "Doe");
-      case 1 -> new AssessmentStarted(id, "A001", OffsetDateTime.MIN, OffsetDateTime.MAX);
+      case 1 -> new AssessmentStarted(id, "A001", OffsetDateTime.now(), OffsetDateTime.now().plusDays(10));
       case 2 -> new AssessmentEnded(id);
       case 3 -> new PatientDeleted(id);
       default -> null;

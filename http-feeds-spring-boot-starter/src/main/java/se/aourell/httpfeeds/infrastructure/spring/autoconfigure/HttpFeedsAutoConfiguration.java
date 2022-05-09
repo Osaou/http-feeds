@@ -2,15 +2,21 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import se.aourell.httpfeeds.core.CloudEvent;
-import se.aourell.httpfeeds.core.FeedItemIdGeneratorImpl;
+import se.aourell.httpfeeds.infrastructure.spring.EventSerializerImpl;
+import se.aourell.httpfeeds.infrastructure.spring.FeedItemIdGeneratorImpl;
 import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
-import se.aourell.httpfeeds.core.EventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.spring.FeedItemRowMapper;
 import se.aourell.httpfeeds.infrastructure.spring.HttpFeedsBeanFactoryPostProcessor;
 import se.aourell.httpfeeds.infrastructure.spring.HttpFeedsController;
@@ -19,19 +25,32 @@ import se.aourell.httpfeeds.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
 @Configuration
+@EnableConfigurationProperties(HttpFeedsProperties.class)
 public class HttpFeedsAutoConfiguration {
 
   @Bean
-  public HttpFeedsBeanFactoryPostProcessor httpFeedsBeanFactoryPostProcessor() {
-    return new HttpFeedsBeanFactoryPostProcessor();
+  public HttpFeedsBeanFactoryPostProcessor httpFeedsBeanFactoryPostProcessor(HttpFeedsProperties properties) {
+    return new HttpFeedsBeanFactoryPostProcessor(properties);
   }
 
   @Bean
-  @ConditionalOnMissingBean
-  public Jackson2ObjectMapperBuilder objectMapperBuilder() {
-    return new Jackson2ObjectMapperBuilder()
-      .failOnUnknownProperties(false)
-      .serializationInclusion(JsonInclude.Include.NON_NULL);
+  @ConditionalOnMissingBean(name = "cloudEventJsonMapper")
+  public ObjectMapper cloudEventJsonMapper() {
+    return JsonMapper.builder()
+      .serializationInclusion(JsonInclude.Include.NON_NULL)
+      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+      .addModule(new JavaTimeModule())
+      .build();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = "domainEventJsonMapper")
+  public ObjectMapper domainEventJsonMapper() {
+    return JsonMapper.builder()
+      .serializationInclusion(JsonInclude.Include.NON_NULL)
+      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+      .addModule(new JavaTimeModule())
+      .build();
   }
 
   @Bean
@@ -54,8 +73,8 @@ public class HttpFeedsAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public EventSerializer eventSerializer(ObjectMapper objectMapper) {
-    return new EventSerializerImpl(objectMapper);
+  public EventSerializer eventSerializer(@Qualifier("domainEventJsonMapper") ObjectMapper domainEventJsonMapper) {
+    return new EventSerializerImpl(domainEventJsonMapper);
   }
 
   @Bean
@@ -65,8 +84,9 @@ public class HttpFeedsAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnWebApplication
-  public HttpFeedsController httpFeedsController(HttpFeedRegistry feedRegistry, CloudEvent.Mapper cloudEventMapper) {
-    return new HttpFeedsController(feedRegistry, cloudEventMapper);
+  @ConditionalOnWebApplication(type = Type.SERVLET)
+  @ConditionalOnProperty(prefix = "httpfeeds.server.rest", name = "enabled", matchIfMissing = true, havingValue = "true")
+  public HttpFeedsController httpFeedsController(HttpFeedRegistry feedRegistry, CloudEvent.Mapper cloudEventMapper, @Qualifier("cloudEventJsonMapper") ObjectMapper cloudEventJsonMapper) {
+    return new HttpFeedsController(feedRegistry, cloudEventMapper, cloudEventJsonMapper);
   }
 }

@@ -1,0 +1,10 @@
+{"properties": [
+  {
+    "name": "httpfeeds.server.poll-interval",
+    "defaultValue": "1s"
+  },
+  {
+    "name": "httpfeeds.server.limit",
+    "defaultValue": "1000"
+  }
+]}

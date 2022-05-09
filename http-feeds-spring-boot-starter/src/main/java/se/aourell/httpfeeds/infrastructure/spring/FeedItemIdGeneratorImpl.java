@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.core;
+package se.aourell.httpfeeds.infrastructure.spring;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import se.aourell.httpfeeds.spi.FeedItemIdGenerator;
