@@ -28,19 +28,24 @@ public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcess
     final var eventSerializer = beanFactory.getBean(EventSerializer.class);
     final var beanClassLoader = Objects.requireNonNull(beanFactory.getBeanClassLoader());
 
+    // find all annotated http feeds in domain code and add their configurations and necessary beans
     for (Class<?> feedEventBaseType : ClassIndex.getAnnotated(HttpFeed.class, beanClassLoader)) {
       final var feedDeclaration = feedEventBaseType.getAnnotation(HttpFeed.class);
       final var feedName = feedDeclaration.feedName();
       final var persistenceName = feedDeclaration.persistenceName();
 
+      // add bean for this event type's repository needs
       final var feedItemRepository = new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName);
       beanFactory.registerSingleton("repository:" + feedName, feedItemRepository);
 
+      // add bean for this event type's service level needs
       final var feedItemService = new FeedItemServiceImpl(feedItemRepository);
       beanFactory.registerSingleton("service:" + feedName, feedItemService);
 
+      // define the http feed in the registry, so that the http controller can read from it
       final var feedDefinition = feedRegistry.defineFeed(feedDeclaration, feedItemService);
 
+      // final piece of the puzzle: the eventbus that is scoped to this specific event type via generics
       final var eventBus = new EventBusImpl(feedEventBaseType, feedDefinition, feedItemRepository, eventSerializer);
       final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
       final var beanDefinition = new RootBeanDefinition();

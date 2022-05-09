@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.core.FeedItem;
 import se.aourell.httpfeeds.spi.FeedItemRepository;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
     this.feedItemRowMapper = feedItemRowMapper;
     this.table = table;
 
-    this.findAllSql = String.format("select * from %s order by id limit ?", table);
-    this.findByIdGreaterThanSql = String.format("select * from %s where id > ? order by id limit ?", table);
+    this.findAllSql = String.format("select id, type, source, time, subject, method, data from %s order by id limit ?", table);
+    this.findByIdGreaterThanSql = String.format("select id, type, source, time, subject, method, data from %s where id > ? order by id limit ?", table);
     this.appendSql = String.format("insert into %s (id, type, source, time, subject, method, data) values (?, ?, ?, ?, ?, ?, ?)", table);
   }
 
@@ -38,7 +39,7 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
 
   @Override
   public void append(String id, String type, String source, Instant time, String subject, String method, String data) {
-    jdbcTemplate.update(appendSql, id, type, source, time, subject, method, data);
+    jdbcTemplate.update(appendSql, id, type, source, Timestamp.from(time), subject, method, data);
   }
 
   public void deleteAll() {

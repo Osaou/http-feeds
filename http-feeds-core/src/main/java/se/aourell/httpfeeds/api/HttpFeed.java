@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 @IndexAnnotated
 public @interface HttpFeed {
 
-  String path() default "";
-  String feedName() default "";
-  String persistenceName() default "";
+  String path();
+  String feedName();
+  String persistenceName();
 }

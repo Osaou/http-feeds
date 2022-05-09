@@ -14,6 +14,10 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
 
   @Override
   public HttpFeedDefinition defineFeed(HttpFeed feed, FeedItemService feedItemService) {
+    requireNonEmpty(feed.path());
+    requireNonEmpty(feed.feedName());
+    requireNonEmpty(feed.persistenceName());
+
     var path = feed.path();
     if (!path.startsWith(HttpFeedDefinition.PATH_PREFIX)) {
       throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.PATH_PREFIX + "\"");
@@ -24,9 +28,10 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
     if (path.isEmpty()) {
       throw new IllegalArgumentException("Feed path must be defined");
     }
+    path = path + "/";
 
-    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), feed.path(), feed.persistenceName(), feedItemService);
-    feedDefinitions.put(path + "/", feedDefinition);
+    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), path, feed.persistenceName(), feedItemService);
+    feedDefinitions.put(path, feedDefinition);
 
     return feedDefinition;
   }
@@ -42,5 +47,11 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
       return Optional.empty();
     }
     return Optional.of(feedDefinition);
+  }
+
+  private void requireNonEmpty(String value) {
+    if (value == null || "".equals(value.trim())) {
+      throw new IllegalArgumentException("Feed path must be defined");
+    }
   }
 }
