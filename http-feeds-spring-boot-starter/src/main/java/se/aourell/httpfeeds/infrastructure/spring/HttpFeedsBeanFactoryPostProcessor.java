@@ -14,6 +14,7 @@ import se.aourell.httpfeeds.core.EventBusImpl;
 import se.aourell.httpfeeds.core.FeedItemServiceImpl;
 import se.aourell.httpfeeds.spi.EventBus;
 import se.aourell.httpfeeds.spi.EventSerializer;
+import se.aourell.httpfeeds.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.spi.HttpFeedRegistry;
 
 import java.util.Objects;
@@ -24,6 +25,7 @@ public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcess
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     final var jdbcTemplate = beanFactory.getBean(JdbcTemplate.class);
     final var feedItemRowMapper = beanFactory.getBean(FeedItemRowMapper.class);
+    final var feedItemIdGenerator = beanFactory.getBean(FeedItemIdGenerator.class);
     final var feedRegistry = beanFactory.getBean(HttpFeedRegistry.class);
     final var eventSerializer = beanFactory.getBean(EventSerializer.class);
     final var beanClassLoader = Objects.requireNonNull(beanFactory.getBeanClassLoader());
@@ -46,7 +48,7 @@ public class HttpFeedsBeanFactoryPostProcessor implements BeanFactoryPostProcess
       final var feedDefinition = feedRegistry.defineFeed(feedDeclaration, feedItemService);
 
       // final piece of the puzzle: the eventbus that is scoped to this specific event type via generics
-      final var eventBus = new EventBusImpl(feedEventBaseType, feedDefinition, feedItemRepository, eventSerializer);
+      final var eventBus = new EventBusImpl(feedEventBaseType, feedDefinition, feedItemRepository, feedItemIdGenerator, eventSerializer);
       final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
       final var beanDefinition = new RootBeanDefinition();
       beanDefinition.setTargetType(resolvableType);
