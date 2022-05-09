@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure.spring;
+package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import org.atteo.classindex.ClassIndex;
 import org.springframework.beans.BeansException;
@@ -12,7 +12,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.api.HttpFeed;
 import se.aourell.httpfeeds.core.EventBusImpl;
 import se.aourell.httpfeeds.core.FeedItemServiceImpl;
-import se.aourell.httpfeeds.infrastructure.spring.autoconfigure.HttpFeedsProperties;
+import se.aourell.httpfeeds.infrastructure.spring.FeedItemRepositoryImpl;
+import se.aourell.httpfeeds.infrastructure.spring.FeedItemRowMapper;
 import se.aourell.httpfeeds.spi.EventBus;
 import se.aourell.httpfeeds.spi.EventSerializer;
 import se.aourell.httpfeeds.spi.FeedItemIdGenerator;

@@ -18,7 +18,6 @@ import se.aourell.httpfeeds.infrastructure.spring.EventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.spring.FeedItemIdGeneratorImpl;
 import se.aourell.httpfeeds.core.HttpFeedRegistryImpl;
 import se.aourell.httpfeeds.infrastructure.spring.FeedItemRowMapper;
-import se.aourell.httpfeeds.infrastructure.spring.HttpFeedsBeanFactoryPostProcessor;
 import se.aourell.httpfeeds.infrastructure.spring.HttpFeedsController;
 import se.aourell.httpfeeds.spi.EventSerializer;
 import se.aourell.httpfeeds.spi.FeedItemIdGenerator;
