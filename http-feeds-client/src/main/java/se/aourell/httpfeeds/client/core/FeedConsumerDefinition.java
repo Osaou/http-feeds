@@ -32,8 +32,8 @@ public class FeedConsumerDefinition {
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
     final var callable = handler.getParameterTypes().length == 2
-      ? new EventHandlerDefinition.WithEventAndMeta(handler)
-      : new EventHandlerDefinition.WithEvent(handler);
+      ? new EventHandlerDefinition.ForEventAndMeta(handler)
+      : new EventHandlerDefinition.ForEvent(handler);
     eventHandlers.put(eventType.getName(), callable);
   }
 
@@ -62,7 +62,7 @@ public class FeedConsumerDefinition {
     final var eventTypeName = event.type();
 
     if (eventHandlers.containsKey(eventTypeName)) {
-      final var handler = eventHandlers.get(eventTypeName);
+      final var eventHandler = eventHandlers.get(eventTypeName);
       final var eventType = Class.forName(eventTypeName);
 
       final Object deserializedData;
@@ -73,11 +73,7 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
-      if (handler instanceof EventHandlerDefinition.WithEventAndMeta h) {
-        h.method().invoke(bean, deserializedData, createEventMetaData(event));
-      } else if (handler instanceof EventHandlerDefinition.WithEvent h) {
-        h.method().invoke(bean, deserializedData);
-      }
+      eventHandler.invoke(bean, deserializedData, () -> createEventMetaData(event));
     }
 
     lastProcessedId = event.id();
