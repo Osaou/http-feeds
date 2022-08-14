@@ -2,9 +2,4 @@ package se.aourell.httpfeeds.client.core;
 
 import java.time.OffsetDateTime;
 
-public record EventMetaData(String specversion, String id, String source, OffsetDateTime time) {
-
-  public static EventMetaData current() {
-    return FeedConsumerDefinition.currentEventMetaData();
-  }
-}
+public record EventMetaData(String specversion, String id, String source, OffsetDateTime time) { }

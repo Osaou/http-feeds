@@ -5,6 +5,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import se.aourell.httpfeeds.client.api.EventHandler;
 import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
+import se.aourell.httpfeeds.client.core.EventMetaData;
 import se.aourell.httpfeeds.client.core.FeedConsumerDefinition;
 import se.aourell.httpfeeds.client.spi.FeedConsumerProcessor;
 
@@ -34,13 +35,18 @@ public class ClientBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
   private void initEventHandlersForConsumer(FeedConsumerDefinition consumerDefinition) {
     final var consumerBean = consumerDefinition.getBean();
 
+    // find all its methods annotated as event handlers
     Arrays.stream(consumerBean.getClass().getDeclaredMethods())
       .filter(method -> Arrays.stream(method.getDeclaredAnnotations()).anyMatch(a -> a.annotationType() == EventHandler.class))
+      // only look at methods that take exactly 1 argument, or 2 if the second is of type metadata
+      .filter(method -> {
+        final var parameters = method.getParameterTypes();
+        return parameters.length == 1 ||
+          (parameters.length == 2 && parameters[1] == EventMetaData.class);
+      })
+      // wire up event handlers for this bean
       .forEach(eventHandler -> {
-        final var eventType = Arrays.stream(eventHandler.getParameterTypes())
-          .findFirst()
-          .orElseThrow(() -> new IllegalArgumentException("Event Handler methods must receive exactly 1 parameter, which is the event type it handles"));
-
+        final var eventType = eventHandler.getParameterTypes()[0];
         consumerDefinition.registerEventHandler(eventType, eventHandler);
       });
   }

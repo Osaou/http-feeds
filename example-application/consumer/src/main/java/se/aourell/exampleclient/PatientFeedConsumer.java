@@ -17,28 +17,23 @@ public class PatientFeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(PatientFeedConsumer.class);
 
-  private void logEvent(Object event) {
-    final var meta = EventMetaData.current();
-    LOG.info("event received: {}, with metadata: {}", event, meta);
-  }
-
   @EventHandler
   public void on(PatientAdded event) {
-    logEvent(event);
+    LOG.info("event received: {}", event);
   }
 
   @EventHandler
   public void on(PatientDeleted event) {
-    logEvent(event);
+    LOG.info("event received: {}", event);
   }
 
   @EventHandler
   public void on(AssessmentStarted event) {
-    logEvent(event);
+    LOG.info("event received: {}", event);
   }
 
   @EventHandler
-  public void on(AssessmentEnded event) {
-    logEvent(event);
+  public void on(AssessmentEnded event, EventMetaData meta) {
+    LOG.info("event received: {} with metadata: {}", event, meta);
   }
 }

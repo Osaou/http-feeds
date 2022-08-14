@@ -13,11 +13,10 @@ public class FeedConsumerDefinition {
   private final String feedName;
   private final String url;
   private final Object bean;
-  private final Map<String, Method> eventHandlers = new HashMap<>();
+  private final Map<String, EventHandlerCallable> eventHandlers = new HashMap<>();
   private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
-  private static CloudEvent currentCloudEvent;
 
   FeedConsumerDefinition(String feedName, String url, Object bean, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
     this.feedName = feedName;
@@ -32,7 +31,10 @@ public class FeedConsumerDefinition {
   }
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
-    eventHandlers.put(eventType.getName(), handler);
+    final var callable = handler.getParameterTypes().length == 2
+      ? new EventHandlerWithEventAndMeta(handler)
+      : new EventHandlerWithEvent(handler);
+    eventHandlers.put(eventType.getName(), callable);
   }
 
   String getFeedName() {
@@ -47,7 +49,7 @@ public class FeedConsumerDefinition {
     return Optional.ofNullable(lastProcessedId);
   }
 
-  static EventMetaData currentEventMetaData() {
+  private EventMetaData createEventMetaData(CloudEvent currentCloudEvent) {
     return new EventMetaData(
       currentCloudEvent.specversion(),
       currentCloudEvent.id(),
@@ -71,11 +73,13 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
-      currentCloudEvent = event;
-      handler.invoke(bean, deserializedData);
+      if (handler instanceof EventHandlerWithEventAndMeta h) {
+        h.method().invoke(bean, deserializedData, createEventMetaData(event));
+      } else if (handler instanceof EventHandlerWithEvent h) {
+        h.method().invoke(bean, deserializedData);
+      }
     }
 
     lastProcessedId = event.id();
-    currentCloudEvent = null;
   }
 }
