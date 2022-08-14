@@ -55,7 +55,7 @@ public class FeedConsumerDefinition {
 
       final Object deserializedData;
       if (CloudEvent.DELETE_METHOD.equals(event.method())) {
-        deserializedData = eventType.getConstructor(String.class).newInstance(event.id());
+        deserializedData = eventType.getConstructor(String.class).newInstance(event.subject());
       } else {
         final var data = event.data();
         deserializedData = eventDeserializer.toDomainEvent(data, eventType);
