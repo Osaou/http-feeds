@@ -20,12 +20,12 @@ public class HttpFeedsServerController {
   private static final Logger LOG = LoggerFactory.getLogger(HttpFeedsServerController.class);
   private final HttpFeedRegistry feedRegistry;
   private final CloudEventMapper cloudEventMapper;
-  private final ObjectMapper cloudEventJsonMapper;
+  private final ObjectMapper cloudEventObjectMapper;
 
-  public HttpFeedsServerController(HttpFeedRegistry feedRegistry, CloudEventMapper cloudEventMapper, ObjectMapper cloudEventJsonMapper) {
+  public HttpFeedsServerController(HttpFeedRegistry feedRegistry, CloudEventMapper cloudEventMapper, ObjectMapper cloudEventObjectMapper) {
     this.feedRegistry = feedRegistry;
     this.cloudEventMapper = cloudEventMapper;
-    this.cloudEventJsonMapper = cloudEventJsonMapper;
+    this.cloudEventObjectMapper = cloudEventObjectMapper;
   }
 
   @GetMapping(value = HttpFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
@@ -49,6 +49,6 @@ public class HttpFeedsServerController {
       .toList();
 
     LOG.debug("GET feed with lastEventId {} returned {} events", lastEventId, cloudEvents.size());
-    return cloudEventJsonMapper.writeValueAsString(cloudEvents);
+    return cloudEventObjectMapper.writeValueAsString(cloudEvents);
   }
 }

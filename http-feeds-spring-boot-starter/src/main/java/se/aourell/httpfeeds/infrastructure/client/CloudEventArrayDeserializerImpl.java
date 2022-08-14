@@ -7,16 +7,16 @@ import se.aourell.httpfeeds.core.CloudEvent;
 
 public class CloudEventArrayDeserializerImpl implements CloudEventArrayDeserializer {
 
-  private final ObjectMapper domainEventJsonMapper;
+  private final ObjectMapper domainEventObjectMapper;
 
-  public CloudEventArrayDeserializerImpl(ObjectMapper domainEventJsonMapper) {
-    this.domainEventJsonMapper = domainEventJsonMapper;
+  public CloudEventArrayDeserializerImpl(ObjectMapper domainEventObjectMapper) {
+    this.domainEventObjectMapper = domainEventObjectMapper;
   }
 
   @Override
   public CloudEvent[] toCloudEvents(String string) {
     try {
-      return domainEventJsonMapper.readValue(string, CloudEvent[].class);
+      return domainEventObjectMapper.readValue(string, CloudEvent[].class);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

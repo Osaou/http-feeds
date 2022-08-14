@@ -6,16 +6,16 @@ import se.aourell.httpfeeds.server.spi.EventSerializer;
 
 public class EventSerializerImpl implements EventSerializer {
 
-  private final ObjectMapper domainEventJsonMapper;
+  private final ObjectMapper domainEventObjectMapper;
 
-  public EventSerializerImpl(ObjectMapper domainEventJsonMapper) {
-    this.domainEventJsonMapper = domainEventJsonMapper;
+  public EventSerializerImpl(ObjectMapper domainEventObjectMapper) {
+    this.domainEventObjectMapper = domainEventObjectMapper;
   }
 
   @Override
   public String toString(Object object) {
     try {
-      return domainEventJsonMapper.writeValueAsString(object);
+      return domainEventObjectMapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -24,7 +24,7 @@ public class EventSerializerImpl implements EventSerializer {
   @Override
   public Object toDomainEvent(String string) {
     try {
-      return domainEventJsonMapper.readValue(string, Object.class);
+      return domainEventObjectMapper.readValue(string, Object.class);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
