@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.client.spi.CloudEventArrayDeserializer;
 import se.aourell.httpfeeds.client.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.core.CloudEvent;
+import se.aourell.httpfeeds.core.util.Result;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +31,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
   }
 
   @Override
-  public List<CloudEvent> pollCloudEvents(String httpFeedUrl, String lastProcessedId) {
+  public Result<List<CloudEvent>> pollCloudEvents(String httpFeedUrl, String lastProcessedId) {
     final var urlWithLongPolling = httpFeedUrl + "?timeout=" + LONG_POLLING_TIMEOUT.toMillis();
     final var urlWithLastProcessedId = Optional.ofNullable(lastProcessedId)
       .map(id -> urlWithLongPolling + "&lastEventId=" + id)
@@ -41,7 +42,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
       uri = new URI(urlWithLastProcessedId);
     } catch (URISyntaxException e) {
       LOG.error("Exception when parsing httpfeed url", e);
-      return List.of();
+      return Result.failure(e);
     }
 
     final var request = HttpRequest.newBuilder()
@@ -55,11 +56,13 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
       response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
       LOG.error("Exception when GETing httpfeed from " + httpFeedUrl, e);
-      return List.of();
+      return Result.failure(e);
     }
 
     final var body = response.body();
-    return Arrays.stream(cloudEventArrayDeserializer.toCloudEvents(body))
+    final var events = Arrays.stream(cloudEventArrayDeserializer.toCloudEvents(body))
       .toList();
+
+    return Result.success(events);
   }
 }

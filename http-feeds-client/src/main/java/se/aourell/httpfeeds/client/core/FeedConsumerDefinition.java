@@ -13,7 +13,7 @@ public class FeedConsumerDefinition {
   private final String feedName;
   private final String url;
   private final Object bean;
-  private final Map<String, EventHandlerCallable> eventHandlers = new HashMap<>();
+  private final Map<String, EventHandlerDefinition> eventHandlers = new HashMap<>();
   private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
@@ -32,8 +32,8 @@ public class FeedConsumerDefinition {
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
     final var callable = handler.getParameterTypes().length == 2
-      ? new EventHandlerWithEventAndMeta(handler)
-      : new EventHandlerWithEvent(handler);
+      ? new EventHandlerDefinition.WithEventAndMeta(handler)
+      : new EventHandlerDefinition.WithEvent(handler);
     eventHandlers.put(eventType.getName(), callable);
   }
 
@@ -58,7 +58,7 @@ public class FeedConsumerDefinition {
     );
   }
 
-  void processEvent(CloudEvent event) throws Throwable {
+  void processEvent(CloudEvent event) throws Exception {
     final var eventTypeName = event.type();
 
     if (eventHandlers.containsKey(eventTypeName)) {
@@ -73,9 +73,9 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
-      if (handler instanceof EventHandlerWithEventAndMeta h) {
+      if (handler instanceof EventHandlerDefinition.WithEventAndMeta h) {
         h.method().invoke(bean, deserializedData, createEventMetaData(event));
-      } else if (handler instanceof EventHandlerWithEvent h) {
+      } else if (handler instanceof EventHandlerDefinition.WithEvent h) {
         h.method().invoke(bean, deserializedData);
       }
     }
