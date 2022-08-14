@@ -26,40 +26,37 @@ public class FeedItemServiceImpl implements FeedItemService {
   }
 
   @Override
-  public List<FeedItem> fetch(Optional<String> lastEventId) {
-    LOG.debug("Find items with lastEventId={}", lastEventId);
-    return lastEventId
+  public List<FeedItem> fetch(String lastEventId) {
+    return Optional.ofNullable(lastEventId)
       .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
       .orElseGet(() -> feedItemRepository.findAll(limit));
   }
 
   @Override
-  public List<FeedItem> fetchWithTimeout(Optional<String> lastEventId, Long timeoutMillis) {
-    LOG.debug("Long polling for items with lastEventId={} timeoutMillis={}", lastEventId, timeoutMillis);
+  public List<FeedItem> fetchWithTimeout(String lastEventId, Long timeoutMillis) {
     final Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, ChronoUnit.MILLIS);
 
     while (true) {
-      final var items = lastEventId
+      final var items = Optional.ofNullable(lastEventId)
         .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
         .orElseGet(() -> feedItemRepository.findAll(limit));
 
       int numberOfItems = items.size();
       if (numberOfItems > 0) {
-        LOG.debug("Returning {} items.", numberOfItems);
         return items;
       }
 
       if (Instant.now().isAfter(timeoutTimestamp)) {
-        LOG.debug("Polling timed out. Returning empty response.");
+        // polling timed out, return empty response
         return List.of();
       }
 
       try {
-        LOG.debug("No items found. Wait {} and then retry again.", pollInterval);
+        // no items found, wait {pollInterval} milliseconds and retry
         //noinspection BusyWait
-        Thread.sleep(DEFAULT_POLL_INTERVAL.toMillis());
+        Thread.sleep(pollInterval.toMillis());
       } catch (InterruptedException e) {
-        LOG.debug("Thread was interrupted. Probably a graceful shutdown. Try to send empty response.");
+        LOG.info("Thread was interrupted. Probably a graceful shutdown. Attempting to send empty response.");
         return List.of();
       }
     }

@@ -8,9 +8,10 @@ import se.aourell.httpfeeds.server.spi.FeedItemService;
 import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HttpFeedRegistryImplTest {
 
@@ -23,11 +24,11 @@ class HttpFeedRegistryImplTest {
 
   final FeedItemService serviceMock = new FeedItemService() {
     @Override
-    public List<FeedItem> fetch(Optional<String> lastEventId) {
+    public List<FeedItem> fetch(String lastEventId) {
       return null;
     }
     @Override
-    public List<FeedItem> fetchWithTimeout(Optional<String> lastEventId, Long timeoutMillis) {
+    public List<FeedItem> fetchWithTimeout(String lastEventId, Long timeoutMillis) {
       return null;
     }
   };

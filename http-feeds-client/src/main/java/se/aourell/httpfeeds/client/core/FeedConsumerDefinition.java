@@ -26,27 +26,27 @@ public class FeedConsumerDefinition {
     this.lastProcessedId = lastProcessedId;
   }
 
-  public String getFeedName() {
-    return feedName;
-  }
-
   public Object getBean() {
     return bean;
-  }
-
-  public String getUrl() {
-    return url;
-  }
-
-  public Optional<String> getLastProcessedId() {
-    return Optional.ofNullable(lastProcessedId);
   }
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
     eventHandlers.put(eventType.getName(), handler);
   }
 
-  public void processEvent(CloudEvent event) throws Throwable {
+  String getFeedName() {
+    return feedName;
+  }
+
+  String getUrl() {
+    return url;
+  }
+
+  Optional<String> getLastProcessedId() {
+    return Optional.ofNullable(lastProcessedId);
+  }
+
+  void processEvent(CloudEvent event) throws Throwable {
     final var eventTypeName = event.type();
 
     if (eventHandlers.containsKey(eventTypeName)) {

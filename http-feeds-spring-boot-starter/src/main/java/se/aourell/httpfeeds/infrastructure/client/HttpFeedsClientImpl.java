@@ -30,8 +30,8 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
   }
 
   @Override
-  public List<CloudEvent> pollCloudEvents(String url, String lastProcessedId) {
-    final var urlWithLongPolling = url + "?timeout=" + LONG_POLLING_TIMEOUT.toMillis();
+  public List<CloudEvent> pollCloudEvents(String httpFeedUrl, String lastProcessedId) {
+    final var urlWithLongPolling = httpFeedUrl + "?timeout=" + LONG_POLLING_TIMEOUT.toMillis();
     final var urlWithLastProcessedId = Optional.ofNullable(lastProcessedId)
       .map(id -> urlWithLongPolling + "&lastEventId=" + id)
       .orElse(urlWithLongPolling);
@@ -44,7 +44,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
       return List.of();
     }
 
-    final HttpRequest request = HttpRequest.newBuilder()
+    final var request = HttpRequest.newBuilder()
       .uri(uri)
       .timeout(LONG_POLLING_TIMEOUT)
       .GET()
@@ -54,10 +54,12 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
     try {
       response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
+      LOG.error("Exception when GETing httpfeed from " + httpFeedUrl, e);
       return List.of();
     }
 
-    return Arrays.stream(cloudEventArrayDeserializer.toCloudEvents(response.body()))
+    final var body = response.body();
+    return Arrays.stream(cloudEventArrayDeserializer.toCloudEvents(body))
       .toList();
   }
 }

@@ -29,26 +29,20 @@ public class HttpFeedsServerController {
   }
 
   @GetMapping(value = HttpFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
-  public String getFeedItems(
-    @RequestParam(name = "lastEventId", required = false) Optional<String> lastEventId,
-    @RequestParam(name = "timeout", required = false) Optional<Long> timeoutMillis,
-    HttpServletRequest request
-  ) throws JsonProcessingException {
+  public String getFeedItems(@RequestParam(name = "lastEventId", required = false) String lastEventId, @RequestParam(name = "timeout", required = false) Long timeoutMillis, HttpServletRequest request) throws JsonProcessingException {
     final var path = request.getServletPath();
-    LOG.debug("GET feed {} with lastEventId {}", path, lastEventId);
 
     final var feedItemService = feedRegistry.getDefinedFeed(path)
       .map(HttpFeedDefinition::feedItemService)
       .orElseThrow(() -> new IllegalArgumentException(String.format("No feed defined for path \"%s\"", path)));
 
-    final var cloudEvents = timeoutMillis
+    final var cloudEvents = Optional.ofNullable(timeoutMillis)
       .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, timeout))
       .orElseGet(() -> feedItemService.fetch(lastEventId))
       .stream()
       .map(cloudEventMapper::mapFeedItem)
       .toList();
 
-    LOG.debug("GET feed with lastEventId {} returned {} events", lastEventId, cloudEvents.size());
     return cloudEventObjectMapper.writeValueAsString(cloudEvents);
   }
 }

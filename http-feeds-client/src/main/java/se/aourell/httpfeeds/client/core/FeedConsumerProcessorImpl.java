@@ -6,7 +6,6 @@ import se.aourell.httpfeeds.client.spi.EventDeserializer;
 import se.aourell.httpfeeds.client.spi.FeedConsumerProcessor;
 import se.aourell.httpfeeds.client.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.client.spi.HttpFeedsClient;
-import se.aourell.httpfeeds.core.CloudEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,17 +43,17 @@ public class FeedConsumerProcessorImpl implements FeedConsumerProcessor {
         .orElseGet(() -> httpFeedsClient.pollCloudEvents(url));
 
       try {
-        for (CloudEvent event : events) {
+        for (final var event : events) {
           consumerDefinition.processEvent(event);
         }
       } catch (Throwable e) {
-        LOG.error("Exception when processing event handler", e);
+        LOG.error("Exception when processing event", e);
       }
 
       consumerDefinition.getLastProcessedId()
-        .ifPresent(updatedLastProcessedId -> {
+        .ifPresent(lastProcessedId -> {
           final var feedName = consumerDefinition.getFeedName();
-          feedConsumerRepository.storeLastProcessedId(feedName, updatedLastProcessedId);
+          feedConsumerRepository.storeLastProcessedId(feedName, lastProcessedId);
         });
     }
   }
