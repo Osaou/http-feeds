@@ -14,12 +14,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import se.aourell.httpfeeds.client.core.FeedConsumerProcessorImpl;
 import se.aourell.httpfeeds.client.spi.CloudEventArrayDeserializer;
-import se.aourell.httpfeeds.client.spi.EventDeserializer;
+import se.aourell.httpfeeds.client.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.client.spi.FeedConsumerProcessor;
 import se.aourell.httpfeeds.client.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.client.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.infrastructure.client.CloudEventArrayDeserializerImpl;
-import se.aourell.httpfeeds.infrastructure.client.EventDeserializerImpl;
+import se.aourell.httpfeeds.infrastructure.client.DomainEventDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.client.FeedConsumerRepositoryImpl;
 import se.aourell.httpfeeds.infrastructure.client.HttpFeedsClientImpl;
 
@@ -43,8 +43,8 @@ public class ClientAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public EventDeserializer eventDeserializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
-    return new EventDeserializerImpl(domainEventObjectMapper);
+  public DomainEventDeserializer eventDeserializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
+    return new DomainEventDeserializerImpl(domainEventObjectMapper);
   }
 
   @Bean
@@ -61,8 +61,8 @@ public class ClientAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public FeedConsumerProcessor feedConsumerRegistry(HttpFeedsClient httpFeedsClient, EventDeserializer eventDeserializer, FeedConsumerRepository feedConsumerRepository) {
-    return new FeedConsumerProcessorImpl(httpFeedsClient, eventDeserializer, feedConsumerRepository);
+  public FeedConsumerProcessor feedConsumerRegistry(HttpFeedsClient httpFeedsClient, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+    return new FeedConsumerProcessorImpl(httpFeedsClient, domainEventDeserializer, feedConsumerRepository);
   }
 
   @Bean

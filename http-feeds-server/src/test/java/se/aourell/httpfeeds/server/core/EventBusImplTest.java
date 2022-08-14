@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.server.core;
 
 import org.junit.jupiter.api.Test;
 import se.aourell.httpfeeds.server.api.DeletionEvent;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.server.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.server.spi.FeedItemRepository;
 
@@ -23,7 +23,7 @@ class EventBusImplTest {
     final var feedDefinition = new HttpFeedDefinition(null, "path", null, null);
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
-    final var eventSerializer = mock(EventSerializer.class);
+    final var eventSerializer = mock(DomainEventSerializer.class);
     final var eventBus = new EventBusImpl(OkFeedSealed.class, feedDefinition, feedItemRepository, feedItemIdGenerator, eventSerializer);
 
     final var time = Instant.MIN;
@@ -41,7 +41,7 @@ class EventBusImplTest {
     final var feedDefinition = new HttpFeedDefinition(null, "path", null, null);
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
-    final var eventSerializer = mock(EventSerializer.class);
+    final var eventSerializer = mock(DomainEventSerializer.class);
     final var eventBus = new EventBusImpl(OkFeedSealed.class, feedDefinition, feedItemRepository, feedItemIdGenerator, eventSerializer);
 
     final var time = Instant.MIN;
@@ -67,7 +67,7 @@ class EventBusImplTest {
     final var feedDefinition = new HttpFeedDefinition(null, "path", null, null);
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
-    final var eventSerializer = mock(EventSerializer.class);
+    final var eventSerializer = mock(DomainEventSerializer.class);
     final var eventBus = new EventBusImpl(OkFeed.class, feedDefinition, feedItemRepository, feedItemIdGenerator, eventSerializer);
 
     final var time = Instant.MIN;
@@ -85,7 +85,7 @@ class EventBusImplTest {
     final var feedDefinition = new HttpFeedDefinition(null, "path", null, null);
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
-    final var eventSerializer = mock(EventSerializer.class);
+    final var eventSerializer = mock(DomainEventSerializer.class);
     final var eventBus = new EventBusImpl(OkFeed.class, feedDefinition, feedItemRepository, feedItemIdGenerator, eventSerializer);
 
     final var time = Instant.MIN;

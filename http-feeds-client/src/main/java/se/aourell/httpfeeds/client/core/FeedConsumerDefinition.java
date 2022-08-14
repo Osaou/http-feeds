@@ -1,6 +1,6 @@
 package se.aourell.httpfeeds.client.core;
 
-import se.aourell.httpfeeds.client.spi.EventDeserializer;
+import se.aourell.httpfeeds.client.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.core.CloudEvent;
 
 import java.lang.reflect.Method;
@@ -14,15 +14,15 @@ public class FeedConsumerDefinition {
   private final String url;
   private final Object bean;
   private final Map<String, Method> eventHandlers = new HashMap<>();
-  private final EventDeserializer eventDeserializer;
+  private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
 
-  FeedConsumerDefinition(String feedName, String url, Object bean, EventDeserializer eventDeserializer, String lastProcessedId) {
+  FeedConsumerDefinition(String feedName, String url, Object bean, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
     this.feedName = feedName;
     this.bean = bean;
     this.url = url;
-    this.eventDeserializer = eventDeserializer;
+    this.domainEventDeserializer = domainEventDeserializer;
     this.lastProcessedId = lastProcessedId;
   }
 
@@ -58,7 +58,7 @@ public class FeedConsumerDefinition {
         deserializedData = eventType.getConstructor(String.class).newInstance(event.subject());
       } else {
         final var data = event.data();
-        deserializedData = eventDeserializer.toDomainEvent(data, eventType);
+        deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
       handler.invoke(bean, deserializedData);

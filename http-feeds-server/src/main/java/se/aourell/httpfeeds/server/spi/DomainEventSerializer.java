@@ -1,6 +1,6 @@
 package se.aourell.httpfeeds.server.spi;
 
-public interface EventSerializer {
+public interface DomainEventSerializer {
 
   String toString(Object object);
 

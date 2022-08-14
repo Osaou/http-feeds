@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.server.core;
 
 import se.aourell.httpfeeds.core.CloudEvent;
 import se.aourell.httpfeeds.server.spi.EventBus;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.server.spi.FeedItemRepository;
 import se.aourell.httpfeeds.server.spi.FeedItemIdGenerator;
 
@@ -17,13 +17,13 @@ public class EventBusImpl implements EventBus<Object> {
   private final HttpFeedDefinition feedDefinition;
   private final FeedItemRepository feedItemRepository;
   private final FeedItemIdGenerator feedItemIdGenerator;
-  private final EventSerializer eventSerializer;
+  private final DomainEventSerializer domainEventSerializer;
 
-  public EventBusImpl(Class<?> eventBaseType, HttpFeedDefinition feedDefinition, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, EventSerializer eventSerializer) {
+  public EventBusImpl(Class<?> eventBaseType, HttpFeedDefinition feedDefinition, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
     this.feedDefinition = feedDefinition;
     this.feedItemRepository = feedItemRepository;
     this.feedItemIdGenerator = feedItemIdGenerator;
-    this.eventSerializer = eventSerializer;
+    this.domainEventSerializer = domainEventSerializer;
 
     this.deletionEventTypes = eventBaseType.isSealed()
       ? Optional.of(Arrays.stream(eventBaseType.getPermittedSubclasses()).filter(EventBus::isDeletionEvent).toList())
@@ -41,7 +41,7 @@ public class EventBusImpl implements EventBus<Object> {
     final var type = eventType.getName();
     final var source = feedDefinition.path();
     final var method = isDeleteEvent ? CloudEvent.DELETE_METHOD : null;
-    final var dataAsString = eventSerializer.toString(event);
+    final var dataAsString = domainEventSerializer.toString(event);
 
     feedItemRepository.append(id, type, source, time, subject, method, dataAsString);
   }

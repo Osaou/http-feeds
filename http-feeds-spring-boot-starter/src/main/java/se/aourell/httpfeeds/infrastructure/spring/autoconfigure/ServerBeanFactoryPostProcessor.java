@@ -15,7 +15,7 @@ import se.aourell.httpfeeds.server.api.HttpFeed;
 import se.aourell.httpfeeds.server.core.EventBusImpl;
 import se.aourell.httpfeeds.server.core.FeedItemServiceImpl;
 import se.aourell.httpfeeds.server.spi.EventBus;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.server.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 
@@ -35,7 +35,7 @@ public class ServerBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
     final var feedItemRowMapper = beanFactory.getBean(FeedItemRowMapper.class);
     final var feedItemIdGenerator = beanFactory.getBean(FeedItemIdGenerator.class);
     final var feedRegistry = beanFactory.getBean(HttpFeedRegistry.class);
-    final var eventSerializer = beanFactory.getBean(EventSerializer.class);
+    final var eventSerializer = beanFactory.getBean(DomainEventSerializer.class);
     final var beanClassLoader = Objects.requireNonNull(beanFactory.getBeanClassLoader());
 
     // find all annotated http feeds in domain code and add their configurations and necessary beans

@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public class FeedConsumerRepositoryImpl implements FeedConsumerRepository {
 
+  public static final String DEFAULT_TABLE_NAME = "httpfeeds_consummation";
+
   private final JdbcTemplate jdbcTemplate;
   private final String retrieveSql;
   private final String storeSql;

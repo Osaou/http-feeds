@@ -1,13 +1,13 @@
 package se.aourell.httpfeeds.infrastructure.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import se.aourell.httpfeeds.client.spi.EventDeserializer;
+import se.aourell.httpfeeds.client.spi.DomainEventDeserializer;
 
-public class EventDeserializerImpl implements EventDeserializer {
+public class DomainEventDeserializerImpl implements DomainEventDeserializer {
 
   private final ObjectMapper domainEventMapper;
 
-  public EventDeserializerImpl(ObjectMapper domainEventMapper) {
+  public DomainEventDeserializerImpl(ObjectMapper domainEventMapper) {
     this.domainEventMapper = domainEventMapper;
   }
 

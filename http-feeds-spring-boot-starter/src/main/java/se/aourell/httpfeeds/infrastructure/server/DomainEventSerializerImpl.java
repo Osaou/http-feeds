@@ -2,13 +2,13 @@ package se.aourell.httpfeeds.infrastructure.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 
-public class EventSerializerImpl implements EventSerializer {
+public class DomainEventSerializerImpl implements DomainEventSerializer {
 
   private final ObjectMapper domainEventObjectMapper;
 
-  public EventSerializerImpl(ObjectMapper domainEventObjectMapper) {
+  public DomainEventSerializerImpl(ObjectMapper domainEventObjectMapper) {
     this.domainEventObjectMapper = domainEventObjectMapper;
   }
 

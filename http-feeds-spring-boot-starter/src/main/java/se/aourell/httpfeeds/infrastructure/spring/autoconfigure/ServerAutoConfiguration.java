@@ -9,13 +9,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import se.aourell.httpfeeds.infrastructure.server.EventSerializerImpl;
+import se.aourell.httpfeeds.infrastructure.server.DomainEventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.server.FeedItemIdGeneratorImpl;
 import se.aourell.httpfeeds.infrastructure.server.FeedItemRowMapper;
 import se.aourell.httpfeeds.infrastructure.spring.http.HttpFeedsServerController;
 import se.aourell.httpfeeds.server.core.CloudEventMapper;
 import se.aourell.httpfeeds.server.core.HttpFeedRegistryImpl;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.server.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 
@@ -50,14 +50,14 @@ public class ServerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public EventSerializer eventSerializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
-    return new EventSerializerImpl(domainEventObjectMapper);
+  public DomainEventSerializer eventSerializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
+    return new DomainEventSerializerImpl(domainEventObjectMapper);
   }
 
   @Bean
   @ConditionalOnMissingBean
-  public CloudEventMapper cloudEventMapper(EventSerializer eventSerializer) {
-    return new CloudEventMapper(eventSerializer);
+  public CloudEventMapper cloudEventMapper(DomainEventSerializer domainEventSerializer) {
+    return new CloudEventMapper(domainEventSerializer);
   }
 
   @Bean

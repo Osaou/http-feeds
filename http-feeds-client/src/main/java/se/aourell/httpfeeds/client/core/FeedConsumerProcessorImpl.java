@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.client.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.client.spi.EventDeserializer;
+import se.aourell.httpfeeds.client.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.client.spi.FeedConsumerProcessor;
 import se.aourell.httpfeeds.client.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.client.spi.HttpFeedsClient;
@@ -15,20 +15,20 @@ public class FeedConsumerProcessorImpl implements FeedConsumerProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessorImpl.class);
 
   private final HttpFeedsClient httpFeedsClient;
-  private final EventDeserializer eventDeserializer;
+  private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
   private final List<FeedConsumerDefinition> consumerDefinitions = new ArrayList<>();
 
-  public FeedConsumerProcessorImpl(HttpFeedsClient httpFeedsClient, EventDeserializer eventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessorImpl(HttpFeedsClient httpFeedsClient, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
     this.httpFeedsClient = httpFeedsClient;
-    this.eventDeserializer = eventDeserializer;
+    this.domainEventDeserializer = domainEventDeserializer;
     this.feedConsumerRepository = feedConsumerRepository;
   }
 
   @Override
   public FeedConsumerDefinition defineConsumer(String feedName, String url, Object bean) {
     final var lastProcessedId = feedConsumerRepository.retrieveLastProcessedId(feedName);
-    final var consumerDefinition = new FeedConsumerDefinition(feedName, url, bean, eventDeserializer, lastProcessedId.orElse(null));
+    final var consumerDefinition = new FeedConsumerDefinition(feedName, url, bean, domainEventDeserializer, lastProcessedId.orElse(null));
     consumerDefinitions.add(consumerDefinition);
 
     return consumerDefinition;

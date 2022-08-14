@@ -1,16 +1,16 @@
 package se.aourell.httpfeeds.server.core;
 
 import se.aourell.httpfeeds.core.CloudEvent;
-import se.aourell.httpfeeds.server.spi.EventSerializer;
+import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 
 import java.time.ZoneOffset;
 
 public class CloudEventMapper {
 
-  private final EventSerializer eventSerializer;
+  private final DomainEventSerializer domainEventSerializer;
 
-  public CloudEventMapper(EventSerializer eventSerializer) {
-    this.eventSerializer = eventSerializer;
+  public CloudEventMapper(DomainEventSerializer domainEventSerializer) {
+    this.domainEventSerializer = domainEventSerializer;
   }
 
   public CloudEvent mapFeedItem(FeedItem feedItem) {
@@ -23,7 +23,7 @@ public class CloudEventMapper {
       feedItem.subject(),
       feedItem.method(),
       feedItem.method() != null ? null : "application/json",
-      feedItem.method() != null ? null : eventSerializer.toDomainEvent(feedItem.data())
+      feedItem.method() != null ? null : domainEventSerializer.toDomainEvent(feedItem.data())
     );
   }
 }

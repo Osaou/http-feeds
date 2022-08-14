@@ -37,12 +37,8 @@ public class FeedItemServiceImpl implements FeedItemService {
     final Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, ChronoUnit.MILLIS);
 
     while (true) {
-      final var items = Optional.ofNullable(lastEventId)
-        .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
-        .orElseGet(() -> feedItemRepository.findAll(limit));
-
-      int numberOfItems = items.size();
-      if (numberOfItems > 0) {
+      final var items = fetch(lastEventId);
+      if (!items.isEmpty()) {
         return items;
       }
 
