@@ -19,7 +19,11 @@
 	<dependencies>
     <dependency>
       <groupId>se.aourell.httpfeeds</groupId>
-      <artifactId>http-feeds-core</artifactId>
+      <artifactId>http-feeds-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>se.aourell.httpfeeds</groupId>
+      <artifactId>http-feeds-server</artifactId>
     </dependency>
 
     <dependency>

@@ -109,7 +109,7 @@ Content-Type: application/cloudevents-batch+json
   {
     "specversion": "1.0",
     "id": "1eccf0ce-699e-6e99-b86d-532a9b59bc9c",
-    "type": "se.aourell.exampleapplication.feeds.patient.PatientAdded",
+    "type": "PatientAdded",
     "source": "/feed/patient",
     "time": "2022-05-08T20:24:45.695+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
@@ -123,7 +123,7 @@ Content-Type: application/cloudevents-batch+json
   {
     "specversion": "1.0",
     "id": "1eccf0ce-718e-629b-b86d-2b881a64c97e",
-    "type": "se.aourell.exampleapplication.feeds.patient.PatientDeleted",
+    "type": "PatientDeleted",
     "source": "/feed/patient",
     "time": "2022-05-08T20:24:46.514+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
