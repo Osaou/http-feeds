@@ -17,6 +17,7 @@ public class FeedConsumerDefinition {
   private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
+  private static CloudEvent currentCloudEvent;
 
   FeedConsumerDefinition(String feedName, String url, Object bean, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
     this.feedName = feedName;
@@ -46,6 +47,15 @@ public class FeedConsumerDefinition {
     return Optional.ofNullable(lastProcessedId);
   }
 
+  static EventMetaData currentEventMetaData() {
+    return new EventMetaData(
+      currentCloudEvent.specversion(),
+      currentCloudEvent.id(),
+      currentCloudEvent.source(),
+      currentCloudEvent.time()
+    );
+  }
+
   void processEvent(CloudEvent event) throws Throwable {
     final var eventTypeName = event.type();
 
@@ -61,9 +71,11 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
+      currentCloudEvent = event;
       handler.invoke(bean, deserializedData);
     }
 
     lastProcessedId = event.id();
+    currentCloudEvent = null;
   }
 }

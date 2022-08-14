@@ -31,7 +31,7 @@ import se.aourell.httpfeeds.infrastructure.client.HttpFeedsClientImpl;
 public class ClientAutoConfiguration {
 
   @Bean
-  public ClientBeanFactoryPostProcessor clientBeanFactoryPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
+  public static ClientBeanFactoryPostProcessor clientBeanFactoryPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
     return new ClientBeanFactoryPostProcessor(clientProperties, feedConsumerProcessor);
   }
 

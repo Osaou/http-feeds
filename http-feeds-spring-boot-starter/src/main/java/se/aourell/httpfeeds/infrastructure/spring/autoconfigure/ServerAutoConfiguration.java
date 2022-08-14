@@ -26,7 +26,7 @@ import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 public class ServerAutoConfiguration {
 
   @Bean
-  public ServerBeanFactoryPostProcessor serverBeanFactoryPostProcessor(ServerProperties serverProperties) {
+  public static ServerBeanFactoryPostProcessor serverBeanFactoryPostProcessor(ServerProperties serverProperties) {
     return new ServerBeanFactoryPostProcessor(serverProperties);
   }
 

@@ -9,6 +9,7 @@ import se.aourell.exampleapplication.patientfeed.PatientAdded;
 import se.aourell.exampleapplication.patientfeed.PatientDeleted;
 import se.aourell.httpfeeds.client.api.EventHandler;
 import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
+import se.aourell.httpfeeds.client.core.EventMetaData;
 
 @Service
 @HttpFeedConsumer(feedName = "patient")
@@ -17,7 +18,8 @@ public class PatientFeedConsumer {
   private static final Logger LOG = LoggerFactory.getLogger(PatientFeedConsumer.class);
 
   private void logEvent(Object event) {
-    LOG.info("event received: {}", event);
+    final var meta = EventMetaData.current();
+    LOG.info("event received: {}, with metadata: {}", event, meta);
   }
 
   @EventHandler
