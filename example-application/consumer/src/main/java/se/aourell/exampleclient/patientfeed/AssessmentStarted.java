@@ -1,4 +1,4 @@
-package se.aourell.exampleapplication.patientfeed;
+package se.aourell.exampleclient.patientfeed;
 
 import java.time.Instant;
 

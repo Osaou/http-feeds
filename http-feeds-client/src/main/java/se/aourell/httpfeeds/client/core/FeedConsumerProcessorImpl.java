@@ -33,8 +33,9 @@ public class FeedConsumerProcessorImpl implements FeedConsumerProcessor {
 
   @Override
   public FeedConsumerDefinition defineConsumer(String feedName, String url, Object bean) {
-    final var lastProcessedId = feedConsumerRepository.retrieveLastProcessedId(feedName);
-    final var consumerDefinition = new FeedConsumerDefinition(feedName, url, bean, domainEventDeserializer, lastProcessedId.orElse(null));
+    final var packageName = bean.getClass().getPackageName();
+    final var lastProcessedId = feedConsumerRepository.retrieveLastProcessedId(feedName).orElse(null);
+    final var consumerDefinition = new FeedConsumerDefinition(feedName, url, bean, packageName, domainEventDeserializer, lastProcessedId);
     consumerDefinitions.add(consumerDefinition);
 
     return consumerDefinition;

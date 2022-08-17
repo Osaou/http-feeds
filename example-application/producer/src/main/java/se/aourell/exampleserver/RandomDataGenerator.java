@@ -2,11 +2,11 @@ package se.aourell.exampleserver;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import se.aourell.exampleapplication.patientfeed.AssessmentEnded;
-import se.aourell.exampleapplication.patientfeed.AssessmentStarted;
-import se.aourell.exampleapplication.patientfeed.PatientAdded;
-import se.aourell.exampleapplication.patientfeed.PatientDeleted;
-import se.aourell.exampleapplication.patientfeed.PatientEvent;
+import se.aourell.exampleserver.patientfeed.AssessmentEnded;
+import se.aourell.exampleserver.patientfeed.AssessmentStarted;
+import se.aourell.exampleserver.patientfeed.PatientAdded;
+import se.aourell.exampleserver.patientfeed.PatientDeleted;
+import se.aourell.exampleserver.patientfeed.PatientEvent;
 import se.aourell.httpfeeds.server.spi.EventBus;
 
 import java.time.Instant;

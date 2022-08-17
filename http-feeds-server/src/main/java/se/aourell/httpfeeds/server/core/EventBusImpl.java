@@ -26,7 +26,7 @@ public class EventBusImpl implements EventBus<Object> {
     this.domainEventSerializer = domainEventSerializer;
 
     this.deletionEventTypes = eventBaseType.isSealed()
-      ? Optional.of(Arrays.stream(eventBaseType.getPermittedSubclasses()).filter(EventBus::isDeletionEvent).toList())
+      ? Optional.of(Arrays.stream(eventBaseType.getPermittedSubclasses()).filter(EventUtil::isDeletionEvent).toList())
       : Optional.empty();
   }
 
@@ -35,10 +35,10 @@ public class EventBusImpl implements EventBus<Object> {
     final var eventType = event.getClass();
     final var isDeleteEvent = deletionEventTypes
       .map(types -> types.contains(eventType))
-      .orElseGet(() -> EventBus.isDeletionEvent(eventType));
+      .orElseGet(() -> EventUtil.isDeletionEvent(eventType));
 
     final var id = feedItemIdGenerator.generateId();
-    final var type = eventType.getName();
+    final var type = eventType.getSimpleName();
     final var source = feedDefinition.path();
     final var method = isDeleteEvent ? CloudEvent.DELETE_METHOD : null;
     final var dataAsString = domainEventSerializer.toString(event);

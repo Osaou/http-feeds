@@ -1,3 +1,3 @@
-package se.aourell.exampleapplication.patientfeed;
+package se.aourell.exampleserver.patientfeed;
 
 public record AssessmentEnded(String id) implements PatientEvent { }

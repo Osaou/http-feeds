@@ -13,15 +13,17 @@ public class FeedConsumerDefinition {
   private final String feedName;
   private final String url;
   private final Object bean;
+  private final String packageName;
   private final Map<String, EventHandlerDefinition> eventHandlers = new HashMap<>();
   private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
 
-  FeedConsumerDefinition(String feedName, String url, Object bean, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
+  FeedConsumerDefinition(String feedName, String url, Object bean, String packageName, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
     this.feedName = feedName;
-    this.bean = bean;
     this.url = url;
+    this.bean = bean;
+    this.packageName = packageName;
     this.domainEventDeserializer = domainEventDeserializer;
     this.lastProcessedId = lastProcessedId;
   }
@@ -34,7 +36,7 @@ public class FeedConsumerDefinition {
     final var callable = handler.getParameterTypes().length == 2
       ? new EventHandlerDefinition.ForEventAndMeta(handler)
       : new EventHandlerDefinition.ForEvent(handler);
-    eventHandlers.put(eventType.getName(), callable);
+    eventHandlers.put(eventType.getSimpleName(), callable);
   }
 
   String getFeedName() {
@@ -51,10 +53,10 @@ public class FeedConsumerDefinition {
 
   private EventMetaData createEventMetaData(CloudEvent currentCloudEvent) {
     return new EventMetaData(
-      currentCloudEvent.specversion(),
       currentCloudEvent.id(),
-      currentCloudEvent.source(),
-      currentCloudEvent.time()
+      currentCloudEvent.subject(),
+      currentCloudEvent.time(),
+      currentCloudEvent.source()
     );
   }
 
@@ -62,8 +64,8 @@ public class FeedConsumerDefinition {
     final var eventTypeName = event.type();
 
     if (eventHandlers.containsKey(eventTypeName)) {
-      final var eventHandler = eventHandlers.get(eventTypeName);
-      final var eventType = Class.forName(eventTypeName);
+      final var eventTypeNameWithPackage = String.format("%s.%s", packageName, eventTypeName);
+      final var eventType = Class.forName(eventTypeNameWithPackage);
 
       final Object deserializedData;
       if (CloudEvent.DELETE_METHOD.equals(event.method())) {
@@ -73,6 +75,7 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
+      final var eventHandler = eventHandlers.get(eventTypeName);
       eventHandler.invoke(bean, deserializedData, () -> createEventMetaData(event));
     }
 
