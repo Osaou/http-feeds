@@ -29,7 +29,11 @@ public class HttpFeedsServerController {
   }
 
   @GetMapping(value = HttpFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
-  public String getFeedItems(@RequestParam(name = "lastEventId", required = false) String lastEventId, @RequestParam(name = "timeout", required = false) Long timeoutMillis, HttpServletRequest request) throws JsonProcessingException {
+  public String getFeedItems(
+    @RequestParam(name = "lastEventId", required = false) String lastEventId,
+    @RequestParam(name = "timeout", required = false) Long timeoutMillis,
+    HttpServletRequest request
+  ) throws JsonProcessingException {
     final var path = request.getServletPath();
 
     final var feedItemService = feedRegistry.getDefinedFeed(path)

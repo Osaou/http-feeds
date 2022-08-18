@@ -1,6 +1,5 @@
 package se.aourell.httpfeeds.server.core;
 
-import se.aourell.httpfeeds.server.api.HttpFeed;
 import se.aourell.httpfeeds.server.spi.FeedItemService;
 import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 
@@ -13,12 +12,9 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
   private final Map<String, HttpFeedDefinition> feedDefinitions = new HashMap<>();
 
   @Override
-  public HttpFeedDefinition defineFeed(HttpFeed feed, FeedItemService feedItemService) {
-    requireNonEmpty(feed.path());
-    requireNonEmpty(feed.feedName());
-    requireNonEmpty(feed.persistenceName());
+  public String validateFeedPath(String path) {
+    requireNonEmpty(path);
 
-    var path = feed.path();
     if (!path.startsWith(HttpFeedDefinition.PATH_PREFIX)) {
       throw new IllegalArgumentException("Feed path must start with \"" + HttpFeedDefinition.PATH_PREFIX + "\"");
     }
@@ -28,9 +24,15 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
     if (path.isEmpty()) {
       throw new IllegalArgumentException("Feed path must be defined");
     }
-    path = path + "/";
 
-    final var feedDefinition = new HttpFeedDefinition(feed.feedName(), path, feed.persistenceName(), feedItemService);
+    return path + "/";
+  }
+
+  @Override
+  public HttpFeedDefinition defineFeed(String path, FeedItemService feedItemService) {
+    requireNonEmpty(path);
+
+    final var feedDefinition = new HttpFeedDefinition(path, feedItemService);
     feedDefinitions.put(path, feedDefinition);
 
     return feedDefinition;
@@ -51,7 +53,7 @@ public class HttpFeedRegistryImpl implements HttpFeedRegistry {
 
   private void requireNonEmpty(String value) {
     if (value == null || "".equals(value.trim())) {
-      throw new IllegalArgumentException("Feed path must be defined");
+      throw new IllegalArgumentException("Feed values must be defined");
     }
   }
 }

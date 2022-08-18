@@ -10,6 +10,5 @@ import java.lang.annotation.RetentionPolicy;
 public @interface HttpFeed {
 
   String path();
-  String feedName();
-  String persistenceName();
+  String persistenceName() default "";
 }

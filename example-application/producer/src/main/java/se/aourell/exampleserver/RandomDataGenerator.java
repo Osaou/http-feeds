@@ -26,8 +26,6 @@ public class RandomDataGenerator {
     final var eventId = randomId();
     final var event = randomEvent(eventId);
     eventBus.publish(eventId, event);
-
-    Thread.sleep(200L);
   }
 
   private String randomId() {

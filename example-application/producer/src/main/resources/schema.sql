@@ -1,12 +1,18 @@
-drop table httpfeed_patient if exists;
+drop table httpfeeds if exists;
 
-create table httpfeed_patient
+create table httpfeeds
 (
-  id       varchar(1024) primary key,
-  type     varchar(1024),
-  source   varchar(1024),
-  time     timestamp,
-  subject  varchar(1024),
-  method   varchar(1024),
+  id       varchar(256) primary key,
+  type     varchar(256) not null,
+  source   varchar(256) not null,
+  time     timestamp not null,
+  subject  varchar(256) not null,
+  method   varchar(256),
   data     clob
+);
+
+create index httpfeeds_idx_source on httpfeeds
+(
+  id,
+  source
 );

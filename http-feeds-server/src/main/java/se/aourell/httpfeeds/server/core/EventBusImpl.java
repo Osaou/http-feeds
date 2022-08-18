@@ -14,13 +14,11 @@ import java.util.Optional;
 public class EventBusImpl implements EventBus<Object> {
 
   private final Optional<List<Class<?>>> deletionEventTypes;
-  private final HttpFeedDefinition feedDefinition;
   private final FeedItemRepository feedItemRepository;
   private final FeedItemIdGenerator feedItemIdGenerator;
   private final DomainEventSerializer domainEventSerializer;
 
-  public EventBusImpl(Class<?> eventBaseType, HttpFeedDefinition feedDefinition, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
-    this.feedDefinition = feedDefinition;
+  public EventBusImpl(Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
     this.feedItemRepository = feedItemRepository;
     this.feedItemIdGenerator = feedItemIdGenerator;
     this.domainEventSerializer = domainEventSerializer;
@@ -39,10 +37,9 @@ public class EventBusImpl implements EventBus<Object> {
 
     final var id = feedItemIdGenerator.generateId();
     final var type = eventType.getSimpleName();
-    final var source = feedDefinition.path();
     final var method = isDeleteEvent ? CloudEvent.DELETE_METHOD : null;
     final var dataAsString = domainEventSerializer.toString(event);
 
-    feedItemRepository.append(id, type, source, time, subject, method, dataAsString);
+    feedItemRepository.append(id, type, time, subject, method, dataAsString);
   }
 }

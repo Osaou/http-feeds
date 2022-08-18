@@ -10,6 +10,8 @@ import java.util.List;
 
 public class FeedItemRepositoryImpl implements FeedItemRepository {
 
+  private static final String DEFAULT_TABLE_NAME = "httpfeeds";
+
   private final JdbcTemplate jdbcTemplate;
   private final FeedItemRowMapper feedItemRowMapper;
   private final String table;
@@ -17,14 +19,18 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   private final String findAllSql;
   private final String findByIdGreaterThanSql;
 
-  public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table) {
+  public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table, String source) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
+
+    if (table == null || "".equals(table.trim())) {
+      table = DEFAULT_TABLE_NAME;
+    }
     this.table = table;
 
-    this.findAllSql = String.format("select id, type, source, time, subject, method, data from %s order by id limit ?", table);
-    this.findByIdGreaterThanSql = String.format("select id, type, source, time, subject, method, data from %s where id > ? order by id limit ?", table);
-    this.appendSql = String.format("insert into %s (id, type, source, time, subject, method, data) values (?, ?, ?, ?, ?, ?, ?)", table);
+    this.findAllSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' order by id limit ?", table, source);
+    this.findByIdGreaterThanSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' and id > ? order by id limit ?", table, source);
+    this.appendSql = String.format("insert into %s (id, type, source, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, source);
   }
 
   @Override
@@ -38,8 +44,8 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   }
 
   @Override
-  public void append(String id, String type, String source, Instant time, String subject, String method, String data) {
-    jdbcTemplate.update(appendSql, id, type, source, Timestamp.from(time), subject, method, data);
+  public void append(String id, String type, Instant time, String subject, String method, String data) {
+    jdbcTemplate.update(appendSql, id, type, Timestamp.from(time), subject, method, data);
   }
 
   public void deleteAll() {
