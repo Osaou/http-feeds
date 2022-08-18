@@ -34,8 +34,9 @@ public class FeedConsumerDefinition {
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
     final var callable = handler.getParameterTypes().length == 2
-      ? new EventHandlerDefinition.ForEventAndMeta(handler)
-      : new EventHandlerDefinition.ForEvent(handler);
+      ? new EventHandlerDefinition.ForEventAndMeta(handler, eventType)
+      : new EventHandlerDefinition.ForEvent(handler, eventType);
+
     eventHandlers.put(eventType.getSimpleName(), callable);
   }
 
@@ -64,8 +65,8 @@ public class FeedConsumerDefinition {
     final var eventTypeName = event.type();
 
     if (eventHandlers.containsKey(eventTypeName)) {
-      final var eventTypeNameWithPackage = String.format("%s.%s", packageName, eventTypeName);
-      final var eventType = Class.forName(eventTypeNameWithPackage);
+      final var eventHandler = eventHandlers.get(eventTypeName);
+      final var eventType = eventHandler.eventType();
 
       final Object deserializedData;
       if (CloudEvent.DELETE_METHOD.equals(event.method())) {
@@ -75,7 +76,6 @@ public class FeedConsumerDefinition {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
-      final var eventHandler = eventHandlers.get(eventTypeName);
       eventHandler.invoke(bean, deserializedData, () -> createEventMetaData(event));
     }
 

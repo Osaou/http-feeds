@@ -1,8 +1,12 @@
-package se.aourell.exampleclient.patientfeed;
+package se.aourell.exampleclient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import se.aourell.exampleclient.patientfeed.AssessmentEnded;
+import se.aourell.exampleclient.patientfeed.AssessmentStarted;
+import se.aourell.exampleclient.patientfeed.PatientAdded;
+import se.aourell.exampleclient.patientfeed.PatientDeleted;
 import se.aourell.httpfeeds.client.api.EventHandler;
 import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
 import se.aourell.httpfeeds.client.core.EventMetaData;

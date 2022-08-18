@@ -7,22 +7,27 @@ sealed abstract class EventHandlerDefinition
   permits EventHandlerDefinition.ForEvent, EventHandlerDefinition.ForEventAndMeta {
 
   private final Method method;
+  private final Class<?> eventType;
 
-  protected EventHandlerDefinition(Method method) {
+  protected EventHandlerDefinition(Method method, Class<?> eventType) {
     this.method = method;
+    this.eventType = eventType;
   }
 
   protected Method method() {
     return method;
   }
 
+  Class<?> eventType() {
+    return eventType;
+  }
+
   abstract void invoke(Object bean, Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception;
 
 
-
   static final class ForEvent extends EventHandlerDefinition {
-    ForEvent(Method method) {
-      super(method);
+    ForEvent(Method method, Class<?> eventType) {
+      super(method, eventType);
     }
 
     @Override
@@ -34,8 +39,8 @@ sealed abstract class EventHandlerDefinition
 
 
   static final class ForEventAndMeta extends EventHandlerDefinition {
-    ForEventAndMeta(Method method) {
-      super(method);
+    ForEventAndMeta(Method method, Class<?> eventType) {
+      super(method, eventType);
     }
 
     @Override
