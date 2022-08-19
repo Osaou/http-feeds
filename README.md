@@ -168,6 +168,20 @@ public class PatientFeedConsumer {
 `PatientFeedConsumer` is defined here as a regular Spring bean, so all the normal injection mechanics (@Autowired, @Inject, constructor injection, etc) work just as expected.
 Any and all "magic" setup via the http-feeds-spring-boot-starter dependency is done via `BeanFactoryPostProcessor`, and will not interfere with other dependencies.
 
+Event types accepted here for the handlers must have class names that match the cloud events' `type` property, from the (producer) HTTP Feed, and be serializable from their data portion (setter with matching name or constructor with matching parameter).
+So e.g. any of the following:
+```java
+record PatientAdded(String id) { }
+record PatientAdded(String id, String firstName) { }
+record PatientAdded(String id, String firstName, String lastName) { }
+class PatientAdded {
+  ...
+  void setId(String id) { ... }
+}
+...
+etc
+```
+
 Next, make sure the correct settings are applied in `application.properties`:
 
 ```properties
