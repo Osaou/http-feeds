@@ -21,20 +21,20 @@ for testing, you might also want to add
 Then add this library to your `pom.xml`:
 
 ```xml
-    <dependency>
-      <groupId>se.aourell.httpfeeds</groupId>
-      <artifactId>http-feeds-spring-boot-starter</artifactId>
-      <version>0.0.1</version>
-    </dependency>
+<dependency>
+  <groupId>se.aourell.httpfeeds</groupId>
+  <artifactId>http-feeds-spring-boot-starter</artifactId>
+  <version>0.0.1</version>
+</dependency>
 ```
 
-The [`HttpFeedsAutoConfiguration`](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/autoconfigure/HttpFeedsAutoConfiguration.java) adds all relevant Spring beans.
+The [`HttpFeedsAutoConfiguration`](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/autoconfigure) adds all relevant Spring beans.
 
 Check the [`example-application`](example-application) folder for a full example of using the "-spring-boot-starter" version, mentioned above, of this library. This is a sample application that uses the `spring-boot-starter-parent` as a parent pom, as is a common strategy.
 
-### "But I don't want to use Spring"
+### "But I don't use Spring"
 
-Of course, you can also use the "-core" dependency version, which does not depend on Spring. However, you must then [wire up](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/autoconfigure/HttpFeedsAutoConfiguration.java) the [necessary infrastructure](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/HttpFeedsBeanFactoryPostProcessor.java) manually.
+Not a problem. You can simply use the core library, which does not depend on Spring. However, you must then [wire up the necessary infrastructure](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/autoconfigure) manually.
 
 
 ## Feed definition
@@ -42,7 +42,7 @@ Of course, you can also use the "-core" dependency version, which does not depen
 Define your HTTP Feed using standard Java class hierarchy, for example like the following [ADT](https://en.wikipedia.org/wiki/Algebraic_data_type):
 
 ```java
-@HttpFeed(path = "/feed/patient", feedName = "patient", persistenceName = "httpfeed_patient")
+@HttpFeed(path = "/feed/patient")
 public sealed interface PatientEvent
   permits AssessmentEnded, AssessmentStarted, PatientAdded, PatientDeleted {
 
@@ -59,25 +59,34 @@ public record PatientDeleted(String id) implements PatientEvent { }
 
 ## DB schema definition
 
-Next, make sure to have a valid schema for your database set up (use [Flyway](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-use-a-higher-level-database-migration-tool) or a [schema.sql](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-initialize-a-database-using-spring-jdbc) file):
+Next, make sure to have a valid schema configured for your database (use [Flyway](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-use-a-higher-level-database-migration-tool) or a [schema.sql](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-initialize-a-database-using-spring-jdbc) file):
 
 ```sql
-create table httpfeed_patient
+drop table httpfeeds if exists;
+
+create table httpfeeds
 (
-  id       varchar(1024) primary key,
-  type     varchar(1024),
-  source   varchar(1024),
-  time     timestamp,
-  subject  varchar(1024),
-  method   varchar(1024),
+  id       varchar(256) primary key,
+  type     varchar(256) not null,
+  source   varchar(256) not null,
+  time     timestamp not null,
+  subject  varchar(256) not null,
+  method   varchar(256),
   data     clob
+);
+
+create index httpfeeds_idx_id_source on httpfeeds
+(
+  id,
+  source
 );
 ```
 
-And make sure your database is connected in your `application.properties`:
+Also make sure your database is connected, and the server portion of httpfeeds is enabled, in your `application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:h2:mem:testdb
+httpfeeds.server.enabled=true
 ```
 
 
@@ -97,7 +106,7 @@ eventBus.publish(subject, event);
 ```
 
 
-## Consuming events
+## Consuming events: HTTP
 
 When you start the application (`./mvnw spring-boot:run` etc), you can consume the HTTP Feed by GET:ing e.g. http://localhost:8080/feed/patient.
 
@@ -110,7 +119,7 @@ Content-Type: application/cloudevents-batch+json
     "specversion": "1.0",
     "id": "1eccf0ce-699e-6e99-b86d-532a9b59bc9c",
     "type": "PatientAdded",
-    "source": "/feed/patient",
+    "source": "/feed/patient/",
     "time": "2022-05-08T20:24:45.695+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
     "datacontenttype": "application/json",
@@ -124,12 +133,43 @@ Content-Type: application/cloudevents-batch+json
     "specversion": "1.0",
     "id": "1eccf0ce-718e-629b-b86d-2b881a64c97e",
     "type": "PatientDeleted",
-    "source": "/feed/patient",
+    "source": "/feed/patient/",
     "time": "2022-05-08T20:24:46.514+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
     "method": "delete"
   }
 ]
+```
+
+
+## Consuming events: Java
+
+There is also a Java API for consuming events, mainly meant for use from _other_ applications.
+
+Simply define a consumer like so:
+
+```java
+@Service
+@HttpFeedConsumer(name = "patient")
+public class PatientFeedConsumer {
+
+  @EventHandler
+  public void on(PatientAdded event) {
+    ...
+  }
+
+  @EventHandler
+  public void on(AssessmentEnded event, EventMetaData meta) {
+    ...
+  }
+}
+```
+
+And make sure the correct settings are applied in `application.properties`:
+
+```properties
+httpfeeds.client.enabled=true
+httpfeeds.client.urls.patient=http://localhost:8080/feed/patient
 ```
 
 

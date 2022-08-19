@@ -13,17 +13,15 @@ public class FeedConsumerDefinition {
   private final String feedName;
   private final String url;
   private final Object bean;
-  private final String packageName;
   private final Map<String, EventHandlerDefinition> eventHandlers = new HashMap<>();
   private final DomainEventDeserializer domainEventDeserializer;
 
   private String lastProcessedId;
 
-  FeedConsumerDefinition(String feedName, String url, Object bean, String packageName, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
+  FeedConsumerDefinition(String feedName, String url, Object bean, DomainEventDeserializer domainEventDeserializer, String lastProcessedId) {
     this.feedName = feedName;
     this.url = url;
     this.bean = bean;
-    this.packageName = packageName;
     this.domainEventDeserializer = domainEventDeserializer;
     this.lastProcessedId = lastProcessedId;
   }

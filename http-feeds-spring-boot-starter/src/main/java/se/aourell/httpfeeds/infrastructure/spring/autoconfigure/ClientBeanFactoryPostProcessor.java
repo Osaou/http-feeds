@@ -24,9 +24,12 @@ public class ClientBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
   @Override
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     for (final var consumerBean : beanFactory.getBeansWithAnnotation(HttpFeedConsumer.class).values()) {
-      final var feedName = consumerBean.getClass().getAnnotation(HttpFeedConsumer.class).feedName();
-      final var feedUrl = clientProperties.getUrls().get(feedName);
+      String feedName = consumerBean.getClass().getAnnotation(HttpFeedConsumer.class).name();
+      if (feedName == null || "".equals(feedName.trim())) {
+        feedName = consumerBean.getClass().getName();
+      }
 
+      final var feedUrl = clientProperties.getUrls().get(feedName);
       final var feedConsumer = feedConsumerProcessor.defineConsumer(feedName, feedUrl, consumerBean);
       initEventHandlersForConsumer(feedConsumer);
     }

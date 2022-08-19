@@ -11,7 +11,7 @@ create table httpfeeds
   data     clob
 );
 
-create index httpfeeds_idx_source on httpfeeds
+create index httpfeeds_idx_id_source on httpfeeds
 (
   id,
   source

@@ -12,7 +12,7 @@ import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
 import se.aourell.httpfeeds.client.core.EventMetaData;
 
 @Service
-@HttpFeedConsumer(feedName = "patient")
+@HttpFeedConsumer(name = "patient")
 public class PatientFeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(PatientFeedConsumer.class);
