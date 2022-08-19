@@ -82,11 +82,11 @@ create index httpfeeds_idx_id_source on httpfeeds
 );
 ```
 
-Also make sure your database is connected, and the server portion of httpfeeds is enabled, in your `application.properties`:
+Also make sure the server portion of httpfeeds is enabled, and e.g. that your database is running, in your `application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:h2:mem:testdb
 httpfeeds.server.enabled=true
+spring.datasource.url=jdbc:h2:mem:testdb
 ```
 
 
@@ -144,7 +144,7 @@ Content-Type: application/cloudevents-batch+json
 
 ## Consuming events: Java
 
-There is also a Java API for consuming events, mainly meant for use from _other_ applications.
+There is also a Java API for consuming events, mainly designed to be used from _other_ applications.
 
 Simply define a consumer like so:
 
@@ -165,12 +165,17 @@ public class PatientFeedConsumer {
 }
 ```
 
-And make sure the correct settings are applied in `application.properties`:
+`PatientFeedConsumer` is defined here as a regular Spring bean, so all the normal injection mechanics (@Autowired, @Inject, constructor injection, etc) work just as expected.
+Any and all "magic" setup via the http-feeds-spring-boot-starter dependency is done via `BeanFactoryPostProcessor`, and will not interfere with other dependencies.
+
+Next, make sure the correct settings are applied in `application.properties`:
 
 ```properties
 httpfeeds.client.enabled=true
 httpfeeds.client.urls.patient=http://localhost:8080/feed/patient
 ```
+
+`httpfeeds.client.urls` is a map where the consumer names are mapped to urls. In this case, we say that events for the consumer named `patient` can be found at url `http://localhost:8080/feed/patient`.
 
 
 ## Acknowledgements
