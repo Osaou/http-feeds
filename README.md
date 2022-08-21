@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/se.aourell.httpfeeds/http-feeds-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/se.aourell.httpfeeds/http-feeds-spring-boot-starter)
 
-Spring Boot starter for implementing [HTTP Feed](http://www.http-feeds.org/) servers.
+Spring Boot starter for implementing [HTTP Feed](http://www.http-feeds.org/) servers and/or clients.
 
 Compiled against, and requires at least, Java 17 LTS.
 
@@ -98,7 +98,7 @@ Finally, make sure that your application adds new feed items by calling the `Eve
 @Autowired // ...or preferably, use constructor injection
 private final EventBus<PatientEvent> eventBus;
 
-  ...
+...
 
 var subject = UUID.randomUUID().toString();
 var event = new PatientAdded(subject, "Scooby", "Doe");
@@ -166,9 +166,9 @@ public class PatientFeedConsumer {
 ```
 
 `PatientFeedConsumer` is defined here as a regular Spring bean, so all the normal injection mechanics (@Autowired, @Inject, constructor injection, etc) work just as expected.
-Any and all "magic" setup via the http-feeds-spring-boot-starter dependency is done via `BeanFactoryPostProcessor`, and will not interfere with other dependencies.
+Any and all "magic" setup via the http-feeds-spring-boot-starter dependency is done via `BeanFactoryPostProcessor`, and should not interfere with other dependencies.
 
-Event types accepted here for the handlers must have class names that match the cloud events' `type` property, from the (producer) HTTP Feed, and be serializable from their data portion (setter with matching name or constructor with matching parameter).
+Event types accepted here for the handlers must have class names that match the cloud events' `type` properties, from the (producer) HTTP Feed, and be serializable from their data portion (setter with matching name or constructor with matching parameter list).
 So e.g. any of the following:
 ```java
 record PatientAdded(String id) { }
@@ -182,7 +182,7 @@ class PatientAdded {
 etc
 ```
 
-Next, make sure the correct settings are applied in `application.properties`:
+Finally, make sure the correct settings are applied in `application.properties`:
 
 ```properties
 httpfeeds.client.enabled=true
