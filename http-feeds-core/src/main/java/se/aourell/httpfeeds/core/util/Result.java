@@ -21,8 +21,8 @@ public abstract class Result<V> {
     return new Failure<>(exception);
   }
 
-  public abstract V orElseGet(final V defaultValue);
-  public abstract V orElseGet(final Supplier<V> defaultValue);
+  public abstract V orElseGet(V defaultValue);
+  public abstract V orElseGet(Supplier<V> defaultValue);
   public abstract <U> Result<U> map(Function<V, U> f);
   public abstract <U> Result<U> flatMap(Function<V, Result<U>> f);
 

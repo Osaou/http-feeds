@@ -3,7 +3,7 @@ package se.aourell.httpfeeds.client.core;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
-sealed abstract class EventHandlerDefinition
+abstract sealed class EventHandlerDefinition
   permits EventHandlerDefinition.ForEvent, EventHandlerDefinition.ForEventAndMeta {
 
   private final Method method;
