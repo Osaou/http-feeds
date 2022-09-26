@@ -16,3 +16,10 @@ create index httpfeeds_idx_id_source on httpfeeds
   id,
   source
 );
+
+create index httpfeeds_idx_id_source_subject on httpfeeds
+(
+  id,
+  source,
+  subject
+);

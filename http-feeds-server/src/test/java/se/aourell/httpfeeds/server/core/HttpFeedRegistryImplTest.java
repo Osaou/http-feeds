@@ -24,11 +24,11 @@ class HttpFeedRegistryImplTest {
 
   final FeedItemService serviceMock = new FeedItemService() {
     @Override
-    public List<FeedItem> fetch(String lastEventId) {
+    public List<FeedItem> fetch(String lastEventId, String subjectId) {
       return null;
     }
     @Override
-    public List<FeedItem> fetchWithTimeout(String lastEventId, Long timeoutMillis) {
+    public List<FeedItem> fetchWithTimeout(String lastEventId, String subjectId, Long timeoutMillis) {
       return null;
     }
   };

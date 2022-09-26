@@ -26,18 +26,30 @@ public class FeedItemServiceImpl implements FeedItemService {
   }
 
   @Override
-  public List<FeedItem> fetch(String lastEventId) {
+  public List<FeedItem> fetch(String lastEventId, String subjectId) {
     return Optional.ofNullable(lastEventId)
-      .map(lastId -> feedItemRepository.findByIdGreaterThan(lastId, limit))
+      .map(lastId -> fetchFromEventId(lastId, subjectId))
+      .orElseGet(() -> fetchFromBeginning(subjectId));
+  }
+
+  private List<FeedItem> fetchFromEventId(String eventId, String subjectId) {
+    return Optional.ofNullable(subjectId)
+      .map(subject -> feedItemRepository.findByIdGreaterThanForSubject(eventId, subject, limit))
+      .orElseGet(() -> feedItemRepository.findByIdGreaterThan(eventId, limit));
+  }
+
+  private List<FeedItem> fetchFromBeginning(String subjectId) {
+    return Optional.ofNullable(subjectId)
+      .map(subject -> feedItemRepository.findAllForSubject(subject, limit))
       .orElseGet(() -> feedItemRepository.findAll(limit));
   }
 
   @Override
-  public List<FeedItem> fetchWithTimeout(String lastEventId, Long timeoutMillis) {
+  public List<FeedItem> fetchWithTimeout(String lastEventId, String subjectId, Long timeoutMillis) {
     final Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, ChronoUnit.MILLIS);
 
     while (true) {
-      final var items = fetch(lastEventId);
+      final var items = fetch(lastEventId, subjectId);
       if (!items.isEmpty()) {
         return items;
       }

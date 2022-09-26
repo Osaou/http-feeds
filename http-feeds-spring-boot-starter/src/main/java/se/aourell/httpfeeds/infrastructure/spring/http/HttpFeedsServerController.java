@@ -32,6 +32,7 @@ public class HttpFeedsServerController {
   public String getFeedItems(
     @RequestParam(name = "lastEventId", required = false) String lastEventId,
     @RequestParam(name = "timeout", required = false) Long timeoutMillis,
+    @RequestParam(name = "subject", required = false) String subjectId,
     HttpServletRequest request
   ) throws JsonProcessingException {
     final var path = request.getServletPath();
@@ -41,8 +42,8 @@ public class HttpFeedsServerController {
       .orElseThrow(() -> new IllegalArgumentException(String.format("No feed defined for path \"%s\"", path)));
 
     final var cloudEvents = Optional.ofNullable(timeoutMillis)
-      .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, timeout))
-      .orElseGet(() -> feedItemService.fetch(lastEventId))
+      .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, subjectId, timeout))
+      .orElseGet(() -> feedItemService.fetch(lastEventId, subjectId))
       .stream()
       .map(cloudEventMapper::mapFeedItem)
       .toList();
