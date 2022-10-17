@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface FeedItemRepository {
 
+  String DEFAULT_TABLE_NAME = "httpfeeds";
+
   List<FeedItem> findAll(int limit);
 
   List<FeedItem> findByIdGreaterThan(String lastEventId, int limit);

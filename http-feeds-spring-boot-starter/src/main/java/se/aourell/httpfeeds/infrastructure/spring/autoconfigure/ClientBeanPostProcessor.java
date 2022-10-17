@@ -1,8 +1,7 @@
 package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import se.aourell.httpfeeds.client.api.EventHandler;
 import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
 import se.aourell.httpfeeds.client.core.EventMetaData;
@@ -11,28 +10,31 @@ import se.aourell.httpfeeds.client.spi.FeedConsumerProcessor;
 
 import java.util.Arrays;
 
-public class ClientBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+public class ClientBeanPostProcessor implements BeanPostProcessor {
 
   private final ClientProperties clientProperties;
   private final FeedConsumerProcessor feedConsumerProcessor;
 
-  public ClientBeanFactoryPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
+  public ClientBeanPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
     this.clientProperties = clientProperties;
     this.feedConsumerProcessor = feedConsumerProcessor;
   }
 
   @Override
-  public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-    for (final var consumerBean : beanFactory.getBeansWithAnnotation(HttpFeedConsumer.class).values()) {
-      String feedName = consumerBean.getClass().getAnnotation(HttpFeedConsumer.class).name();
+  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    final var feedConsumerDeclaration = bean.getClass().getAnnotation(HttpFeedConsumer.class);
+    if (feedConsumerDeclaration != null) {
+      String feedName = feedConsumerDeclaration.name();
       if (feedName == null || "".equals(feedName.trim())) {
-        feedName = consumerBean.getClass().getName();
+        feedName = bean.getClass().getName();
       }
 
       final var feedUrl = clientProperties.getUrls().get(feedName);
-      final var feedConsumer = feedConsumerProcessor.defineConsumer(feedName, feedUrl, consumerBean);
+      final var feedConsumer = feedConsumerProcessor.defineConsumer(feedName, feedUrl, bean);
       initEventHandlersForConsumer(feedConsumer);
     }
+
+    return bean;
   }
 
   private void initEventHandlersForConsumer(FeedConsumerDefinition consumerDefinition) {

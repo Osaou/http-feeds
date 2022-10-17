@@ -2,12 +2,12 @@ drop table httpfeeds if exists;
 
 create table httpfeeds
 (
-  id       varchar(256) primary key,
-  type     varchar(256) not null,
-  source   varchar(256) not null,
+  id       varchar(64) primary key,
+  type     varchar(128) not null,
+  source   varchar(128) not null,
   time     timestamp not null,
-  subject  varchar(256) not null,
-  method   varchar(256),
+  subject  varchar(64) not null,
+  method   varchar(64),
   data     clob
 );
 

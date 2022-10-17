@@ -10,8 +10,6 @@ import java.util.List;
 
 public class FeedItemRepositoryImpl implements FeedItemRepository {
 
-  private static final String DEFAULT_TABLE_NAME = "httpfeeds";
-
   private final JdbcTemplate jdbcTemplate;
   private final FeedItemRowMapper feedItemRowMapper;
   private final String table;
@@ -25,10 +23,6 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table, String source) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
-
-    if (table == null || "".equals(table.trim())) {
-      table = DEFAULT_TABLE_NAME;
-    }
     this.table = table;
 
     this.findAllSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' order by id limit ?", table, source);

@@ -8,18 +8,18 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import se.aourell.httpfeeds.infrastructure.server.FeedItemRepositoryImpl;
-import se.aourell.httpfeeds.infrastructure.server.FeedItemRowMapper;
 import se.aourell.httpfeeds.server.api.HttpFeed;
 import se.aourell.httpfeeds.server.core.EventBusImpl;
 import se.aourell.httpfeeds.server.core.FeedItemServiceImpl;
 import se.aourell.httpfeeds.server.spi.EventBus;
 import se.aourell.httpfeeds.server.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.server.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.server.spi.FeedItemRepositoryFactory;
 import se.aourell.httpfeeds.server.spi.HttpFeedRegistry;
 
 import java.util.Objects;
+
+import static se.aourell.httpfeeds.server.spi.FeedItemRepository.DEFAULT_TABLE_NAME;
 
 public class ServerBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
@@ -31,8 +31,7 @@ public class ServerBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
 
   @Override
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-    final var jdbcTemplate = beanFactory.getBean(JdbcTemplate.class);
-    final var feedItemRowMapper = beanFactory.getBean(FeedItemRowMapper.class);
+    final var feedItemRepositoryFactory = beanFactory.getBean(FeedItemRepositoryFactory.class);
     final var feedItemIdGenerator = beanFactory.getBean(FeedItemIdGenerator.class);
     final var feedRegistry = beanFactory.getBean(HttpFeedRegistry.class);
     final var eventSerializer = beanFactory.getBean(DomainEventSerializer.class);
@@ -41,11 +40,15 @@ public class ServerBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
     // find all annotated http feeds in domain code and add their configurations and necessary beans
     for (final Class<?> feedEventBaseType : ClassIndex.getAnnotated(HttpFeed.class, beanClassLoader)) {
       final var feedDeclaration = feedEventBaseType.getAnnotation(HttpFeed.class);
-      final var persistenceName = feedDeclaration.persistenceName();
       final var feedPath = feedRegistry.validateFeedPath(feedDeclaration.path());
 
+      var persistenceName = feedDeclaration.persistenceName();
+      if (persistenceName == null || "".equals(persistenceName.trim())) {
+        persistenceName = DEFAULT_TABLE_NAME;
+      }
+
       // add bean for this event type's repository needs
-      final var feedItemRepository = new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName, feedPath);
+      final var feedItemRepository = feedItemRepositoryFactory.apply(persistenceName, feedPath);
       beanFactory.registerSingleton("repository:" + feedPath, feedItemRepository);
 
       // add bean for this event type's service level needs

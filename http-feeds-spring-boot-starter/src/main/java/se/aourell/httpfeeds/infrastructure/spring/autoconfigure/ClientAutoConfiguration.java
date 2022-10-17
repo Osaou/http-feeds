@@ -2,6 +2,7 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,8 +32,8 @@ import se.aourell.httpfeeds.infrastructure.client.HttpFeedsClientImpl;
 public class ClientAutoConfiguration {
 
   @Bean
-  public static ClientBeanFactoryPostProcessor clientBeanFactoryPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
-    return new ClientBeanFactoryPostProcessor(clientProperties, feedConsumerProcessor);
+  public static BeanPostProcessor clientBeanFactoryPostProcessor(ClientProperties clientProperties, FeedConsumerProcessor feedConsumerProcessor) {
+    return new ClientBeanPostProcessor(clientProperties, feedConsumerProcessor);
   }
 
   @Bean
@@ -61,7 +62,7 @@ public class ClientAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public FeedConsumerProcessor feedConsumerRegistry(HttpFeedsClient httpFeedsClient, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessor feedConsumerProcessor(HttpFeedsClient httpFeedsClient, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
     return new FeedConsumerProcessorImpl(httpFeedsClient, domainEventDeserializer, feedConsumerRepository);
   }
 
