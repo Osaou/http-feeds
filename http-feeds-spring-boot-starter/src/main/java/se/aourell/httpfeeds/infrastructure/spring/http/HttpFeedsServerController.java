@@ -41,9 +41,11 @@ public class HttpFeedsServerController {
       .map(HttpFeedDefinition::feedItemService)
       .orElseThrow(() -> new IllegalArgumentException(String.format("No feed defined for path \"%s\"", path)));
 
-    final var cloudEvents = Optional.ofNullable(timeoutMillis)
+    final var feedItems = Optional.ofNullable(timeoutMillis)
       .map(timeout -> feedItemService.fetchWithTimeout(lastEventId, subjectId, timeout))
-      .orElseGet(() -> feedItemService.fetch(lastEventId, subjectId))
+      .orElseGet(() -> feedItemService.fetch(lastEventId, subjectId));
+
+    final var cloudEvents = feedItems
       .stream()
       .map(cloudEventMapper::mapFeedItem)
       .toList();
