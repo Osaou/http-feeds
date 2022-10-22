@@ -64,7 +64,7 @@ public class FeedItemServiceImpl implements FeedItemService {
         //noinspection BusyWait
         Thread.sleep(pollInterval.toMillis());
       } catch (InterruptedException e) {
-        LOG.info("Thread was interrupted. Probably a graceful shutdown. Attempting to send empty response.");
+        LOG.trace("Thread was interrupted. Probably a graceful shutdown. Attempting to send empty response.");
         return List.of();
       }
     }

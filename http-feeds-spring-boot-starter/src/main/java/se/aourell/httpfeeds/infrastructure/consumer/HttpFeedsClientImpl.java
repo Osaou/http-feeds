@@ -59,8 +59,11 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
     } catch (HttpTimeoutException e) {
       return Result.success(Collections.emptyList());
     } catch (IOException | InterruptedException e) {
-      LOG.error("Exception when GETing httpfeed from " + httpFeedUrl, e);
       return Result.failure(e);
+    }
+
+    if (response.statusCode() != 200) {
+      return Result.failure("Unexpected status code " + response.statusCode() + " when fetching cloud events");
     }
 
     final var body = response.body();

@@ -52,7 +52,7 @@ public class HttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
         final long effect = (long) Math.pow(2, failureCount);
         final long backOffTimerMs = effect * FAILURE_TIMEOUT_MS;
 
-        LOG.info("Sleeping for {} ms because of earlier failure", backOffTimerMs);
+        LOG.trace("Sleeping for {} ms because of earlier failure", backOffTimerMs);
         Thread.sleep(backOffTimerMs);
       } catch (InterruptedException e) {
         LOG.error("Interrupted while sleeping because of earlier failure", e);
