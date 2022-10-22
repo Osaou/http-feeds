@@ -7,33 +7,33 @@ import se.aourell.exampleclient.patientfeed.AssessmentEnded;
 import se.aourell.exampleclient.patientfeed.AssessmentStarted;
 import se.aourell.exampleclient.patientfeed.PatientAdded;
 import se.aourell.exampleclient.patientfeed.PatientDeleted;
-import se.aourell.httpfeeds.client.api.EventHandler;
-import se.aourell.httpfeeds.client.api.HttpFeedConsumer;
-import se.aourell.httpfeeds.client.core.EventMetaData;
+import se.aourell.httpfeeds.consumer.api.EventHandler;
+import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
+import se.aourell.httpfeeds.consumer.core.EventMetaData;
 
 @Service
-@HttpFeedConsumer(name = "patient")
+@EventFeedConsumer("patient")
 public class PatientFeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(PatientFeedConsumer.class);
 
   @EventHandler
   public void on(PatientAdded event) {
-    LOG.info("event received: {}", event);
+    LOG.info("remote event received: {}", event);
   }
 
   @EventHandler
   public void on(PatientDeleted event) {
-    LOG.info("event received: {}", event);
+    LOG.info("remote event received: {}", event);
   }
 
   @EventHandler
   public void on(AssessmentStarted event) {
-    LOG.info("event received: {}", event);
+    LOG.info("remote event received: {}", event);
   }
 
   @EventHandler
   public void on(AssessmentEnded event, EventMetaData meta) {
-    LOG.info("event received: {} with metadata: {}", event, meta);
+    LOG.info("remote event received: {} with metadata: {}", event, meta);
   }
 }

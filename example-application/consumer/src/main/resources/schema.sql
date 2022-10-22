@@ -1,6 +1,6 @@
-drop table httpfeeds_consummation if exists;
+drop table eventfeeds_consummation if exists;
 
-create table httpfeeds_consummation
+create table eventfeeds_consummation
 (
   feedName         varchar(128) primary key,
   lastProcessedId  varchar(64)

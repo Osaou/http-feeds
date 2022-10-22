@@ -12,7 +12,7 @@
 
   <groupId>se.aourell.exampleapplication</groupId>
 	<artifactId>consumer</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.3.0</version>
 
 	<name>consumer</name>
 	<description>Example app for HTTP-feeds</description>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>se.aourell.httpfeeds</groupId>
       <artifactId>http-feeds-spring-boot-starter</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.3.0</version>
     </dependency>
 
     <dependency>

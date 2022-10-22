@@ -1,4 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.AutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ClientAutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ServerAutoConfiguration
+  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ConsumerAutoConfiguration,\
+  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerAutoConfiguration

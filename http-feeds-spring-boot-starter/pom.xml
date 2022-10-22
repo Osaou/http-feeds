@@ -6,12 +6,12 @@
 	<parent>
     <groupId>se.aourell.httpfeeds</groupId>
     <artifactId>bom</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.3.0</version>
     <relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>http-feeds-spring-boot-starter</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.3.0</version>
 
 	<name>http-feeds-spring-boot-starter</name>
 	<description>Spring Boot autoconfig for HTTP-feeds</description>
@@ -19,11 +19,7 @@
 	<dependencies>
     <dependency>
       <groupId>se.aourell.httpfeeds</groupId>
-      <artifactId>http-feeds-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>se.aourell.httpfeeds</groupId>
-      <artifactId>http-feeds-server</artifactId>
+      <artifactId>http-feeds-core</artifactId>
     </dependency>
 
     <dependency>

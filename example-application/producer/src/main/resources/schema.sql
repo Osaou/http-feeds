@@ -1,6 +1,6 @@
-drop table httpfeeds if exists;
+drop table eventfeeds if exists;
 
-create table httpfeeds
+create table eventfeeds
 (
   id       varchar(64) primary key,
   type     varchar(128) not null,
@@ -11,13 +11,13 @@ create table httpfeeds
   data     clob
 );
 
-create index httpfeeds_idx_id_source on httpfeeds
+create index eventfeeds_idx_id_source on eventfeeds
 (
   id,
   source
 );
 
-create index httpfeeds_idx_id_source_subject on httpfeeds
+create index eventfeeds_idx_id_source_subject on eventfeeds
 (
   id,
   source,

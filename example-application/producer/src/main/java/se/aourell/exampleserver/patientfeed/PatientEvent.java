@@ -1,8 +1,8 @@
 package se.aourell.exampleserver.patientfeed;
 
-import se.aourell.httpfeeds.server.api.HttpFeed;
+import se.aourell.httpfeeds.publisher.api.EventFeed;
 
-@HttpFeed(path = "/feed/patient")
+@EventFeed("patient")
 public sealed interface PatientEvent
   permits AssessmentEnded, AssessmentStarted, PatientAdded, PatientDeleted {
 
