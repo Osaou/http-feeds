@@ -63,7 +63,7 @@ public class ProducerBeanFactoryPostProcessor implements BeanFactoryPostProcesso
       eventFeedRegistry.defineFeed(feedName, feedItemService, shouldPublish);
 
       // final piece of the puzzle: the eventbus that is scoped to this specific event type via generics
-      final var eventBus = new EventBusImpl(feedEventBaseType, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+      final var eventBus = new EventBusImpl(feedName, feedEventBaseType, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
       final var resolvableType = ResolvableType.forClassWithGenerics(EventBus.class, feedEventBaseType);
       final var beanDefinition = new RootBeanDefinition();
       beanDefinition.setTargetType(resolvableType);

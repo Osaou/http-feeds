@@ -55,8 +55,8 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   }
 
   @Override
-  public void append(String id, String type, Instant time, String subject, String method, String data) {
-    jdbcTemplate.update(appendSql, id, type, Timestamp.from(time), subject, method, data);
+  public void append(FeedItem feedItem) {
+    jdbcTemplate.update(appendSql, feedItem.id(), feedItem.type(), Timestamp.from(feedItem.time()), feedItem.subject(), feedItem.method(), feedItem.data());
   }
 
   public void deleteAll() {

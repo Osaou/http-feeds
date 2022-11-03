@@ -2,7 +2,6 @@ package se.aourell.httpfeeds.publisher.spi;
 
 import se.aourell.httpfeeds.publisher.core.FeedItem;
 
-import java.time.Instant;
 import java.util.List;
 
 public interface FeedItemRepository {
@@ -17,5 +16,5 @@ public interface FeedItemRepository {
 
   List<FeedItem> findByIdGreaterThanForSubject(String lastEventId, String subject, int limit);
 
-  void append(String id, String type, Instant time, String subject, String method, String data);
+  void append(FeedItem feedItem);
 }

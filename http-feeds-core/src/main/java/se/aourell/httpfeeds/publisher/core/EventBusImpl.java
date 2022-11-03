@@ -14,13 +14,15 @@ import java.util.Optional;
 
 public class EventBusImpl implements EventBus<Object> {
 
+  private final String source;
   private final Optional<List<Class<?>>> deletionEventTypes;
   private final FeedItemRepository feedItemRepository;
   private final FeedItemIdGenerator feedItemIdGenerator;
   private final DomainEventSerializer domainEventSerializer;
   private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
 
-  public EventBusImpl(Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+  public EventBusImpl(String source, Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    this.source = source;
     this.feedItemRepository = feedItemRepository;
     this.feedItemIdGenerator = feedItemIdGenerator;
     this.domainEventSerializer = domainEventSerializer;
@@ -45,7 +47,8 @@ public class EventBusImpl implements EventBus<Object> {
 
     // first persist the event
     // an exception here means we should not go ahead with local processing
-    feedItemRepository.append(id, type, time, subject, method, dataAsString);
+    final var feedItem = new FeedItem(id, type, source, time, subject, method, dataAsString);
+    feedItemRepository.append(feedItem);
 
     // after persisting the event, we immediately go ahead and let local handlers process it
     localFeedConsumerRegistry.processLocalEvent(id, subject, event, time);
