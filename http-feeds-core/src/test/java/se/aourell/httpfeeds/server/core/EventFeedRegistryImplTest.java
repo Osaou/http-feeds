@@ -3,11 +3,11 @@ package se.aourell.httpfeeds.server.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import se.aourell.httpfeeds.publisher.api.EventFeed;
-import se.aourell.httpfeeds.publisher.core.EventFeedRegistryImpl;
-import se.aourell.httpfeeds.publisher.core.FeedItem;
-import se.aourell.httpfeeds.publisher.spi.EventFeedRegistry;
-import se.aourell.httpfeeds.publisher.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.api.EventFeed;
+import se.aourell.httpfeeds.producer.core.EventFeedRegistryImpl;
+import se.aourell.httpfeeds.producer.core.FeedItem;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.spi.FeedItemService;
 
 import java.util.List;
 

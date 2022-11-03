@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
-import se.aourell.httpfeeds.publisher.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.spi.FeedItemService;
 
 import java.time.Duration;
 import java.util.Collections;

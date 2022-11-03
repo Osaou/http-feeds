@@ -1,11 +1,11 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
-import se.aourell.httpfeeds.publisher.spi.DomainEventSerializer;
-import se.aourell.httpfeeds.publisher.spi.EventBus;
-import se.aourell.httpfeeds.publisher.spi.FeedItemIdGenerator;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepository;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.producer.spi.EventBus;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 
 import java.time.Instant;
 import java.util.Arrays;

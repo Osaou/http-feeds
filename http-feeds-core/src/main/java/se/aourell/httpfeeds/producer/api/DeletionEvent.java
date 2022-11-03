@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.publisher.api;
+package se.aourell.httpfeeds.producer.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

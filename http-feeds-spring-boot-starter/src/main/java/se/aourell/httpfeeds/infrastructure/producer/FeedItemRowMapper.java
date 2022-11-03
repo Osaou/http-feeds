@@ -1,7 +1,7 @@
-package se.aourell.httpfeeds.infrastructure.publisher;
+package se.aourell.httpfeeds.infrastructure.producer;
 
 import org.springframework.jdbc.core.RowMapper;
-import se.aourell.httpfeeds.publisher.core.FeedItem;
+import se.aourell.httpfeeds.producer.core.FeedItem;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

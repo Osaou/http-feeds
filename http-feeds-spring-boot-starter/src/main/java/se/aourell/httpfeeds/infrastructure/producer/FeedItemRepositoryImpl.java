@@ -1,11 +1,10 @@
-package se.aourell.httpfeeds.infrastructure.publisher;
+package se.aourell.httpfeeds.infrastructure.producer;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import se.aourell.httpfeeds.publisher.core.FeedItem;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepository;
+import se.aourell.httpfeeds.producer.core.FeedItem;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 
 public class FeedItemRepositoryImpl implements FeedItemRepository {

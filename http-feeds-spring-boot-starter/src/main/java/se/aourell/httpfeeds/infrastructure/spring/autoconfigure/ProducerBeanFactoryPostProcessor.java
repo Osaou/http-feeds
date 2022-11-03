@@ -9,19 +9,19 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
-import se.aourell.httpfeeds.publisher.api.EventFeed;
-import se.aourell.httpfeeds.publisher.core.EventBusImpl;
-import se.aourell.httpfeeds.publisher.core.EventFeedDefinition;
-import se.aourell.httpfeeds.publisher.core.FeedItemServiceImpl;
-import se.aourell.httpfeeds.publisher.spi.DomainEventSerializer;
-import se.aourell.httpfeeds.publisher.spi.EventBus;
-import se.aourell.httpfeeds.publisher.spi.EventFeedRegistry;
-import se.aourell.httpfeeds.publisher.spi.FeedItemIdGenerator;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepositoryFactory;
+import se.aourell.httpfeeds.producer.api.EventFeed;
+import se.aourell.httpfeeds.producer.core.EventBusImpl;
+import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.core.FeedItemServiceImpl;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.producer.spi.EventBus;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 
 import java.util.Objects;
 
-import static se.aourell.httpfeeds.publisher.spi.FeedItemRepository.DEFAULT_TABLE_NAME;
+import static se.aourell.httpfeeds.producer.spi.FeedItemRepository.DEFAULT_TABLE_NAME;
 
 public class ProducerBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 

@@ -1,6 +1,6 @@
-package se.aourell.httpfeeds.publisher.spi;
+package se.aourell.httpfeeds.producer.spi;
 
-import se.aourell.httpfeeds.publisher.core.FeedItem;
+import se.aourell.httpfeeds.producer.core.FeedItem;
 
 import java.time.Duration;
 import java.util.List;

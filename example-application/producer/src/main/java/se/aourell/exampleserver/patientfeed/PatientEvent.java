@@ -1,6 +1,6 @@
 package se.aourell.exampleserver.patientfeed;
 
-import se.aourell.httpfeeds.publisher.api.EventFeed;
+import se.aourell.httpfeeds.producer.api.EventFeed;
 
 @EventFeed("patient")
 public sealed interface PatientEvent

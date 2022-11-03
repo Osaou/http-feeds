@@ -1,6 +1,6 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
-import se.aourell.httpfeeds.publisher.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.spi.FeedItemService;
 
 public record EventFeedDefinition(String name, String feedPath, FeedItemService feedItemService, boolean publishedHttpFeed) {
 

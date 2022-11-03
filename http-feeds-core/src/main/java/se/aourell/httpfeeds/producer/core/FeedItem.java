@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
 import java.time.Instant;
 

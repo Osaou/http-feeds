@@ -1,6 +1,6 @@
-package se.aourell.httpfeeds.publisher.spi;
+package se.aourell.httpfeeds.producer.spi;
 
-import se.aourell.httpfeeds.publisher.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
 
 import java.util.Optional;
 

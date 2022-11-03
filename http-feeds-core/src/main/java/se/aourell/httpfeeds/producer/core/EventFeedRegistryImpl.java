@@ -1,7 +1,7 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
-import se.aourell.httpfeeds.publisher.spi.FeedItemService;
-import se.aourell.httpfeeds.publisher.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 
 import java.util.HashMap;
 import java.util.Map;

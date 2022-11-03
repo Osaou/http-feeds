@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.publisher.spi;
+package se.aourell.httpfeeds.producer.spi;
 
 public interface FeedItemIdGenerator {
 

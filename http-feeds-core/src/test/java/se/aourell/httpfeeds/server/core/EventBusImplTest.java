@@ -2,12 +2,12 @@ package se.aourell.httpfeeds.server.core;
 
 import org.junit.jupiter.api.Test;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
-import se.aourell.httpfeeds.publisher.api.DeletionEvent;
-import se.aourell.httpfeeds.publisher.core.EventBusImpl;
-import se.aourell.httpfeeds.publisher.core.FeedItem;
-import se.aourell.httpfeeds.publisher.spi.DomainEventSerializer;
-import se.aourell.httpfeeds.publisher.spi.FeedItemIdGenerator;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepository;
+import se.aourell.httpfeeds.producer.api.DeletionEvent;
+import se.aourell.httpfeeds.producer.core.EventBusImpl;
+import se.aourell.httpfeeds.producer.core.FeedItem;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 
 import java.time.Instant;
 

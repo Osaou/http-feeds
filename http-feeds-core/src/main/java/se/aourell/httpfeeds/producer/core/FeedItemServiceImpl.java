@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepository;
-import se.aourell.httpfeeds.publisher.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
+import se.aourell.httpfeeds.producer.spi.FeedItemService;
 
 public class FeedItemServiceImpl implements FeedItemService {
 

@@ -1,6 +1,6 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
-import se.aourell.httpfeeds.publisher.api.DeletionEvent;
+import se.aourell.httpfeeds.producer.api.DeletionEvent;
 
 import java.util.Arrays;
 

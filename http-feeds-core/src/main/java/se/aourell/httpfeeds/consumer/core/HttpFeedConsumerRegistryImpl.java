@@ -8,7 +8,7 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
-import se.aourell.httpfeeds.publisher.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.ArrayList;
@@ -87,6 +87,14 @@ public class HttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
           final var feedName = consumerDefinition.getFeedName();
           feedConsumerRepository.storeLastProcessedId(feedName, lastProcessedId);
         });
+
+      if (updatedFailureCount > 0 && failureCount <= 0) {
+        // going into failure mode
+        LOG.warn("Problem consuming events from feed {}", consumerDefinition.getUrl());
+      } else if (updatedFailureCount <= 0 && failureCount > 0) {
+        // exiting failure mode
+        LOG.warn("Successful resume from feed {}", consumerDefinition.getUrl());
+      }
 
       failureCount = updatedFailureCount;
     }

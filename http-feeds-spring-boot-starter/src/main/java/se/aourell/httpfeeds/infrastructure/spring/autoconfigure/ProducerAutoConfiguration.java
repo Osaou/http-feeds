@@ -12,17 +12,17 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import se.aourell.httpfeeds.infrastructure.publisher.DomainEventSerializerImpl;
-import se.aourell.httpfeeds.infrastructure.publisher.FeedItemIdGeneratorImpl;
-import se.aourell.httpfeeds.infrastructure.publisher.FeedItemRepositoryImpl;
-import se.aourell.httpfeeds.infrastructure.publisher.FeedItemRowMapper;
+import se.aourell.httpfeeds.infrastructure.producer.DomainEventSerializerImpl;
+import se.aourell.httpfeeds.infrastructure.producer.FeedItemIdGeneratorImpl;
+import se.aourell.httpfeeds.infrastructure.producer.FeedItemRepositoryImpl;
+import se.aourell.httpfeeds.infrastructure.producer.FeedItemRowMapper;
 import se.aourell.httpfeeds.infrastructure.spring.http.HttpFeedsServerController;
-import se.aourell.httpfeeds.publisher.core.CloudEventMapper;
-import se.aourell.httpfeeds.publisher.core.EventFeedRegistryImpl;
-import se.aourell.httpfeeds.publisher.spi.DomainEventSerializer;
-import se.aourell.httpfeeds.publisher.spi.FeedItemIdGenerator;
-import se.aourell.httpfeeds.publisher.spi.FeedItemRepositoryFactory;
-import se.aourell.httpfeeds.publisher.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.core.CloudEventMapper;
+import se.aourell.httpfeeds.producer.core.EventFeedRegistryImpl;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 
 @Configuration
 @AutoConfigureAfter(ConsumerAutoConfiguration.class)

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import se.aourell.httpfeeds.publisher.core.CloudEventMapper;
-import se.aourell.httpfeeds.publisher.core.EventFeedDefinition;
-import se.aourell.httpfeeds.publisher.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.core.CloudEventMapper;
+import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;

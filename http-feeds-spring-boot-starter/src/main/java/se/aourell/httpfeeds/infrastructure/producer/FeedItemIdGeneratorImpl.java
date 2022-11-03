@@ -1,7 +1,7 @@
-package se.aourell.httpfeeds.infrastructure.publisher;
+package se.aourell.httpfeeds.infrastructure.producer;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import se.aourell.httpfeeds.publisher.spi.FeedItemIdGenerator;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 
 public class FeedItemIdGeneratorImpl implements FeedItemIdGenerator {
 

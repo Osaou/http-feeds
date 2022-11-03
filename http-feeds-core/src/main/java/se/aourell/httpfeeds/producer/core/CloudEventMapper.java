@@ -1,7 +1,7 @@
-package se.aourell.httpfeeds.publisher.core;
+package se.aourell.httpfeeds.producer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
-import se.aourell.httpfeeds.publisher.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 
 import java.time.ZoneOffset;
 

@@ -7,7 +7,7 @@ import se.aourell.exampleserver.patientfeed.AssessmentStarted;
 import se.aourell.exampleserver.patientfeed.PatientAdded;
 import se.aourell.exampleserver.patientfeed.PatientDeleted;
 import se.aourell.exampleserver.patientfeed.PatientEvent;
-import se.aourell.httpfeeds.publisher.spi.EventBus;
+import se.aourell.httpfeeds.producer.spi.EventBus;
 
 import java.time.Instant;
 import java.util.Random;

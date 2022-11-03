@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.publisher.api;
+package se.aourell.httpfeeds.producer.api;
 
 import org.atteo.classindex.IndexAnnotated;
 
