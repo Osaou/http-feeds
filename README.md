@@ -16,7 +16,7 @@ Go to [start.spring.io](https://start.spring.io/#!type=maven-project&language=ja
 
 for testing, you might also want to add
 
-- H2 Database
+- H2 Database (or equivalent)
 
 Then add this library to your `pom.xml`:
 
@@ -24,7 +24,7 @@ Then add this library to your `pom.xml`:
 <dependency>
   <groupId>se.aourell.httpfeeds</groupId>
   <artifactId>http-feeds-spring-boot-starter</artifactId>
-  <version>0.0.1</version>
+  <version>0.4.1</version>
 </dependency>
 ```
 
@@ -42,7 +42,7 @@ Not a problem. You can simply use the core library, which does not depend on Spr
 Define your HTTP Feed using standard Java class hierarchy, for example like the following [ADT](https://en.wikipedia.org/wiki/Algebraic_data_type):
 
 ```java
-@HttpFeed(path = "/feed/patient")
+@EventFeed("patient")
 public sealed interface PatientEvent
   permits AssessmentEnded, AssessmentStarted, PatientAdded, PatientDeleted {
 
@@ -62,9 +62,9 @@ public record PatientDeleted(String id) implements PatientEvent { }
 Next, make sure to have a valid schema configured for your database (use [Flyway](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-use-a-higher-level-database-migration-tool) or a [schema.sql](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-initialize-a-database-using-spring-jdbc) file):
 
 ```sql
-drop table httpfeeds if exists;
+drop table eventfeeds if exists;
 
-create table httpfeeds
+create table eventfeeds
 (
   id       varchar(256) primary key,
   type     varchar(256) not null,
@@ -75,7 +75,7 @@ create table httpfeeds
   data     clob
 );
 
-create index httpfeeds_idx_id_source on httpfeeds
+create index eventfeeds_idx_id_source on eventfeeds
 (
   id,
   source
@@ -85,9 +85,14 @@ create index httpfeeds_idx_id_source on httpfeeds
 Also make sure the server portion of httpfeeds is enabled, and e.g. that your database is running, in your `application.properties`:
 
 ```properties
-httpfeeds.server.enabled=true
+eventfeeds.producer.enabled=true
+eventfeeds.producer.publish.patient=true
+
 spring.datasource.url=jdbc:h2:mem:testdb
 ```
+
+`eventfeeds.producer.publish.patient` tells the framework to indeed publish the feed named `patient` over HTTP.
+If you _only_ need in-process consuming support, you can skip this config for any feeds you define. See the section named "Consuming events: in-process" below for more info.
 
 
 ## Publishing events
@@ -119,7 +124,7 @@ Content-Type: application/cloudevents-batch+json
     "specversion": "1.0",
     "id": "1eccf0ce-699e-6e99-b86d-532a9b59bc9c",
     "type": "PatientAdded",
-    "source": "/feed/patient/",
+    "source": "patient",
     "time": "2022-05-08T20:24:45.695+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
     "datacontenttype": "application/json",
@@ -133,7 +138,7 @@ Content-Type: application/cloudevents-batch+json
     "specversion": "1.0",
     "id": "1eccf0ce-718e-629b-b86d-2b881a64c97e",
     "type": "PatientDeleted",
-    "source": "/feed/patient/",
+    "source": "patient",
     "time": "2022-05-08T20:24:46.514+00:00",
     "subject": "1eccf0ce-6161-6897-b86d-df21df0bb0e2",
     "method": "delete"
@@ -150,7 +155,7 @@ Simply define a consumer like so:
 
 ```java
 @Service
-@HttpFeedConsumer(name = "patient")
+@EventFeedConsumer("patient")
 public class PatientFeedConsumer {
 
   @EventHandler
@@ -185,11 +190,22 @@ etc
 Finally, make sure the correct settings are applied in `application.properties`:
 
 ```properties
-httpfeeds.client.enabled=true
-httpfeeds.client.urls.patient=http://localhost:8080/feed/patient
+eventfeeds.consumer.enabled=true
+eventfeeds.consumer.sources.patient=http://localhost:8080
 ```
 
-`httpfeeds.client.urls` is a map where the consumer names are mapped to urls. In this case, we say that events for the consumer named `patient` can be found at url `http://localhost:8080/feed/patient`.
+`eventfeeds.consumer.sources` is a map where the consumer names are mapped to base urls. In this case, we say that events for the consumer named `patient` can be found at url `http://localhost:8080/feed/patient`.
+
+
+## Consuming events: in-process
+
+There is optimized support for when we want to process events from the same JVM process as where we publish them.
+This can be helpful in monolithic architectures, for example.
+
+The Spring implementation ensures events are persisted before they are processed, and additionally no communication is sent over HTTP.
+
+You don't need any additional configuration to benefit from this optimization - the same API as described above is used.
+The framework will detect that we have any `EventFeed` defined in the same class path loader (with matching feed name), and then use this implementation automatically for that consumer.
 
 
 ## Acknowledgements
