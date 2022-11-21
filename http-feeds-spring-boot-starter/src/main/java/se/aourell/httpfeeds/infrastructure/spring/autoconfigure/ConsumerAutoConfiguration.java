@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +24,6 @@ import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.infrastructure.consumer.CloudEventArrayDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.DomainEventDeserializerImpl;
-import se.aourell.httpfeeds.infrastructure.consumer.FeedConsumerRepositoryImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.HttpFeedsClientImpl;
 
 @Configuration
@@ -36,8 +33,8 @@ import se.aourell.httpfeeds.infrastructure.consumer.HttpFeedsClientImpl;
 public class ConsumerAutoConfiguration {
 
   @Bean
-  public static BeanPostProcessor consumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
-    return new ConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
+  public static BeanPostProcessor consumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    return new ConsumerEventFeedConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
   }
 
   @Bean
@@ -89,17 +86,6 @@ public class ConsumerAutoConfiguration {
     @ConditionalOnMissingBean
     public HttpFeedConsumerRegistry httpFeedConsumerRegistry() {
       return new DisabledHttpFeedConsumerRegistryImpl();
-    }
-  }
-
-  @Configuration
-  @ConditionalOnClass(JdbcTemplate.class)
-  public static class JdbcAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public FeedConsumerRepositoryFactory feedConsumerRepositoryFactory(JdbcTemplate jdbcTemplate) {
-      return (persistenceName) -> new FeedConsumerRepositoryImpl(jdbcTemplate, persistenceName);
     }
   }
 

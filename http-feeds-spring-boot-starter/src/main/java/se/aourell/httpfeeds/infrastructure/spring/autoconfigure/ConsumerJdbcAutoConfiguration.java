@@ -8,23 +8,20 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepositoryFactory;
-import se.aourell.httpfeeds.infrastructure.consumer.jpa.EventFeedConsummationSpringRepository;
-import se.aourell.httpfeeds.infrastructure.consumer.jpa.FeedConsumerRepositoryJpaImpl;
-
-import javax.persistence.EntityManager;
+import se.aourell.httpfeeds.infrastructure.consumer.jdbc.FeedConsumerRepositoryJdbcImpl;
 
 @Configuration
-@ConditionalOnClass(EntityManager.class)
+@ConditionalOnClass(JdbcTemplate.class)
+@ConditionalOnMissingBean(FeedConsumerRepositoryFactory.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
-@AutoConfigureBefore({ TransactionAutoConfiguration.class, ConsumerJdbcAutoConfiguration.class })
-@Import(ConsumerJpaRepositoryAutoConfiguration.class)
-public class ConsumerJpaAutoConfiguration {
+@AutoConfigureBefore(TransactionAutoConfiguration.class)
+public class ConsumerJdbcAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public FeedConsumerRepositoryFactory feedConsumerRepositoryFactory(EventFeedConsummationSpringRepository eventFeedConsummationSpringRepository) {
-    return (persistenceName) -> new FeedConsumerRepositoryJpaImpl(eventFeedConsummationSpringRepository);
+  public FeedConsumerRepositoryFactory feedConsumerRepositoryFactory(JdbcTemplate jdbcTemplate) {
+    return (persistenceName) -> new FeedConsumerRepositoryJdbcImpl(jdbcTemplate, persistenceName);
   }
 }

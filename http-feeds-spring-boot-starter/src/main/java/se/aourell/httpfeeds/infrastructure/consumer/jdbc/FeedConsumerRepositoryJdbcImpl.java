@@ -5,7 +5,7 @@ import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 
 import java.util.Optional;
 
-public class FeedConsumerRepositoryImpl implements FeedConsumerRepository {
+public class FeedConsumerRepositoryJdbcImpl implements FeedConsumerRepository {
 
   public static final String DEFAULT_TABLE_NAME = "eventfeeds_consummation";
 
@@ -13,7 +13,7 @@ public class FeedConsumerRepositoryImpl implements FeedConsumerRepository {
   private final String retrieveSql;
   private final String storeSql;
 
-  public FeedConsumerRepositoryImpl(JdbcTemplate jdbcTemplate, String table) {
+  public FeedConsumerRepositoryJdbcImpl(JdbcTemplate jdbcTemplate, String table) {
     this.jdbcTemplate = jdbcTemplate;
 
     if (table == null || "".trim().equals(table)) {

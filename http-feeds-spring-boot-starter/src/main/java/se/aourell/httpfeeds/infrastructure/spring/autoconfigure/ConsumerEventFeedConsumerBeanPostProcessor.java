@@ -13,13 +13,13 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class ConsumerBeanPostProcessor implements BeanPostProcessor {
+public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
 
   private final ConsumerProperties consumerProperties;
   private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
   private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
 
-  public ConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+  public ConsumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
     this.consumerProperties = consumerProperties;
     this.httpFeedConsumerRegistry = httpFeedConsumerRegistry;
     this.localFeedConsumerRegistry = localFeedConsumerRegistry;
