@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.producer.core;
+package se.aourell.httpfeeds.infrastructure.producer;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -8,6 +8,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerProperties;
+import se.aourell.httpfeeds.producer.core.FeedItem;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.producer.spi.FeedItemService;
 
@@ -19,10 +21,10 @@ public class FeedItemServiceImpl implements FeedItemService {
   private final Duration pollInterval;
   private final int limit;
 
-  public FeedItemServiceImpl(FeedItemRepository feedItemRepository, Duration pollInterval, int limit) {
+  public FeedItemServiceImpl(FeedItemRepository feedItemRepository, ProducerProperties producerProperties) {
     this.feedItemRepository = feedItemRepository;
-    this.pollInterval = pollInterval;
-    this.limit = limit;
+    this.pollInterval = producerProperties.getPollInterval();
+    this.limit = producerProperties.getLimit();
   }
 
   @Override

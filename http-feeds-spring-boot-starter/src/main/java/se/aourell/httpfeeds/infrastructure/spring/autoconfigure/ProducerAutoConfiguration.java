@@ -2,27 +2,23 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.infrastructure.producer.DomainEventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.producer.FeedItemIdGeneratorImpl;
-import se.aourell.httpfeeds.infrastructure.producer.FeedItemRepositoryImpl;
-import se.aourell.httpfeeds.infrastructure.producer.FeedItemRowMapper;
 import se.aourell.httpfeeds.infrastructure.spring.http.HttpFeedsServerController;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.EventFeedRegistryImpl;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
-import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
-import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 
 @Configuration
 @AutoConfigureAfter(ConsumerAutoConfiguration.class)
@@ -30,8 +26,13 @@ import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 public class ProducerAutoConfiguration {
 
   @Bean
-  public static BeanFactoryPostProcessor producerBeanFactoryPostProcessor(ProducerProperties producerProperties) {
-    return new ProducerBeanFactoryPostProcessor(producerProperties);
+  public static BeanDefinitionRegistryPostProcessor producerBeanDefinitionRegistryPostProcessor() {
+    return new ProducerBeanDefinitionRegistryPostProcessor();
+  }
+
+  @Bean
+  public static BeanPostProcessor producerFeedItemServiceBeanPostProcessor(ProducerProperties producerProperties, EventFeedRegistry eventFeedRegistry) {
+    return new ProducerFeedItemServiceBeanPostProcessor(producerProperties, eventFeedRegistry);
   }
 
   @Bean
@@ -63,22 +64,5 @@ public class ProducerAutoConfiguration {
   @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
   public HttpFeedsServerController httpFeedsServerController(EventFeedRegistry feedRegistry, CloudEventMapper cloudEventMapper, @Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
     return new HttpFeedsServerController(feedRegistry, cloudEventMapper, cloudEventObjectMapper);
-  }
-
-  @Configuration
-  @ConditionalOnClass(JdbcTemplate.class)
-  public static class JdbcAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public FeedItemRepositoryFactory feedItemRepositoryFactory(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper) {
-      return (persistenceName, feedName) -> new FeedItemRepositoryImpl(jdbcTemplate, feedItemRowMapper, persistenceName, feedName);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public FeedItemRowMapper feedItemRowMapper() {
-      return new FeedItemRowMapper();
-    }
   }
 }

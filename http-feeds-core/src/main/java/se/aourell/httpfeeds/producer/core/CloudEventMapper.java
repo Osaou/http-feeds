@@ -18,7 +18,7 @@ public class CloudEventMapper {
       "1.0",
       feedItem.id(),
       feedItem.type(),
-      feedItem.source(),
+      feedItem.feedName(),
       feedItem.time().atOffset(ZoneOffset.UTC),
       feedItem.subject(),
       feedItem.method(),

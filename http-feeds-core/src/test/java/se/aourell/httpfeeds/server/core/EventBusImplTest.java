@@ -26,12 +26,12 @@ class EventBusImplTest {
   @Test
   void eventBusImpl_should_serialize_data_for_sealed_type() {
     // given
-    final var source = "source";
+    final var feedName = "feedName";
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
     final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(source, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
     final var deleteEvent = new OkFeedSealed_Rec(1);
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -42,19 +42,19 @@ class EventBusImplTest {
     eventBus.publish("subject", deleteEvent, time);
 
     // then
-    final var feedItem = new FeedItem("random id", OkFeedSealed_Rec.class.getSimpleName(), source, time, "subject", null, "serialized data");
+    final var feedItem = new FeedItem("random id", OkFeedSealed_Rec.class.getSimpleName(), feedName, time, "subject", null, "serialized data");
     verify(feedItemRepository).append(feedItem);
   }
 
   @Test
   void eventBusImpl_should_find_deletion_annotation_on_sealed_type() {
     // given
-    final var source = "source";
+    final var feedName = "feedName";
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
     final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(source, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
     final var deleteEvent = new OkFeedSealed_Delete("delete me");
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -65,7 +65,7 @@ class EventBusImplTest {
     eventBus.publish("subject", deleteEvent, time);
 
     // then
-    final var feedItem = new FeedItem("random id", OkFeedSealed_Delete.class.getSimpleName(), source, time, "subject", "delete", "serialized data");
+    final var feedItem = new FeedItem("random id", OkFeedSealed_Delete.class.getSimpleName(), feedName, time, "subject", "delete", "serialized data");
     verify(feedItemRepository).append(feedItem);
   }
 
@@ -80,12 +80,12 @@ class EventBusImplTest {
   @Test
   void eventBusImpl_should_serialize_data_for_classic_types() {
     // given
-    final var source = "source";
+    final var feedName = "feedName";
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
     final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(source, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
     final var deleteEvent = new OkFeed_Rec(1);
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -96,19 +96,19 @@ class EventBusImplTest {
     eventBus.publish("subject", deleteEvent, time);
 
     // then
-    final var feedItem = new FeedItem("random id", OkFeed_Rec.class.getSimpleName(), source, time, "subject", null, "serialized data");
+    final var feedItem = new FeedItem("random id", OkFeed_Rec.class.getSimpleName(), feedName, time, "subject", null, "serialized data");
     verify(feedItemRepository).append(feedItem);
   }
 
   @Test
   void eventBusImpl_should_find_deletion_annotation_on_classic_types() {
     // given
-    final var source = "source";
+    final var feedName = "feedName";
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
     final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(source, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
     final var deleteEvent = new OkFeed_Delete("delete me");
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -119,7 +119,7 @@ class EventBusImplTest {
     eventBus.publish("subject", deleteEvent, time);
 
     // then
-    final var feedItem = new FeedItem("random id", OkFeed_Delete.class.getSimpleName(), source, time, "subject", "delete", "serialized data");
+    final var feedItem = new FeedItem("random id", OkFeed_Delete.class.getSimpleName(), feedName, time, "subject", "delete", "serialized data");
     verify(feedItemRepository).append(feedItem);
   }
 }

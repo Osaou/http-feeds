@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure.producer;
+package se.aourell.httpfeeds.infrastructure.producer.jdbc;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.producer.core.FeedItem;
@@ -7,7 +7,7 @@ import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import java.sql.Timestamp;
 import java.util.List;
 
-public class FeedItemRepositoryImpl implements FeedItemRepository {
+public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
 
   private final JdbcTemplate jdbcTemplate;
   private final FeedItemRowMapper feedItemRowMapper;
@@ -19,18 +19,18 @@ public class FeedItemRepositoryImpl implements FeedItemRepository {
   private final String findByIdGreaterThanForSubjectSql;
   private final String appendSql;
 
-  public FeedItemRepositoryImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table, String source) {
+  public FeedItemRepositoryJdbcImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table, String feedName) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
     this.table = table;
 
-    this.findAllSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' order by id limit ?", table, source);
-    this.findAllForSubjectSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' and subject = ? order by id limit ?", table, source);
+    this.findAllSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' order by id limit ?", table, feedName);
+    this.findAllForSubjectSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and subject = ? order by id limit ?", table, feedName);
 
-    this.findByIdGreaterThanSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' and id > ? order by id limit ?", table, source);
-    this.findByIdGreaterThanForSubjectSql = String.format("select id, type, source, time, subject, method, data from %s where source = '%s' and subject = ? and id > ? order by id limit ?", table, source);
+    this.findByIdGreaterThanSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and id > ? order by id limit ?", table, feedName);
+    this.findByIdGreaterThanForSubjectSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and subject = ? and id > ? order by id limit ?", table, feedName);
 
-    this.appendSql = String.format("insert into %s (id, type, source, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, source);
+    this.appendSql = String.format("insert into %s (id, type, feedName, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, feedName);
   }
 
   @Override

@@ -7,6 +7,6 @@ public class FeedItemIdGeneratorImpl implements FeedItemIdGenerator {
 
   @Override
   public String generateId() {
-    return UuidCreator.getTimeOrderedWithRandom().toString();
+    return UuidCreator.getTimeOrderedEpoch().toString();
   }
 }

@@ -36,7 +36,7 @@ import se.aourell.httpfeeds.infrastructure.consumer.HttpFeedsClientImpl;
 public class ConsumerAutoConfiguration {
 
   @Bean
-  public static BeanPostProcessor consumerBeanFactoryPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+  public static BeanPostProcessor consumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
     return new ConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
   }
 

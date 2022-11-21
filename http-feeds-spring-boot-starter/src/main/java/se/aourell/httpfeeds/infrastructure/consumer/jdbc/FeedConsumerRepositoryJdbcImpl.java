@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure.consumer;
+package se.aourell.httpfeeds.infrastructure.consumer.jdbc;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
