@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfigu
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import se.aourell.httpfeeds.infrastructure.producer.jpa.FeedItemEntitySpringRepository;
+import se.aourell.httpfeeds.infrastructure.producer.jpa.FeedItemSpringRepository;
 import se.aourell.httpfeeds.infrastructure.producer.jpa.FeedItemRepositoryJpaImpl;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 
@@ -24,7 +24,7 @@ public class ProducerJpaAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public FeedItemRepositoryFactory feedItemRepositoryFactory(FeedItemEntitySpringRepository feedItemEntitySpringRepository) {
-    return (persistenceName, feedName) -> new FeedItemRepositoryJpaImpl(feedItemEntitySpringRepository, feedName);
+  public FeedItemRepositoryFactory feedItemRepositoryFactory(FeedItemSpringRepository feedItemSpringRepository) {
+    return (persistenceName, feedName) -> new FeedItemRepositoryJpaImpl(feedItemSpringRepository, feedName);
   }
 }

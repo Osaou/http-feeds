@@ -24,13 +24,13 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
     this.feedItemRowMapper = feedItemRowMapper;
     this.table = table;
 
-    this.findAllSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' order by id limit ?", table, feedName);
-    this.findAllForSubjectSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and subject = ? order by id limit ?", table, feedName);
+    this.findAllSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' order by id limit ?", table, feedName);
+    this.findAllForSubjectSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? order by id limit ?", table, feedName);
 
-    this.findByIdGreaterThanSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and id > ? order by id limit ?", table, feedName);
-    this.findByIdGreaterThanForSubjectSql = String.format("select id, type, feedName, time, subject, method, data from %s where feedName = '%s' and subject = ? and id > ? order by id limit ?", table, feedName);
+    this.findByIdGreaterThanSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and id > ? order by id limit ?", table, feedName);
+    this.findByIdGreaterThanForSubjectSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? and id > ? order by id limit ?", table, feedName);
 
-    this.appendSql = String.format("insert into %s (id, type, feedName, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, feedName);
+    this.appendSql = String.format("insert into %s (id, type, feed_name, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, feedName);
   }
 
   @Override
@@ -56,9 +56,5 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
   @Override
   public void append(FeedItem feedItem) {
     jdbcTemplate.update(appendSql, feedItem.id(), feedItem.type(), Timestamp.from(feedItem.time()), feedItem.subject(), feedItem.method(), feedItem.data());
-  }
-
-  public void deleteAll() {
-    jdbcTemplate.update(String.format("delete from %s", table));
   }
 }

@@ -20,8 +20,8 @@ public class FeedConsumerRepositoryJdbcImpl implements FeedConsumerRepository {
       table = DEFAULT_TABLE_NAME;
     }
 
-    this.retrieveSql = String.format("select lastProcessedId from %s where feedName = ?", table);
-    this.storeSql = String.format("update %s set lastProcessedId = ? where feedName = ?", table);
+    this.retrieveSql = String.format("select last_processed_id from %s where feed_name = ?", table);
+    this.storeSql = String.format("update %s set last_processed_id = ? where feed_name = ?", table);
   }
 
   @Override

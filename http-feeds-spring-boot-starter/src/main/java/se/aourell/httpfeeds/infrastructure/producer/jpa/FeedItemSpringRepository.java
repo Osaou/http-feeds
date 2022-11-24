@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FeedItemEntitySpringRepository extends PagingAndSortingRepository<FeedItemEntity, String> {
+public interface FeedItemSpringRepository extends PagingAndSortingRepository<FeedItemEntity, String> {
 
   List<FeedItemEntity> findAllByFeedName(String feedName, Pageable pageable);
 

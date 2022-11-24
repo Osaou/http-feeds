@@ -10,11 +10,11 @@ import java.util.List;
 
 public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
 
-  private final FeedItemEntitySpringRepository feedItemEntitySpringRepository;
+  private final FeedItemSpringRepository feedItemSpringRepository;
   private final String feedName;
 
-  public FeedItemRepositoryJpaImpl(FeedItemEntitySpringRepository feedItemEntitySpringRepository, String feedName) {
-    this.feedItemEntitySpringRepository = feedItemEntitySpringRepository;
+  public FeedItemRepositoryJpaImpl(FeedItemSpringRepository feedItemSpringRepository, String feedName) {
+    this.feedItemSpringRepository = feedItemSpringRepository;
     this.feedName = feedName;
   }
 
@@ -22,7 +22,7 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   public List<FeedItem> findAll(int limit) {
     final Sort sort = Sort.by(Sort.Direction.ASC, "id");
     final Pageable pageable = PageRequest.of(0, limit, sort);
-    return feedItemEntitySpringRepository.findAllByFeedName(feedName, pageable)
+    return feedItemSpringRepository.findAllByFeedName(feedName, pageable)
       .stream()
       .map(FeedItemRepositoryJpaImpl::mapFromEntityToFeedItem)
       .toList();
@@ -32,7 +32,7 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   public List<FeedItem> findByIdGreaterThan(String lastEventId, int limit) {
     final Sort sort = Sort.by(Sort.Direction.ASC, "id");
     final Pageable pageable = PageRequest.of(0, limit, sort);
-    return feedItemEntitySpringRepository.findAllByFeedNameAndIdGreaterThan(feedName, lastEventId, pageable)
+    return feedItemSpringRepository.findAllByFeedNameAndIdGreaterThan(feedName, lastEventId, pageable)
       .stream()
       .map(FeedItemRepositoryJpaImpl::mapFromEntityToFeedItem)
       .toList();
@@ -42,7 +42,7 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   public List<FeedItem> findAllForSubject(String subject, int limit) {
     final Sort sort = Sort.by(Sort.Direction.ASC, "id");
     final Pageable pageable = PageRequest.of(0, limit, sort);
-    return feedItemEntitySpringRepository.findAllByFeedNameAndSubject(feedName, subject, pageable)
+    return feedItemSpringRepository.findAllByFeedNameAndSubject(feedName, subject, pageable)
       .stream()
       .map(FeedItemRepositoryJpaImpl::mapFromEntityToFeedItem)
       .toList();
@@ -52,7 +52,7 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   public List<FeedItem> findByIdGreaterThanForSubject(String lastEventId, String subject, int limit) {
     final Sort sort = Sort.by(Sort.Direction.ASC, "id");
     final Pageable pageable = PageRequest.of(0, limit, sort);
-    return feedItemEntitySpringRepository.findAllByFeedNameAndIdGreaterThanAndSubject(feedName, lastEventId, subject, pageable)
+    return feedItemSpringRepository.findAllByFeedNameAndIdGreaterThanAndSubject(feedName, lastEventId, subject, pageable)
       .stream()
       .map(FeedItemRepositoryJpaImpl::mapFromEntityToFeedItem)
       .toList();
@@ -61,7 +61,7 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   @Override
   public void append(FeedItem feedItem) {
     final var entity = new FeedItemEntity(feedItem);
-    feedItemEntitySpringRepository.save(entity);
+    feedItemSpringRepository.save(entity);
   }
 
   private static FeedItem mapFromEntityToFeedItem(FeedItemEntity entity) {

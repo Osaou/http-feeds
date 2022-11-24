@@ -6,24 +6,24 @@ import java.util.Optional;
 
 public class FeedConsumerRepositoryJpaImpl implements FeedConsumerRepository {
 
-  private final EventFeedConsummationSpringRepository eventFeedConsummationSpringRepository;
+  private final FeedConsumerSpringRepository feedConsumerSpringRepository;
 
-  public FeedConsumerRepositoryJpaImpl(EventFeedConsummationSpringRepository eventFeedConsummationSpringRepository) {
-    this.eventFeedConsummationSpringRepository = eventFeedConsummationSpringRepository;
+  public FeedConsumerRepositoryJpaImpl(FeedConsumerSpringRepository feedConsumerSpringRepository) {
+    this.feedConsumerSpringRepository = feedConsumerSpringRepository;
   }
 
   @Override
   public Optional<String> retrieveLastProcessedId(String feedName) {
-    return eventFeedConsummationSpringRepository.findById(feedName)
-      .map(EventFeedConsummation::getLastProcessedId);
+    return feedConsumerSpringRepository.findById(feedName)
+      .map(FeedConsumerEntity::getLastProcessedId);
   }
 
   @Override
   public void storeLastProcessedId(String feedName, String id) {
-    final var eventFeedConsummation = eventFeedConsummationSpringRepository.findById(feedName)
-      .orElseGet(() -> new EventFeedConsummation(feedName));
+    final var eventFeedConsummation = feedConsumerSpringRepository.findById(feedName)
+      .orElseGet(() -> new FeedConsumerEntity(feedName));
 
     eventFeedConsummation.setLastProcessedId(id);
-    eventFeedConsummationSpringRepository.save(eventFeedConsummation);
+    feedConsumerSpringRepository.save(eventFeedConsummation);
   }
 }

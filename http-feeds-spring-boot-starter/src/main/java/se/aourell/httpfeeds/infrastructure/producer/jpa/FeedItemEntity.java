@@ -2,8 +2,10 @@ package se.aourell.httpfeeds.infrastructure.producer.jpa;
 
 import se.aourell.httpfeeds.producer.core.FeedItem;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import java.time.Instant;
 
@@ -12,12 +14,26 @@ import java.time.Instant;
 public class FeedItemEntity {
 
   @Id
+  @Column(name = "id")
   private String id;
+
+  @Column(name = "type", nullable = false)
   private String type;
+
+  @Column(name = "feed_name", nullable = false)
   private String feedName;
+
+  @Column(name = "time", nullable = false)
   private Instant time;
+
+  @Column(name = "subject", nullable = false)
   private String subject;
+
+  @Column(name = "method")
   private String method;
+
+  @Lob
+  @Column(name = "data")
   private String data;
 
   public FeedItemEntity() { }

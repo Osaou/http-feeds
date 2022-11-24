@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepositoryFactory;
-import se.aourell.httpfeeds.infrastructure.consumer.jpa.EventFeedConsummationSpringRepository;
+import se.aourell.httpfeeds.infrastructure.consumer.jpa.FeedConsumerSpringRepository;
 import se.aourell.httpfeeds.infrastructure.consumer.jpa.FeedConsumerRepositoryJpaImpl;
 
 import javax.persistence.EntityManager;
@@ -24,7 +24,7 @@ public class ConsumerJpaAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public FeedConsumerRepositoryFactory feedConsumerRepositoryFactory(EventFeedConsummationSpringRepository eventFeedConsummationSpringRepository) {
-    return (persistenceName) -> new FeedConsumerRepositoryJpaImpl(eventFeedConsummationSpringRepository);
+  public FeedConsumerRepositoryFactory feedConsumerRepositoryFactory(FeedConsumerSpringRepository feedConsumerSpringRepository) {
+    return (persistenceName) -> new FeedConsumerRepositoryJpaImpl(feedConsumerSpringRepository);
   }
 }
