@@ -1,12 +1,10 @@
 package se.aourell.httpfeeds.consumer.spi;
 
-import se.aourell.httpfeeds.consumer.core.processing.EventFeedConsumerProcessor;
-
-import java.time.Instant;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
 
 public interface LocalFeedConsumerRegistry {
 
-  EventFeedConsumerProcessor defineLocalConsumer(String feedName, Object bean);
+  FeedConsumerProcessor defineLocalConsumer(String feedConsumerName, Object bean, String feedName);
 
-  void processLocalEvent(String id, String subject, Object event, Instant time);
+  void batchProcessLocalFeedEvents();
 }

@@ -34,7 +34,7 @@ public class HttpFeedsServerController {
   ) throws JsonProcessingException {
     final var path = request.getServletPath();
 
-    final var feedItemService = feedRegistry.getPublishedHttpFeed(path)
+    final var feedItemService = feedRegistry.getPublishedHttpFeedByPath(path)
       .map(EventFeedDefinition::feedItemService)
       .orElseThrow(() -> new IllegalArgumentException(String.format("No published http-feed defined for feedPath \"%s\"", path)));
 

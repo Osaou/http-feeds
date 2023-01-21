@@ -30,8 +30,7 @@ class EventBusImplTest {
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
-    final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer);
     final var deleteEvent = new OkFeedSealed_Rec(1);
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -53,8 +52,7 @@ class EventBusImplTest {
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
-    final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeedSealed.class, feedItemRepository, feedItemIdGenerator, eventSerializer);
     final var deleteEvent = new OkFeedSealed_Delete("delete me");
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -84,8 +82,7 @@ class EventBusImplTest {
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
-    final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer);
     final var deleteEvent = new OkFeed_Rec(1);
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");
@@ -107,8 +104,7 @@ class EventBusImplTest {
     final var feedItemRepository = mock(FeedItemRepository.class);
     final var feedItemIdGenerator = mock(FeedItemIdGenerator.class);
     final var eventSerializer = mock(DomainEventSerializer.class);
-    final var localFeedConsumerRegistry = mock(LocalFeedConsumerRegistry.class);
-    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer, localFeedConsumerRegistry);
+    final var eventBus = new EventBusImpl(feedName, OkFeed.class, feedItemRepository, feedItemIdGenerator, eventSerializer);
     final var deleteEvent = new OkFeed_Delete("delete me");
 
     when(feedItemIdGenerator.generateId()).thenReturn("random id");

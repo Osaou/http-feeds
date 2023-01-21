@@ -79,7 +79,6 @@ public class ProducerBeanDefinitionRegistryPostProcessor implements BeanDefiniti
       eventBusBeanArguments.addIndexedArgumentValue(2, new RuntimeBeanReference(repositoryBeanName));
       eventBusBeanArguments.addIndexedArgumentValue(3, new RuntimeBeanReference(FeedItemIdGenerator.class));
       eventBusBeanArguments.addIndexedArgumentValue(4, new RuntimeBeanReference(DomainEventSerializer.class));
-      eventBusBeanArguments.addIndexedArgumentValue(5, new RuntimeBeanReference(LocalFeedConsumerRegistry.class));
       final var eventBusBeanDefinition = new RootBeanDefinition();
       eventBusBeanDefinition.setBeanClass(EventBusImpl.class);
       eventBusBeanDefinition.setTargetType(resolvableType);

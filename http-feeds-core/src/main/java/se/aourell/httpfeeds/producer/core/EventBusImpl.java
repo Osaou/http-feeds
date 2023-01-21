@@ -1,7 +1,6 @@
 package se.aourell.httpfeeds.producer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
-import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
@@ -19,14 +18,12 @@ public class EventBusImpl implements EventBus<Object> {
   private final FeedItemRepository feedItemRepository;
   private final FeedItemIdGenerator feedItemIdGenerator;
   private final DomainEventSerializer domainEventSerializer;
-  private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
 
-  public EventBusImpl(String feedName, Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+  public EventBusImpl(String feedName, Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
     this.feedName = feedName;
     this.feedItemRepository = feedItemRepository;
     this.feedItemIdGenerator = feedItemIdGenerator;
     this.domainEventSerializer = domainEventSerializer;
-    this.localFeedConsumerRegistry = localFeedConsumerRegistry;
 
     this.deletionEventTypes = eventBaseType.isSealed()
       ? Optional.of(Arrays.stream(eventBaseType.getPermittedSubclasses()).filter(EventUtil::isDeletionEvent).toList())
@@ -49,8 +46,5 @@ public class EventBusImpl implements EventBus<Object> {
     // an exception here means we should not go ahead with local processing
     final var feedItem = new FeedItem(id, type, feedName, time, subject, method, dataAsString);
     feedItemRepository.append(feedItem);
-
-    // after persisting the event, we immediately go ahead and let local handlers process it
-    localFeedConsumerRegistry.processLocalEvent(id, subject, event, time);
   }
 }

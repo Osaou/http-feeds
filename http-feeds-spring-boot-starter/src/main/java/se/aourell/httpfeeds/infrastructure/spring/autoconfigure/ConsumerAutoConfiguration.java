@@ -25,6 +25,8 @@ import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.infrastructure.consumer.CloudEventArrayDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.DomainEventDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.HttpFeedsClientImpl;
+import se.aourell.httpfeeds.producer.core.CloudEventMapper;
+import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 
 @Configuration
 @AutoConfigureAfter(AutoConfiguration.class)
@@ -39,8 +41,20 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public LocalFeedConsumerRegistry localFeedConsumerRegistry() {
-    return new LocalFeedConsumerRegistryImpl();
+  public LocalFeedConsumerRegistry localFeedConsumerRegistry(DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository, EventFeedRegistry eventFeedRegistry, CloudEventMapper cloudEventMapper) {
+    return new LocalFeedConsumerRegistryImpl(domainEventDeserializer, feedConsumerRepository, eventFeedRegistry, cloudEventMapper);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public DomainEventDeserializer domainEventDeserializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
+    return new DomainEventDeserializerImpl(domainEventObjectMapper);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public FeedConsumerRepository feedConsumerRepository(FeedConsumerRepositoryFactory feedConsumerRepositoryFactory, ConsumerProperties consumerProperties) {
+    return feedConsumerRepositoryFactory.apply(consumerProperties.getTableName());
   }
 
   @Configuration
@@ -55,26 +69,14 @@ public class ConsumerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DomainEventDeserializer eventDeserializer(@Qualifier("domainEventObjectMapper") ObjectMapper domainEventObjectMapper) {
-      return new DomainEventDeserializerImpl(domainEventObjectMapper);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     public HttpFeedsClient httpFeedsClient(CloudEventArrayDeserializer cloudEventArrayDeserializer) {
       return new HttpFeedsClientImpl(cloudEventArrayDeserializer);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public FeedConsumerRepository feedConsumerRepository(FeedConsumerRepositoryFactory feedConsumerRepositoryFactory, ConsumerProperties consumerProperties) {
-      return feedConsumerRepositoryFactory.apply(consumerProperties.getTableName());
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public HttpFeedConsumerRegistry httpFeedConsumerRegistry(HttpFeedsClient httpFeedsClient, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
-      return new HttpFeedConsumerRegistryImpl(httpFeedsClient, domainEventDeserializer, feedConsumerRepository);
+    public HttpFeedConsumerRegistry httpFeedConsumerRegistry(DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository, HttpFeedsClient httpFeedsClient) {
+      return new HttpFeedConsumerRegistryImpl(domainEventDeserializer, feedConsumerRepository, httpFeedsClient);
     }
   }
 
@@ -91,14 +93,14 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnProperty(prefix = "eventfeeds.consumer", name = "enabled", havingValue = "true")
-  public FeedConsumerJob feedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
-    return new FeedConsumerJob(httpFeedConsumerRegistry);
+  public HttpFeedConsumerJob httpFeedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
+    return new HttpFeedConsumerJob(httpFeedConsumerRegistry);
   }
 
-  static class FeedConsumerJob {
+  static class HttpFeedConsumerJob {
     private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
 
-    FeedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
+    HttpFeedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
       this.httpFeedConsumerRegistry = httpFeedConsumerRegistry;
     }
 
@@ -106,6 +108,25 @@ public class ConsumerAutoConfiguration {
     @Transactional
     public void consumeEvents() {
       httpFeedConsumerRegistry.batchPollAndProcessHttpFeedEvents();
+    }
+  }
+
+  @Bean
+  public LocalFeedConsumerJob localFeedConsumerJob(LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    return new LocalFeedConsumerJob(localFeedConsumerRegistry);
+  }
+
+  static class LocalFeedConsumerJob {
+    private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
+
+    LocalFeedConsumerJob(LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+      this.localFeedConsumerRegistry = localFeedConsumerRegistry;
+    }
+
+    @Scheduled(fixedDelay = 1)
+    @Transactional
+    public void consumeEvents() {
+      localFeedConsumerRegistry.batchProcessLocalFeedEvents();
     }
   }
 }

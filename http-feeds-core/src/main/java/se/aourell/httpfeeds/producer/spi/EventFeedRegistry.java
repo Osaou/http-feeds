@@ -6,7 +6,9 @@ import java.util.Optional;
 
 public interface EventFeedRegistry {
 
-  EventFeedDefinition defineFeed(String path, FeedItemService feedItemService, boolean publishHttpFeed);
+  EventFeedDefinition defineFeed(String name, FeedItemService feedItemService, boolean publishHttpFeed);
 
-  Optional<EventFeedDefinition> getPublishedHttpFeed(String path);
+  Optional<EventFeedDefinition> getLocalFeedByName(String name);
+
+  Optional<EventFeedDefinition> getPublishedHttpFeedByPath(String path);
 }

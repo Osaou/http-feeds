@@ -18,7 +18,7 @@
 	<description>Example app for HTTP-feeds</description>
 
   <properties>
-    <java.version>18</java.version>
+    <java.version>17</java.version>
   </properties>
 
 	<dependencies>

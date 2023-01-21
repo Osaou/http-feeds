@@ -1,12 +1,12 @@
 package se.aourell.httpfeeds.consumer.core;
 
-import se.aourell.httpfeeds.consumer.core.processing.EventFeedConsumerProcessor;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 
 public class DisabledHttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
 
   @Override
-  public EventFeedConsumerProcessor defineHttpFeedConsumer(String feedName, String baseUri, Object bean) {
+  public FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String baseUri) {
     return null;
   }
 

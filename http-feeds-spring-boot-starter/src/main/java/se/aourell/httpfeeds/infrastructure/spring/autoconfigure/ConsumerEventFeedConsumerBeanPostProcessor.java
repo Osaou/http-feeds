@@ -3,8 +3,10 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
+import se.aourell.httpfeeds.consumer.api.EventFeedConsumers;
 import se.aourell.httpfeeds.consumer.api.EventHandler;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 
@@ -13,7 +15,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
+public class  ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
 
   private final ConsumerProperties consumerProperties;
   private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
@@ -27,28 +29,36 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
 
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-    final var feedConsumerDeclaration = bean.getClass().getAnnotation(EventFeedConsumer.class);
+    final EventFeedConsumer feedConsumerDeclaration = bean.getClass().getAnnotation(EventFeedConsumer.class);
     if (feedConsumerDeclaration != null) {
-      String name = feedConsumerDeclaration.value();
-      if (name == null || "".equals(name.trim())) {
-        name = bean.getClass().getName();
-      }
-
-      final var feedName = name;
-      final var baseUri = consumerProperties.getSources().get(feedName);
-      final var httpFeedConsumer = Optional.ofNullable(baseUri).map(uri -> httpFeedConsumerRegistry.defineHttpFeedConsumer(feedName, uri, bean));
-      final var localFeedConsumer = localFeedConsumerRegistry.defineLocalConsumer(feedName, bean);
-
-      // wire up event handlers for this bean
-      findEventHandlersForConsumer(bean)
-        .forEach(eventHandler -> {
-          final var eventType = eventHandler.getParameterTypes()[0];
-          httpFeedConsumer.ifPresent(consumer -> consumer.registerEventHandler(eventType, eventHandler));
-          localFeedConsumer.registerEventHandler(eventType, eventHandler);
-        });
+      registerFeedConsumer(bean, feedConsumerDeclaration);
+    }
+    else {
+      final EventFeedConsumers multipleDeclaration = bean.getClass().getAnnotation(EventFeedConsumers.class);
+      Optional.ofNullable(multipleDeclaration)
+        .map(EventFeedConsumers::value)
+        .map(Stream::of)
+        .ifPresent(consumers -> consumers.forEach(consumer -> registerFeedConsumer(bean, consumer)));
     }
 
     return bean;
+  }
+
+  private void registerFeedConsumer(Object bean, EventFeedConsumer feedConsumerDeclaration) {
+    final String feedName = feedConsumerDeclaration.value();
+    final String feedConsumerName = bean.getClass().getName() + ":" + feedName;
+    final String baseUri = consumerProperties.getSources().get(feedName);
+
+    final FeedConsumerProcessor processor = Optional.ofNullable(baseUri)
+      .map(uri -> httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, bean, feedName, uri))
+      .orElseGet(() -> localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, bean, feedName));
+
+    // wire up event handlers for this bean
+    findEventHandlersForConsumer(bean)
+      .forEach(eventHandler -> {
+        final Class<?> eventType = eventHandler.getParameterTypes()[0];
+        processor.registerEventHandler(eventType, eventHandler);
+      });
   }
 
   private Stream<Method> findEventHandlersForConsumer(Object bean) {
@@ -57,7 +67,7 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
       .filter(method -> Arrays.stream(method.getDeclaredAnnotations()).anyMatch(a -> a.annotationType() == EventHandler.class))
       // only look at methods that take exactly 1 argument, or 2 if the second is of type metadata
       .filter(method -> {
-        final var parameters = method.getParameterTypes();
+        final Class<?>[] parameters = method.getParameterTypes();
         return parameters.length == 1 ||
           (parameters.length == 2 && parameters[1] == EventMetaData.class);
       });

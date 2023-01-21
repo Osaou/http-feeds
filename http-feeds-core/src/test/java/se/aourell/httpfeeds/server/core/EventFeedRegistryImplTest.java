@@ -61,7 +61,7 @@ class EventFeedRegistryImplTest {
     final var path = feed.value();
     final var expected = registry.defineFeed(path, serviceMock, true);
 
-    final var read = registry.getPublishedHttpFeed("/feed/test/");
+    final var read = registry.getPublishedHttpFeedByPath("/feed/test/");
     assertTrue(read.isPresent());
     Assertions.assertEquals(expected, read.get());
   }
@@ -72,7 +72,7 @@ class EventFeedRegistryImplTest {
     final var path = feed.value();
     final var expected = registry.defineFeed(path, serviceMock, true);
 
-    final var read = registry.getPublishedHttpFeed("/feed/test");
+    final var read = registry.getPublishedHttpFeedByPath("/feed/test");
     assertTrue(read.isPresent());
     Assertions.assertEquals(expected, read.get());
   }
@@ -87,7 +87,7 @@ class EventFeedRegistryImplTest {
     final var path2 = feed2.value();
     registry.defineFeed(path2, serviceMock, true);
 
-    final var read = registry.getPublishedHttpFeed("/feed/test/");
+    final var read = registry.getPublishedHttpFeedByPath("/feed/test/");
     assertTrue(read.isPresent());
     Assertions.assertEquals(expected, read.get());
   }
@@ -98,7 +98,7 @@ class EventFeedRegistryImplTest {
     final var path = feed.value();
     registry.defineFeed(path, serviceMock, true);
 
-    final var read = registry.getPublishedHttpFeed("/feed/missing/");
+    final var read = registry.getPublishedHttpFeedByPath("/feed/missing/");
     assertFalse(read.isPresent());
   }
 
@@ -108,7 +108,7 @@ class EventFeedRegistryImplTest {
     final var path = feed.value();
     registry.defineFeed(path, serviceMock, false);
 
-    final var read = registry.getPublishedHttpFeed(path);
+    final var read = registry.getPublishedHttpFeedByPath(path);
     assertFalse(read.isPresent());
   }
 }
