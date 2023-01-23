@@ -12,14 +12,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
+import se.aourell.httpfeeds.consumer.api.FeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.core.DisabledHttpFeedConsumerRegistryImpl;
 import se.aourell.httpfeeds.consumer.core.HttpFeedConsumerRegistryImpl;
 import se.aourell.httpfeeds.consumer.core.LocalFeedConsumerRegistryImpl;
 import se.aourell.httpfeeds.consumer.spi.CloudEventArrayDeserializer;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
-import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepositoryFactory;
+import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.infrastructure.consumer.CloudEventArrayDeserializerImpl;
@@ -34,9 +35,23 @@ import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 @EnableScheduling
 public class ConsumerAutoConfiguration {
 
+  private static ConsumerEventFeedConsumerBeanPostProcessor consumerEventFeedConsumerBeanPostProcessor;
+
+  private static ConsumerEventFeedConsumerBeanPostProcessor consumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    if (consumerEventFeedConsumerBeanPostProcessor == null) {
+      consumerEventFeedConsumerBeanPostProcessor = new ConsumerEventFeedConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
+    }
+    return consumerEventFeedConsumerBeanPostProcessor;
+  }
+
   @Bean
-  public static BeanPostProcessor consumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
-    return new ConsumerEventFeedConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
+  public static BeanPostProcessor beanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    return consumerEventFeedConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
+  }
+
+  @Bean
+  public FeedConsumerRegistry feedConsumerRegistry(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+    return consumerEventFeedConsumerBeanPostProcessor(consumerProperties, httpFeedConsumerRegistry, localFeedConsumerRegistry);
   }
 
   @Bean

@@ -3,6 +3,7 @@ package se.aourell.httpfeeds.consumer.core.processing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
+import se.aourell.httpfeeds.consumer.api.FeedConsumer;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
@@ -14,9 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class FeedConsumerProcessor {
+public class FeedConsumerProcessor implements FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessor.class);
 
@@ -51,10 +54,6 @@ public class FeedConsumerProcessor {
     return feedName;
   }
 
-  public Object getBean() {
-    return bean;
-  }
-
   public String getUrl() {
     return url;
   }
@@ -63,10 +62,24 @@ public class FeedConsumerProcessor {
     return Optional.ofNullable(lastProcessedId);
   }
 
+  @Override
+  public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, Consumer<EventType> handler) {
+    final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEvent<>(eventType, handler);
+    eventHandlers.put(eventType.getSimpleName(), callable);
+    return this;
+  }
+
+  @Override
+  public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
+    final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEventAndMeta<>(eventType, handler);
+    eventHandlers.put(eventType.getSimpleName(), callable);
+    return this;
+  }
+
   public void registerEventHandler(Class<?> eventType, Method handler) {
-    final var callable = handler.getParameterTypes().length == 2
-      ? new EventHandlerDefinition.ForEventAndMeta(handler, eventType)
-      : new EventHandlerDefinition.ForEvent(handler, eventType);
+    final EventHandlerDefinition callable = handler.getParameterTypes().length == 2
+      ? new EventHandlerDefinition.AnnotatedForEventAndMeta(eventType, bean, handler)
+      : new EventHandlerDefinition.AnnotatedForEvent(eventType, bean, handler);
 
     eventHandlers.put(eventType.getSimpleName(), callable);
   }
@@ -109,7 +122,7 @@ public class FeedConsumerProcessor {
         deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
       }
 
-      eventHandler.get().invoke(getBean(), deserializedData, () -> createEventMetaData(event));
+      eventHandler.get().invoke(deserializedData, () -> createEventMetaData(event));
     }
 
     lastProcessedId = Objects.requireNonNull(event.id());

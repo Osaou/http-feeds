@@ -10,24 +10,24 @@ import javax.persistence.Table;
 public class FeedConsumerEntity {
 
   @Id
-  @Column(name = "feed_name")
-  private String feedName;
+  @Column(name = "feed_consumer_name")
+  private String feedConsumerName;
 
   @Column(name = "last_processed_id")
   private String lastProcessedId;
 
   public FeedConsumerEntity() { }
 
-  public FeedConsumerEntity(String feedName) {
-    this.feedName = feedName;
+  public FeedConsumerEntity(String feedConsumerName) {
+    this.feedConsumerName = feedConsumerName;
   }
 
-  public String getFeedName() {
-    return feedName;
+  public String getFeedConsumerName() {
+    return feedConsumerName;
   }
 
-  public void setFeedName(String feedName) {
-    this.feedName = feedName;
+  public void setFeedConsumerName(String feedConsumerName) {
+    this.feedConsumerName = feedConsumerName;
   }
 
   public String getLastProcessedId() {

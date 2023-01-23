@@ -6,7 +6,7 @@ import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 public class DisabledHttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
 
   @Override
-  public FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String baseUri) {
+  public FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String feedUrl) {
     return null;
   }
 

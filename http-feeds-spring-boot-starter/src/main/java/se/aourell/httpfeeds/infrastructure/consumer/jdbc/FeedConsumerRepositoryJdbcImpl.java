@@ -25,14 +25,14 @@ public class FeedConsumerRepositoryJdbcImpl implements FeedConsumerRepository {
   }
 
   @Override
-  public Optional<String> retrieveLastProcessedId(String feedName) {
-    return jdbcTemplate.query(retrieveSql, (rs, rowNum) -> rs.getString(1), feedName)
+  public Optional<String> retrieveLastProcessedId(String feedConsumerName) {
+    return jdbcTemplate.query(retrieveSql, (rs, rowNum) -> rs.getString(1), feedConsumerName)
       .stream()
       .findFirst();
   }
 
   @Override
-  public void storeLastProcessedId(String feedName, String id) {
-    jdbcTemplate.update(storeSql, id, feedName);
+  public void storeLastProcessedId(String feedConsumerName, String id) {
+    jdbcTemplate.update(storeSql, id, feedConsumerName);
   }
 }

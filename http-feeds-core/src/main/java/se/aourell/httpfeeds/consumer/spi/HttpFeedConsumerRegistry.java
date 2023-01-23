@@ -4,7 +4,7 @@ import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
 
 public interface HttpFeedConsumerRegistry {
 
-  FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String baseUri);
+  FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String feedUrl);
 
   void batchPollAndProcessHttpFeedEvents();
 }

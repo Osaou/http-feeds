@@ -3,53 +3,94 @@ package se.aourell.httpfeeds.consumer.core.processing;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 
 import java.lang.reflect.Method;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-abstract sealed class EventHandlerDefinition
-  permits EventHandlerDefinition.ForEvent, EventHandlerDefinition.ForEventAndMeta {
+abstract class EventHandlerDefinition {
 
-  private final Method method;
   private final Class<?> eventType;
 
-  protected EventHandlerDefinition(Method method, Class<?> eventType) {
-    this.method = method;
+  protected EventHandlerDefinition(Class<?> eventType) {
     this.eventType = eventType;
-  }
-
-  protected Method method() {
-    return method;
   }
 
   public Class<?> eventType() {
     return eventType;
   }
 
-  abstract void invoke(Object bean, Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception;
+  abstract void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception;
 
 
 
-  static final class ForEvent extends EventHandlerDefinition {
-    ForEvent(Method method, Class<?> eventType) {
-      super(method, eventType);
+  static abstract class Annotated extends EventHandlerDefinition {
+    protected final Object bean;
+    protected final Method method;
+
+    protected Annotated(Class<?> eventType, Object bean, Method method) {
+      super(eventType);
+      this.bean = bean;
+      this.method = method;
+    }
+  }
+
+  static class AnnotatedForEvent extends Annotated {
+    AnnotatedForEvent(Class<?> eventType, Object bean, Method method) {
+      super(eventType, bean, method);
     }
 
     @Override
-    void invoke(Object bean, Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
-      method().invoke(bean, deserializedData);
+    void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
+      method.invoke(bean, deserializedData);
+    }
+  }
+
+  static class AnnotatedForEventAndMeta extends Annotated {
+    AnnotatedForEventAndMeta(Class<?> eventType, Object bean, Method method) {
+      super(eventType, bean, method);
+    }
+
+    @Override
+    void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
+      final var meta = metaDataSupplier.get();
+      method.invoke(bean, deserializedData, meta);
     }
   }
 
 
 
-  static final class ForEventAndMeta extends EventHandlerDefinition {
-    ForEventAndMeta(Method method, Class<?> eventType) {
-      super(method, eventType);
+  static abstract class Registered extends EventHandlerDefinition {
+    protected Registered(Class<?> eventType) {
+      super(eventType);
+    }
+  }
+
+  static class RegisteredForEvent<EventType> extends Registered {
+    protected Consumer<EventType> handler;
+
+    RegisteredForEvent(Class<EventType> eventType, Consumer<EventType> handler) {
+      super(eventType);
+      this.handler = handler;
     }
 
     @Override
-    void invoke(Object bean, Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
+    void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws ClassCastException {
+      handler.accept((EventType) deserializedData);
+    }
+  }
+
+  static class RegisteredForEventAndMeta<EventType> extends Registered {
+    protected BiConsumer<EventType, EventMetaData> handler;
+
+    RegisteredForEventAndMeta(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
+      super(eventType);
+      this.handler = handler;
+    }
+
+    @Override
+    void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws ClassCastException {
       final var meta = metaDataSupplier.get();
-      method().invoke(bean, deserializedData, meta);
+      handler.accept((EventType) deserializedData, meta);
     }
   }
 }

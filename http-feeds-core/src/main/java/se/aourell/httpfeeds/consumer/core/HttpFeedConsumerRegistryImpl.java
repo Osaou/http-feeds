@@ -19,8 +19,7 @@ public class HttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
   }
 
   @Override
-  public FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String baseUri) {
-    final var feedUrl = EventFeedDefinition.feedUrlFromName(baseUri, feedName);
+  public FeedConsumerProcessor defineHttpFeedConsumer(String feedConsumerName, Object bean, String feedName, String feedUrl) {
     return feedConsumerProcessorGroup.defineFeedConsumer(feedConsumerName, bean, feedName, feedUrl);
   }
 

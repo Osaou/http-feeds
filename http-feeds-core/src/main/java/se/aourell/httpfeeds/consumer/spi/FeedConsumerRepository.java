@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface FeedConsumerRepository {
 
-  Optional<String> retrieveLastProcessedId(String feedName);
+  Optional<String> retrieveLastProcessedId(String feedConsumerName);
 
-  void storeLastProcessedId(String feedName, String id);
+  void storeLastProcessedId(String feedConsumerName, String id);
 }

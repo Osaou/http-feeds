@@ -13,15 +13,15 @@ public class FeedConsumerRepositoryJpaImpl implements FeedConsumerRepository {
   }
 
   @Override
-  public Optional<String> retrieveLastProcessedId(String feedName) {
-    return feedConsumerSpringRepository.findById(feedName)
+  public Optional<String> retrieveLastProcessedId(String feedConsumerName) {
+    return feedConsumerSpringRepository.findById(feedConsumerName)
       .map(FeedConsumerEntity::getLastProcessedId);
   }
 
   @Override
-  public void storeLastProcessedId(String feedName, String id) {
-    final var eventFeedConsummation = feedConsumerSpringRepository.findById(feedName)
-      .orElseGet(() -> new FeedConsumerEntity(feedName));
+  public void storeLastProcessedId(String feedConsumerName, String id) {
+    final var eventFeedConsummation = feedConsumerSpringRepository.findById(feedConsumerName)
+      .orElseGet(() -> new FeedConsumerEntity(feedConsumerName));
 
     eventFeedConsummation.setLastProcessedId(id);
     feedConsumerSpringRepository.save(eventFeedConsummation);
