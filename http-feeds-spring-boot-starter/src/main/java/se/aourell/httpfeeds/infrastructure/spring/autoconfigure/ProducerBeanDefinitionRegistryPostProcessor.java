@@ -11,7 +11,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
-import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.infrastructure.producer.FeedItemServiceImpl;
 import se.aourell.httpfeeds.producer.api.EventFeed;
 import se.aourell.httpfeeds.producer.core.EventBusImpl;

@@ -64,8 +64,7 @@ public class  ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProc
     final EventFeedConsumer feedConsumerDeclaration = bean.getClass().getAnnotation(EventFeedConsumer.class);
     if (feedConsumerDeclaration != null) {
       registerAnnotatedFeedConsumer(bean, feedConsumerDeclaration);
-    }
-    else {
+    } else {
       final EventFeedConsumers multipleDeclaration = bean.getClass().getAnnotation(EventFeedConsumers.class);
       Optional.ofNullable(multipleDeclaration)
         .map(EventFeedConsumers::value)

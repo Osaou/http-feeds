@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
-import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.ArrayList;

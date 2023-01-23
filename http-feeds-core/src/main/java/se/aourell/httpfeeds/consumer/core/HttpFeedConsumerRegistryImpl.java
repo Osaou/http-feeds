@@ -6,7 +6,6 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
-import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
 
 public class HttpFeedConsumerRegistryImpl implements HttpFeedConsumerRegistry {
 

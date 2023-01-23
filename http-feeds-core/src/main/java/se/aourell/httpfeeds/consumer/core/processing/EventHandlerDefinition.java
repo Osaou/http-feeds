@@ -23,14 +23,22 @@ abstract class EventHandlerDefinition {
 
 
 
-  static abstract class Annotated extends EventHandlerDefinition {
-    protected final Object bean;
-    protected final Method method;
+  abstract static class Annotated extends EventHandlerDefinition {
+    private final Object bean;
+    private final Method method;
 
     protected Annotated(Class<?> eventType, Object bean, Method method) {
       super(eventType);
       this.bean = bean;
       this.method = method;
+    }
+
+    protected Object bean() {
+      return bean;
+    }
+
+    protected Method method() {
+      return method;
     }
   }
 
@@ -41,7 +49,7 @@ abstract class EventHandlerDefinition {
 
     @Override
     void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
-      method.invoke(bean, deserializedData);
+      method().invoke(bean(), deserializedData);
     }
   }
 
@@ -53,20 +61,20 @@ abstract class EventHandlerDefinition {
     @Override
     void invoke(Object deserializedData, Supplier<EventMetaData> metaDataSupplier) throws Exception {
       final var meta = metaDataSupplier.get();
-      method.invoke(bean, deserializedData, meta);
+      method().invoke(bean(), deserializedData, meta);
     }
   }
 
 
 
-  static abstract class Registered extends EventHandlerDefinition {
+  abstract static class Registered extends EventHandlerDefinition {
     protected Registered(Class<?> eventType) {
       super(eventType);
     }
   }
 
   static class RegisteredForEvent<EventType> extends Registered {
-    protected Consumer<EventType> handler;
+    private final Consumer<EventType> handler;
 
     RegisteredForEvent(Class<EventType> eventType, Consumer<EventType> handler) {
       super(eventType);
@@ -80,7 +88,7 @@ abstract class EventHandlerDefinition {
   }
 
   static class RegisteredForEventAndMeta<EventType> extends Registered {
-    protected BiConsumer<EventType, EventMetaData> handler;
+    private final BiConsumer<EventType, EventMetaData> handler;
 
     RegisteredForEventAndMeta(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
       super(eventType);
