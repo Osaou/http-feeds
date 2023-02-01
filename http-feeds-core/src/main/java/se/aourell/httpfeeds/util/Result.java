@@ -1,5 +1,6 @@
 package se.aourell.httpfeeds.util;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -21,80 +22,27 @@ public abstract class Result<V> {
     return new Failure<>(exception);
   }
 
+  public abstract boolean isSuccess();
+  public abstract boolean isFailure();
+
   public abstract V orElseGet(V defaultValue);
   public abstract V orElseGet(Supplier<V> defaultValue);
+  public abstract V orElseThrow();
+  public abstract V orElseThrow(String message);
+  public abstract V orElseThrow(Supplier<String> messageSupplier);
+  public abstract V orElseThrow(Function<RuntimeException, ? extends RuntimeException> exceptionSupplier);
+  public abstract V orElseThrow(Class<? extends RuntimeException> clazz);
+  public abstract Result<V> filter(Function<V, Boolean> f);
   public abstract <U> Result<U> map(Function<V, U> f);
   public abstract <U> Result<U> flatMap(Function<V, Result<U>> f);
+  public abstract <F extends Exception> Result<V> mapFailure(Function<Exception, F> exceptionTransformer);
+  public abstract <F extends Exception> Result<V> recoverFrom(Class<F> failureType, Supplier<V> recoveryValue);
+  public abstract Result<V> peek(Consumer<V> f);
+  public abstract Result<V> peekFailure(Consumer<Exception> f);
+  public abstract Result<Void> ifSuccess(Consumer<V> f);
+  public abstract Result<Void> ifFailure(Consumer<Exception> f);
 
   public Result<V> orElse(Supplier<Result<V>> defaultValue) {
     return map(x -> this).orElseGet(defaultValue);
-  }
-
-
-
-  private static final class Success<V> extends Result<V> {
-    private final V value;
-
-    private Success(V value) {
-      this.value = value;
-    }
-
-    public V orElseGet(V defaultValue) {
-      return value;
-    }
-
-    public V orElseGet(Supplier<V> defaultValue) {
-      return value;
-    }
-
-    public <U> Result<U> map(Function<V, U> f) {
-      try {
-        return success(f.apply(value));
-      } catch (Exception e) {
-        return failure(e);
-      }
-    }
-
-    public <U> Result<U> flatMap(Function<V, Result<U>> f) {
-      try {
-        return f.apply(value);
-      } catch (Exception e) {
-        return failure(e);
-      }
-    }
-  }
-
-
-
-  private static final class Failure<V> extends Result<V> {
-    private final RuntimeException exception;
-
-    private Failure(String message) {
-      this.exception = new IllegalStateException(message);
-    }
-
-    private Failure(Exception exception) {
-      this.exception = new IllegalStateException(exception);
-    }
-
-    private Failure(RuntimeException exception) {
-      this.exception = exception;
-    }
-
-    public V orElseGet(V defaultValue) {
-      return defaultValue;
-    }
-
-    public V orElseGet(Supplier<V> defaultValue) {
-      return defaultValue.get();
-    }
-
-    public <U> Result<U> map(Function<V, U> f) {
-      return failure(exception);
-    }
-
-    public <U> Result<U> flatMap(Function<V, Result<U>> f) {
-      return failure(exception);
-    }
   }
 }
