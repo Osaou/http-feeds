@@ -15,7 +15,10 @@ public record EventFeedDefinition(String name, String feedPath, FeedItemService 
   }
 
   public static String feedUrlFromName(String baseUri, String name) {
-    return baseUri + feedPathFromName(name);
+    final String feedPath = baseUri.endsWith("/")
+      ? feedPathFromName(name).substring(1)
+      : feedPathFromName(name);
+    return baseUri + feedPath;
   }
 
   public static String feedPathFromName(String name) {

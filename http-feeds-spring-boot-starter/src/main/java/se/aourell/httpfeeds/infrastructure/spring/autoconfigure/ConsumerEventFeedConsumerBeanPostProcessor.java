@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class  ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor, FeedConsumerRegistry {
+public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor, FeedConsumerRegistry {
 
   private final ConsumerProperties consumerProperties;
   private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
