@@ -32,7 +32,8 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <mvn-checkstyle-version>3.1.2</mvn-checkstyle-version>
+    <mvn-versions-plugin.version>2.14.2</mvn-versions-plugin.version>
+    <mvn-checkstyle-plugin.version>3.1.2</mvn-checkstyle-plugin.version>
     <checkstyle.version>10.1</checkstyle.version>
 
     <org.atteo.classindex.version>3.11</org.atteo.classindex.version>
@@ -82,9 +83,15 @@
 
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>${mvn-versions-plugin.version}</version>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${mvn-checkstyle-version}</version>
+        <version>${mvn-checkstyle-plugin.version}</version>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
