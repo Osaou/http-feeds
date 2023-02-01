@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>se.aourell.httpfeeds</groupId>
 		<artifactId>bom</artifactId>
-    <version>0.6.1</version>
+    <version>0.6.2</version>
     <relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>http-feeds-core</artifactId>
-  <version>0.6.1</version>
+  <version>0.6.2</version>
 
 	<name>http-feeds-core</name>
 	<description>Core HTTP-feeds core functionality</description>

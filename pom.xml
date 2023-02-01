@@ -12,7 +12,7 @@
 
 	<groupId>se.aourell.httpfeeds</groupId>
 	<artifactId>bom</artifactId>
-  <version>0.6.1</version>
+  <version>0.6.2</version>
   <packaging>pom</packaging>
 
 	<name>bom</name>
@@ -26,7 +26,6 @@
 	</modules>
 
   <properties>
-    <se.aourell.httpfeeds.version>0.6.1</se.aourell.httpfeeds.version>
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -45,22 +44,22 @@
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-core</artifactId>
-        <version>${se.aourell.httpfeeds.version}</version>
+        <version>0.6.2</version>
       </dependency>
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-client</artifactId>
-        <version>${se.aourell.httpfeeds.version}</version>
+        <version>0.6.2</version>
       </dependency>
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-server</artifactId>
-        <version>${se.aourell.httpfeeds.version}</version>
+        <version>0.6.2</version>
       </dependency>
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-spring-boot-starter</artifactId>
-        <version>${se.aourell.httpfeeds.version}</version>
+        <version>0.6.2</version>
       </dependency>
 
       <dependency>
