@@ -43,7 +43,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
     try {
       uri = new URI(urlWithLastProcessedId);
     } catch (URISyntaxException e) {
-      LOG.error("Exception when parsing httpfeed url", e);
+      LOG.error("Exception when parsing httpfeed url " + urlWithLastProcessedId, e);
       return Result.failure(e);
     }
 
@@ -59,11 +59,12 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
     } catch (HttpTimeoutException e) {
       return Result.success(Collections.emptyList());
     } catch (IOException | InterruptedException e) {
-      return Result.failure(e);
+      final var err = new RuntimeException("Exception when fetching cloud events from url" + urlWithLastProcessedId, e);
+      return Result.failure(err);
     }
 
     if (response.statusCode() != 200) {
-      return Result.failure("Unexpected status code " + response.statusCode() + " when fetching cloud events");
+      return Result.failure("Unexpected status code " + response.statusCode() + " when fetching cloud events from url " + urlWithLastProcessedId);
     }
 
     final var body = response.body();

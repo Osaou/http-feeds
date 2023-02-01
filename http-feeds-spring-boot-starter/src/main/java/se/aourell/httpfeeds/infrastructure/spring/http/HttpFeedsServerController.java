@@ -25,7 +25,7 @@ public class HttpFeedsServerController {
     this.cloudEventObjectMapper = cloudEventObjectMapper;
   }
 
-  @GetMapping(value = "/" + EventFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
+  @GetMapping(value = EventFeedDefinition.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
   public String getFeedItems(
     @RequestParam(name = "lastEventId", required = false) String lastEventId,
     @RequestParam(name = "timeout", required = false) Long timeoutMillis,
