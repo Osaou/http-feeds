@@ -86,6 +86,7 @@ public class FeedConsumerProcessor implements FeedConsumer {
 
   public Result<Long> fetchAndProcessEvents(Function<FeedConsumerProcessor, Result<List<CloudEvent>>> fetch) {
     final Result<Long> updatedFailureCount = fetch.apply(this)
+      .peekFailure(e -> LOG.debug("Exception when fetching events", e))
       .flatMap(events -> {
         try {
           for (final var event : events) {
