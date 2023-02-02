@@ -3,6 +3,7 @@ package se.aourell.httpfeeds.consumer.core.processing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
+import se.aourell.httpfeeds.consumer.api.EventHandler;
 import se.aourell.httpfeeds.consumer.api.FeedConsumer;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
@@ -66,6 +67,8 @@ public class FeedConsumerProcessor implements FeedConsumer {
   public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, Consumer<EventType> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEvent<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
+
+    LOG.debug("Registered Event Handler {}", handler.toString());
     return this;
   }
 
@@ -73,15 +76,27 @@ public class FeedConsumerProcessor implements FeedConsumer {
   public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEventAndMeta<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
+
+    LOG.debug("Registered Event Handler {}", handler.toString());
     return this;
   }
 
   public void registerEventHandler(Class<?> eventType, Method handler) {
-    final EventHandlerDefinition callable = handler.getParameterTypes().length == 2
+    final boolean isAcceptsMetaData = handler.getParameterTypes().length == 2;
+    final EventHandlerDefinition callable = isAcceptsMetaData
       ? new EventHandlerDefinition.AnnotatedForEventAndMeta(eventType, bean, handler)
       : new EventHandlerDefinition.AnnotatedForEvent(eventType, bean, handler);
 
     eventHandlers.put(eventType.getSimpleName(), callable);
+
+    LOG.debug("Registered Event Handler [from annotation {}]: {}::{}({}{})",
+      EventHandler.class.getName(),
+      handler.getDeclaringClass().getName(),
+      handler.getName(),
+      eventType.getName(),
+      isAcceptsMetaData
+        ? ", " + EventMetaData.class.getName()
+        : "");
   }
 
   public Result<Long> fetchAndProcessEvents(Function<FeedConsumerProcessor, Result<List<CloudEvent>>> fetch) {

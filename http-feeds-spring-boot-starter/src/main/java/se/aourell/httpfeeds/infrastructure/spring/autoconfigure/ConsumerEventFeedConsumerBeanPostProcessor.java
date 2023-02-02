@@ -1,5 +1,7 @@
 package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import se.aourell.httpfeeds.consumer.api.FeedConsumer;
@@ -21,6 +23,8 @@ import java.util.stream.Stream;
 
 public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor, FeedConsumerRegistry {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ConsumerEventFeedConsumerBeanPostProcessor.class);
+
   private final ConsumerProperties consumerProperties;
   private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
   private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
@@ -36,7 +40,10 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
   @Override
   public FeedConsumer registerLocalConsumer(String feedName) {
     final String feedConsumerName = generateUniqueConsumerName(feedName);
-    return localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, null, feedName);
+    final FeedConsumer result = localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, null, feedName);
+
+    LOG.debug("Registered Event Consumer (Local) for feed '{}' with unique name '{}'", feedName, feedConsumerName);
+    return result;
   }
 
   @Override
@@ -45,13 +52,19 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
     final String feedUrl = EventFeedDefinition.feedUrlFromName(baseUri, feedName);
 
     final String feedConsumerName = generateUniqueConsumerName(feedName);
-    return httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
+    final FeedConsumer result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
+
+    LOG.debug("Registered Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, feedUrl);
+    return result;
   }
 
   @Override
   public FeedConsumer registerRemoteConsumer(String feedName, String feedUrl) {
     final String feedConsumerName = generateUniqueConsumerName(feedName);
-    return httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
+    final FeedConsumer result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
+
+    LOG.debug("Registered Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, feedUrl);
+    return result;
   }
 
   private String generateUniqueConsumerName(String feedName) {
@@ -83,9 +96,26 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
     final FeedConsumerProcessor processor = Optional.ofNullable(baseUri)
       .map(uri -> {
         final String feedUrl = EventFeedDefinition.feedUrlFromName(uri, feedName);
-        return httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, bean, feedName, feedUrl);
+        final FeedConsumerProcessor result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, bean, feedName, feedUrl);
+
+        LOG.debug("Registered Event Consumer (Remote) [from annotation {}] for feed '{}' with unique name '{}' for URL '{}'",
+          EventFeedConsumer.class.getName(),
+          feedName,
+          feedConsumerName,
+          feedUrl);
+
+        return result;
       })
-      .orElseGet(() -> localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, bean, feedName));
+      .orElseGet(() -> {
+        final FeedConsumerProcessor result = localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, bean, feedName);
+
+        LOG.debug("Registered Event Consumer (Local) [from annotation {}] for feed '{}' with unique name '{}'",
+          EventFeedConsumer.class.getName(),
+          feedName,
+          feedConsumerName);
+
+        return result;
+      });
 
     // wire up event handlers for this bean
     findEventHandlersForConsumer(bean)
