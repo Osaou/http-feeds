@@ -15,13 +15,11 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "eventfeeds.producer")
 public class ProducerProperties {
 
-  private final boolean enabled;
   private final Duration pollInterval;
   private final Integer limit;
   private final Set<String> httpFeedsToPublish;
 
-  public ProducerProperties(boolean enabled, Duration pollInterval, Integer limit, Map<String, String> publish) {
-    this.enabled = enabled;
+  public ProducerProperties(Duration pollInterval, Integer limit, Map<String, String> publish) {
     this.pollInterval = Optional.ofNullable(pollInterval).orElse(FeedItemService.DEFAULT_POLL_INTERVAL);
     this.limit = Optional.ofNullable(limit).orElse(FeedItemService.DEFAULT_LIMIT_COUNT_PER_REQUEST);
 
@@ -31,13 +29,6 @@ public class ProducerProperties {
       .filter(entry -> "true".equalsIgnoreCase(entry.getValue().trim()))
       .map(Map.Entry::getKey)
       .collect(Collectors.toSet());
-  }
-
-  /**
-   * Whether to enable the server part or not. Default false.
-   */
-  public boolean isEnabled() {
-    return enabled;
   }
 
   /**

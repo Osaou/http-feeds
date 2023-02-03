@@ -4,5 +4,5 @@ import java.util.function.Consumer;
 
 public interface ConsumerGroupScheduler {
 
-  ConsumerGroupScheduler scheduleGroup(Consumer<ConsumerGroupCreator> consumerGroup);
+  ConsumerGroupScheduler scheduleGroup(String groupName, Consumer<ConsumerGroupCreator> consumerGroup);
 }

@@ -12,21 +12,12 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "eventfeeds.consumer")
 public class ConsumerProperties {
 
-  private final boolean enabled;
   private final String tableName;
   private final Map<String, String> sources;
 
-  public ConsumerProperties(boolean enabled, String tableName, Map<String, String> sources) {
-    this.enabled = enabled;
+  public ConsumerProperties(String tableName, Map<String, String> sources) {
     this.tableName = Optional.ofNullable(tableName).orElse(FeedConsumerRepositoryJdbcImpl.DEFAULT_TABLE_NAME);
     this.sources = Optional.ofNullable(sources).orElse(Collections.emptyMap());
-  }
-
-  /**
-   * Whether to enable the client part or not. Default false.
-   */
-  public boolean isEnabled() {
-    return enabled;
   }
 
   /**

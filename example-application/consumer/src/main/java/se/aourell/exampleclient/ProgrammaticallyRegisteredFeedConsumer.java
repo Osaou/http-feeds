@@ -16,13 +16,11 @@ public class ProgrammaticallyRegisteredFeedConsumer {
 
   public ProgrammaticallyRegisteredFeedConsumer(ConsumerGroupScheduler consumerGroupScheduler) {
     consumerGroupScheduler
-      .scheduleGroup(group -> group
+      .scheduleGroup("ProgrammaticallyRegisteredFeedConsumer", group -> group
         .defineRemoteConsumer("patient", "http://localhost:8080", consumer -> consumer
           .registerEventHandler(AssessmentStarted.class, this::onAssessmentStarted)
           .registerEventHandler(AssessmentEnded.class, this::onAssessmentEnded)
         )
-      )
-      .scheduleGroup(group -> group
         .defineRemoteConsumer("health-data", "http://localhost:8080", consumer -> consumer
           .registerEventHandler(EkgStreamUploaded.class, this::onEkgStreamUploaded)
         )

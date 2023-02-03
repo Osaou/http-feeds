@@ -60,7 +60,6 @@ public class ProducerAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "eventfeeds.producer", name = "enabled", havingValue = "true")
   @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
   public HttpFeedsServerController httpFeedsServerController(EventFeedRegistry feedRegistry, CloudEventMapper cloudEventMapper, @Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
     return new HttpFeedsServerController(feedRegistry, cloudEventMapper, cloudEventObjectMapper);

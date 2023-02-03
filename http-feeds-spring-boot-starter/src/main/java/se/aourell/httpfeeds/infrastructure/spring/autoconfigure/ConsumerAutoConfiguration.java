@@ -67,72 +67,15 @@ public class ConsumerAutoConfiguration {
     return feedConsumerRepositoryFactory.apply(consumerProperties.getTableName());
   }
 
-  /*@Configuration
-  @ConditionalOnProperty(prefix = "eventfeeds.consumer", name = "enabled", havingValue = "true")
-  public static class HttpFeedAutoConfiguration {*/
-
-    @Bean
-    @ConditionalOnMissingBean
-    public CloudEventArrayDeserializer cloudEventArrayDeserializer(@Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
-      return new CloudEventArrayDeserializerImpl(cloudEventObjectMapper);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public HttpFeedsClient httpFeedsClient(CloudEventArrayDeserializer cloudEventArrayDeserializer) {
-      return new HttpFeedsClientImpl(cloudEventArrayDeserializer);
-    }
-  //}
-
-  /*@Configuration
-  @ConditionalOnProperty(prefix = "eventfeeds.consumer", name = "enabled", havingValue = "false", matchIfMissing = true)
-  public static class DisabledHttpFeedAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public HttpFeedConsumerRegistry httpFeedConsumerRegistry() {
-      return new DisabledHttpFeedConsumerRegistryImpl();
-    }
-  }*/
-
-  /*@Bean
-  @ConditionalOnProperty(prefix = "eventfeeds.consumer", name = "enabled", havingValue = "true")
-  public HttpFeedConsumerJob httpFeedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
-    return new HttpFeedConsumerJob(httpFeedConsumerRegistry);
-  }
-
-  static class HttpFeedConsumerJob {
-    private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
-
-    HttpFeedConsumerJob(HttpFeedConsumerRegistry httpFeedConsumerRegistry) {
-      this.httpFeedConsumerRegistry = httpFeedConsumerRegistry;
-    }
-
-    @Scheduled(initialDelay = 5, fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
-    @Transactional
-    public void consumeEvents() {
-      System.out.println("Polling for and processing remote events");
-      httpFeedConsumerRegistry.batchPollAndProcessHttpFeedEvents();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public CloudEventArrayDeserializer cloudEventArrayDeserializer(@Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
+    return new CloudEventArrayDeserializerImpl(cloudEventObjectMapper);
   }
 
   @Bean
-  public LocalFeedConsumerJob localFeedConsumerJob(LocalFeedConsumerRegistry localFeedConsumerRegistry) {
-    return new LocalFeedConsumerJob(localFeedConsumerRegistry);
+  @ConditionalOnMissingBean
+  public HttpFeedsClient httpFeedsClient(CloudEventArrayDeserializer cloudEventArrayDeserializer) {
+    return new HttpFeedsClientImpl(cloudEventArrayDeserializer);
   }
-
-  static class LocalFeedConsumerJob {
-    private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
-
-    LocalFeedConsumerJob(LocalFeedConsumerRegistry localFeedConsumerRegistry) {
-      this.localFeedConsumerRegistry = localFeedConsumerRegistry;
-    }
-
-    @Scheduled(initialDelay = 5, fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
-    @Transactional
-    public void consumeEvents() {
-      System.out.println("Processing local events");
-      localFeedConsumerRegistry.batchProcessLocalFeedEvents();
-    }
-  }*/
 }
