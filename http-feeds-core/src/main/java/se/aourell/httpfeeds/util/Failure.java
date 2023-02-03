@@ -12,8 +12,8 @@ final class Failure<V> extends Result<V> {
     this.exception = new IllegalStateException(message);
   }
 
-  Failure(Exception exception) {
-    this.exception = new IllegalStateException(exception);
+  Failure(Throwable throwable) {
+    this.exception = new IllegalStateException(throwable);
   }
 
   Failure(RuntimeException exception) {

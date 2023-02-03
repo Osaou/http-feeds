@@ -48,9 +48,10 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
   public ConsumerGroupCreator defineLocalConsumer(String feedName, String feedConsumerName, Consumer<ConsumerCreator> consumer) {
     final FeedConsumerProcessor processor = feedConsumerProcessorGroup.defineLocalConsumer(feedConsumerName, feedName);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
+
+    LOG.debug("Defining Event Consumer (Local) for feed '{}' with unique name '{}'", feedName, feedConsumerName);
     consumer.accept(consumerCreator);
 
-    LOG.debug("Defined Event Consumer (Local) for feed '{}' with unique name '{}'", feedName, feedConsumerName);
     return this;
   }
 
@@ -66,9 +67,10 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
   public ConsumerGroupCreator defineRemoteConsumer(String feedName, String feedConsumerName, String completeFeedUrl, Consumer<ConsumerCreator> consumer) {
     final FeedConsumerProcessor processor = feedConsumerProcessorGroup.defineRemoteConsumer(feedConsumerName, feedName, completeFeedUrl);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
-    consumer.accept(consumerCreator);
 
     LOG.debug("Defined Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, completeFeedUrl);
+    consumer.accept(consumerCreator);
+
     return this;
   }
 

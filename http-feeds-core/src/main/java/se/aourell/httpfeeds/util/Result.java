@@ -14,8 +14,8 @@ public abstract class Result<V> {
     return new Failure<>(message);
   }
 
-  public static <V> Result<V> failure(Exception exception) {
-    return new Failure<>(exception);
+  public static <V> Result<V> failure(Throwable throwable) {
+    return new Failure<>(throwable);
   }
 
   public static <V> Result<V> failure(RuntimeException exception) {

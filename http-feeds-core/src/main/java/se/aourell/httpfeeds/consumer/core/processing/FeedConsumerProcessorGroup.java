@@ -84,6 +84,7 @@ public class FeedConsumerProcessorGroup {
       }
 
       final long updatedFailureCount = processor.fetchAndProcessEvents()
+        .map(success -> 0L)
         .orElseGet(() -> Math.min(failureCount + 1, MAX_FAILURE_COUNT));
 
       if (applicationShutdownDetector.isGracefulShutdown()) {

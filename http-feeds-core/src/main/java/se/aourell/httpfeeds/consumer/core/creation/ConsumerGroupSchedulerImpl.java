@@ -39,12 +39,13 @@ public class ConsumerGroupSchedulerImpl implements ConsumerGroupScheduler {
   @Override
   public ConsumerGroupScheduler scheduleGroup(String groupName, Consumer<ConsumerGroupCreator> consumerGroup) {
     final var group = new ConsumerGroupCreatorImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+
+    LOG.debug("Scheduling new Consumer Group with thread name {}", groupName);
     consumerGroup.accept(group);
 
     final var thread = new Thread(group, groupName);
-    LOG.debug("Scheduled new Consumer Group with thread name {}", groupName);
-
     thread.start();
+
     return this;
   }
 }

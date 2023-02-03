@@ -79,44 +79,41 @@ public class FeedConsumerProcessor {
   public <EventType> void registerEventHandler(Class<EventType> eventType, Consumer<EventType> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEvent<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
-
-    LOG.debug("Registered Event Handler {}", handler);
   }
 
   public <EventType> void registerEventHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEventAndMeta<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
-
-    LOG.debug("Registered Event Handler {}", handler);
   }
 
-  public Result<Long> fetchAndProcessEvents() {
-    final Result<Long> updatedFailureCount = fetch()
+  public Result<Boolean> fetchAndProcessEvents() {
+    final Result<Boolean> result = fetch()
       .flatMap(events -> {
         try {
           for (final var event : events) {
             if (applicationShutdownDetector.isGracefulShutdown()) {
-              return Result.success(0L);
+              return Result.success(true);
             }
 
             processEvent(event);
           }
-        } catch (Exception e) {
+        } catch (Throwable e) {
           if (!applicationShutdownDetector.isGracefulShutdown()) {
             LOG.error("Exception when processing event", e);
           }
+
           return Result.failure(e);
         }
 
         // reset failure count
-        return Result.success(0L);
+        return Result.success(true);
       });
 
     // persist id of last event we were able to process
     getLastProcessedId()
       .ifPresent(lastProcessedId -> feedConsumerRepository.storeLastProcessedId(feedConsumerName, lastProcessedId));
 
-    return updatedFailureCount;
+    return result;
   }
 
   private Result<List<CloudEvent>> fetch() {
@@ -129,9 +126,7 @@ public class FeedConsumerProcessor {
     final var eventTypeName = event.type();
     final var eventHandler = findHandlerForEventType(eventTypeName);
 
-    LOG.debug("Searching for handler for event type {} among handlers [{}]", eventTypeName, String.join(", ", eventHandlers.keySet()));
     if (eventHandler.isPresent()) {
-      LOG.debug("Found matching handler");
       final var eventType = eventHandler.get().eventType();
 
       final Object deserializedData;
@@ -143,8 +138,6 @@ public class FeedConsumerProcessor {
       }
 
       eventHandler.get().invoke(deserializedData, () -> createEventMetaData(event));
-    } else if (LOG.isDebugEnabled()) {
-      LOG.debug("Found no matching handler");
     }
 
     lastProcessedId = Objects.requireNonNull(event.id());

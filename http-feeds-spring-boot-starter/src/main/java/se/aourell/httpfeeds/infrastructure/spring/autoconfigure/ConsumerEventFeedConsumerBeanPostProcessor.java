@@ -1,7 +1,5 @@
 package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
@@ -21,8 +19,6 @@ import java.util.stream.Stream;
 
 public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ConsumerEventFeedConsumerBeanPostProcessor.class);
-
   private final ConsumerProperties consumerProperties;
   private final ConsumerGroupScheduler consumerGroupScheduler;
 
@@ -35,20 +31,14 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
     final EventFeedConsumer feedConsumerDeclaration = bean.getClass().getAnnotation(EventFeedConsumer.class);
     if (feedConsumerDeclaration != null) {
-      consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> {
-        defineAnnotatedConsumer(bean, feedConsumerDeclaration, groupCreator);
-      });
-      LOG.debug("Scheduled Consumer Group because of annotated bean {}", beanName);
+      consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> defineAnnotatedConsumer(bean, feedConsumerDeclaration, groupCreator));
     } else {
       final EventFeedConsumers multipleDeclaration = bean.getClass().getAnnotation(EventFeedConsumers.class);
       Optional.ofNullable(multipleDeclaration)
         .map(EventFeedConsumers::value)
         .map(Stream::of)
         .ifPresent(consumers -> {
-          consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> {
-            consumers.forEach(consumer -> defineAnnotatedConsumer(bean, consumer, groupCreator));
-          });
-          LOG.debug("Scheduled Consumer Group because of annotated bean {}", beanName);
+          consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> consumers.forEach(consumer -> defineAnnotatedConsumer(bean, consumer, groupCreator)));
         });
     }
 
@@ -62,11 +52,9 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
 
     if (baseUri == null) {
       groupCreator.defineLocalConsumer(feedName, feedConsumerName, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
-      LOG.debug("Defined Local Consumer because of annotation {}", EventFeedConsumer.class.getName());
     } else {
       final String feedUrl = EventFeedDefinition.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
       groupCreator.defineRemoteConsumer(feedName, feedConsumerName, feedUrl, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
-      LOG.debug("Defined Remote Consumer because of annotation {}", EventFeedConsumer.class.getName());
     }
   }
 
@@ -85,7 +73,6 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
               throw new RuntimeException(e);
             }
           });
-          LOG.debug("Registered Event Handler because of annotation {}", EventHandler.class.getName());
         } else {
           consumerCreator.registerEventHandler(eventType, (event) -> {
             try {
@@ -94,7 +81,6 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
               throw new RuntimeException(e);
             }
           });
-          LOG.debug("Registered Event Handler because of annotation {}", EventHandler.class.getName());
         }
       });
   }

@@ -38,7 +38,7 @@ public class LocalFeedFetcherImpl implements LocalFeedFetcher {
         .toList();
 
       return Result.success(result);
-    } catch (Exception e) {
+    } catch (Throwable e) {
       return Result.failure(e);
     }
   }
