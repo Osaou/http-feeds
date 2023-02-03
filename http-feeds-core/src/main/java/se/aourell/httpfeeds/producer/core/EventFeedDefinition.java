@@ -14,14 +14,14 @@ public record EventFeedDefinition(String name, String feedPath, FeedItemService 
     return name;
   }
 
-  public static String feedUrlFromName(String baseUri, String name) {
+  public static String fullUrlFromBaseUriAndFeedName(String baseUri, String name) {
     final String feedPath = baseUri.endsWith("/")
-      ? feedPathFromName(name).substring(1)
-      : feedPathFromName(name);
+      ? urlPathFromFeedName(name).substring(1)
+      : urlPathFromFeedName(name);
     return baseUri + feedPath;
   }
 
-  public static String feedPathFromName(String name) {
+  public static String urlPathFromFeedName(String name) {
     return EventFeedDefinition.PATH_PREFIX + name;
   }
 }

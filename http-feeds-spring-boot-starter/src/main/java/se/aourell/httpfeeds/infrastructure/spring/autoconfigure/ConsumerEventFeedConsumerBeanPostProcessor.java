@@ -4,72 +4,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import se.aourell.httpfeeds.consumer.api.FeedConsumer;
-import se.aourell.httpfeeds.consumer.api.FeedConsumerRegistry;
+import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
+import se.aourell.httpfeeds.consumer.api.ConsumerGroupScheduler;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumers;
 import se.aourell.httpfeeds.consumer.api.EventHandler;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
-import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
-import se.aourell.httpfeeds.consumer.spi.HttpFeedConsumerRegistry;
-import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor, FeedConsumerRegistry {
+public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConsumerEventFeedConsumerBeanPostProcessor.class);
 
   private final ConsumerProperties consumerProperties;
-  private final HttpFeedConsumerRegistry httpFeedConsumerRegistry;
-  private final LocalFeedConsumerRegistry localFeedConsumerRegistry;
+  private final ConsumerGroupScheduler consumerGroupScheduler;
 
-  private int manuallyDefinedConsumerIndex = 0;
-
-  public ConsumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, HttpFeedConsumerRegistry httpFeedConsumerRegistry, LocalFeedConsumerRegistry localFeedConsumerRegistry) {
+  public ConsumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, ConsumerGroupScheduler consumerGroupScheduler) {
     this.consumerProperties = consumerProperties;
-    this.httpFeedConsumerRegistry = httpFeedConsumerRegistry;
-    this.localFeedConsumerRegistry = localFeedConsumerRegistry;
-  }
-
-  @Override
-  public FeedConsumer registerLocalConsumer(String feedName) {
-    final String feedConsumerName = generateUniqueConsumerName(feedName);
-    final FeedConsumer result = localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, null, feedName);
-
-    LOG.debug("Registered Event Consumer (Local) for feed '{}' with unique name '{}'", feedName, feedConsumerName);
-    return result;
-  }
-
-  @Override
-  public FeedConsumer registerRemoteConsumer(String feedName) {
-    final String baseUri = Objects.requireNonNull(consumerProperties.getSources().get(feedName));
-    final String feedUrl = EventFeedDefinition.feedUrlFromName(baseUri, feedName);
-
-    final String feedConsumerName = generateUniqueConsumerName(feedName);
-    final FeedConsumer result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
-
-    LOG.debug("Registered Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, feedUrl);
-    return result;
-  }
-
-  @Override
-  public FeedConsumer registerRemoteConsumer(String feedName, String feedUrl) {
-    final String feedConsumerName = generateUniqueConsumerName(feedName);
-    final FeedConsumer result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, null, feedName, feedUrl);
-
-    LOG.debug("Registered Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, feedUrl);
-    return result;
-  }
-
-  private String generateUniqueConsumerName(String feedName) {
-    ++manuallyDefinedConsumerIndex;
-    return "feed-consumer:" + manuallyDefinedConsumerIndex + ":" + feedName;
+    this.consumerGroupScheduler = consumerGroupScheduler;
   }
 
   @Override
@@ -93,35 +51,45 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
     final String feedConsumerName = bean.getClass().getName() + ":" + feedName;
     final String baseUri = consumerProperties.getSources().get(feedName);
 
-    final FeedConsumerProcessor processor = Optional.ofNullable(baseUri)
-      .map(uri -> {
-        final String feedUrl = EventFeedDefinition.feedUrlFromName(uri, feedName);
-        final FeedConsumerProcessor result = httpFeedConsumerRegistry.defineHttpFeedConsumer(feedConsumerName, bean, feedName, feedUrl);
+    consumerGroupScheduler.scheduleGroup(group -> {
+      if (baseUri == null) {
+        group.defineLocalConsumer(feedName, feedConsumerName, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
+        LOG.debug("Defined Local Consumer because of annotation {}", EventFeedConsumer.class.getName());
+      } else {
+        final String feedUrl = EventFeedDefinition.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
+        group.defineRemoteConsumer(feedName, feedConsumerName, feedUrl, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
+        LOG.debug("Defined Remote Consumer because of annotation {}", EventFeedConsumer.class.getName());
+      }
+    });
+    LOG.debug("Scheduled Consumer Group because of annotated bean {}", bean.getClass().getName());
+  }
 
-        LOG.debug("Registered Event Consumer (Remote) [from annotation {}] for feed '{}' with unique name '{}' for URL '{}'",
-          EventFeedConsumer.class.getName(),
-          feedName,
-          feedConsumerName,
-          feedUrl);
-
-        return result;
-      })
-      .orElseGet(() -> {
-        final FeedConsumerProcessor result = localFeedConsumerRegistry.defineLocalConsumer(feedConsumerName, bean, feedName);
-
-        LOG.debug("Registered Event Consumer (Local) [from annotation {}] for feed '{}' with unique name '{}'",
-          EventFeedConsumer.class.getName(),
-          feedName,
-          feedConsumerName);
-
-        return result;
-      });
-
+  private void registerEventHandlersForBean(Object bean, ConsumerCreator consumerCreator) {
     // wire up event handlers for this bean
     findEventHandlersForConsumer(bean)
       .forEach(eventHandler -> {
-        final Class<?> eventType = eventHandler.getParameterTypes()[0];
-        processor.registerEventHandler(eventType, eventHandler);
+        final Class<?>[] handlerParameters = eventHandler.getParameterTypes();
+        final Class<?> eventType = handlerParameters[0];
+
+        if (handlerParameters.length == 2) {
+          consumerCreator.registerEventHandler(eventType, (event, metaData) -> {
+            try {
+              eventHandler.invoke(bean, event, metaData);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+              throw new RuntimeException(e);
+            }
+          });
+          LOG.debug("Registered Event Handler because of annotation {}", EventHandler.class.getName());
+        } else {
+          consumerCreator.registerEventHandler(eventType, (event) -> {
+            try {
+              eventHandler.invoke(bean, event);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+              throw new RuntimeException(e);
+            }
+          });
+          LOG.debug("Registered Event Handler because of annotation {}", EventHandler.class.getName());
+        }
       });
   }
 

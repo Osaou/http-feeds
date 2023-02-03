@@ -3,14 +3,13 @@ package se.aourell.httpfeeds.consumer.core.processing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
-import se.aourell.httpfeeds.consumer.api.EventHandler;
-import se.aourell.httpfeeds.consumer.api.FeedConsumer;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
+import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
+import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.util.Result;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,27 +17,29 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public class FeedConsumerProcessor implements FeedConsumer {
+public class FeedConsumerProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessor.class);
 
   private final String feedConsumerName;
   private final String feedName;
-  private final Object bean;
   private final String url;
+  private final LocalFeedFetcher localFeedFetcher;
+  private final RemoteFeedFetcher remoteFeedFetcher;
   private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
   private final Map<String, EventHandlerDefinition> eventHandlers;
 
   private String lastProcessedId;
 
-  public FeedConsumerProcessor(String feedConsumerName, Object bean, String feedName, String url, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessor(String feedConsumerName, String feedName, String url, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
     this.feedConsumerName = feedConsumerName;
-    this.bean = bean;
     this.feedName = feedName;
     this.url = url;
+
+    this.localFeedFetcher = localFeedFetcher;
+    this.remoteFeedFetcher = remoteFeedFetcher;
     this.domainEventDeserializer = domainEventDeserializer;
     this.feedConsumerRepository = feedConsumerRepository;
 
@@ -63,44 +64,22 @@ public class FeedConsumerProcessor implements FeedConsumer {
     return Optional.ofNullable(lastProcessedId);
   }
 
-  @Override
-  public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, Consumer<EventType> handler) {
+  public <EventType> void registerEventHandler(Class<EventType> eventType, Consumer<EventType> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEvent<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
 
-    LOG.debug("Registered Event Handler {}", handler.toString());
-    return this;
+    LOG.debug("Registered Event Handler {}", handler);
   }
 
-  @Override
-  public <EventType> FeedConsumer registerHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
+  public <EventType> void registerEventHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEventAndMeta<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
 
-    LOG.debug("Registered Event Handler {}", handler.toString());
-    return this;
+    LOG.debug("Registered Event Handler {}", handler);
   }
 
-  public void registerEventHandler(Class<?> eventType, Method handler) {
-    final boolean isAcceptsMetaData = handler.getParameterTypes().length == 2;
-    final EventHandlerDefinition callable = isAcceptsMetaData
-      ? new EventHandlerDefinition.AnnotatedForEventAndMeta(eventType, bean, handler)
-      : new EventHandlerDefinition.AnnotatedForEvent(eventType, bean, handler);
-
-    eventHandlers.put(eventType.getSimpleName(), callable);
-
-    LOG.debug("Registered Event Handler [from annotation {}]: {}::{}({}{})",
-      EventHandler.class.getName(),
-      handler.getDeclaringClass().getName(),
-      handler.getName(),
-      eventType.getName(),
-      isAcceptsMetaData
-        ? ", " + EventMetaData.class.getName()
-        : "");
-  }
-
-  public Result<Long> fetchAndProcessEvents(Function<FeedConsumerProcessor, Result<List<CloudEvent>>> fetch) {
-    final Result<Long> updatedFailureCount = fetch.apply(this)
+  public Result<Long> fetchAndProcessEvents() {
+    final Result<Long> updatedFailureCount = fetch()
       .flatMap(events -> {
         try {
           for (final var event : events) {
@@ -122,11 +101,19 @@ public class FeedConsumerProcessor implements FeedConsumer {
     return updatedFailureCount;
   }
 
+  private Result<List<CloudEvent>> fetch() {
+    return url == null
+      ? localFeedFetcher.fetchLocalEvents(this)
+      : remoteFeedFetcher.fetchRemoteEvents(this);
+  }
+
   private void processEvent(CloudEvent event) throws Exception {
     final var eventTypeName = event.type();
     final var eventHandler = findHandlerForEventType(eventTypeName);
 
+    LOG.debug("Searching for handler for event type {} among handlers [{}]", eventTypeName, String.join(", ", eventHandlers.keySet()));
     if (eventHandler.isPresent()) {
+      LOG.debug("Found matching handler");
       final var eventType = eventHandler.get().eventType();
 
       final Object deserializedData;
@@ -138,6 +125,8 @@ public class FeedConsumerProcessor implements FeedConsumer {
       }
 
       eventHandler.get().invoke(deserializedData, () -> createEventMetaData(event));
+    } else if (LOG.isDebugEnabled()) {
+      LOG.debug("Found no matching handler");
     }
 
     lastProcessedId = Objects.requireNonNull(event.id());

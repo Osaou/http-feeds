@@ -16,7 +16,7 @@ public class EventFeedRegistryImpl implements EventFeedRegistry {
   public EventFeedDefinition defineFeed(String name, FeedItemService feedItemService, boolean publishHttpFeed) {
     requireNonEmpty(name);
 
-    final String path = EventFeedDefinition.feedPathFromName(name);
+    final String path = EventFeedDefinition.urlPathFromFeedName(name);
     final var feedDefinition = new EventFeedDefinition(name, path, feedItemService, publishHttpFeed);
     nameMap.put(name, feedDefinition);
     pathMap.put(path, feedDefinition);

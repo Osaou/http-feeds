@@ -23,7 +23,7 @@ import java.util.Optional;
 public class HttpFeedsClientImpl implements HttpFeedsClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(HttpFeedsClientImpl.class);
-  private static final Duration LONG_POLLING_TIMEOUT = Duration.ofSeconds(60);
+  private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(3);
 
   private final CloudEventArrayDeserializer cloudEventArrayDeserializer;
   private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -34,10 +34,9 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
 
   @Override
   public Result<List<CloudEvent>> pollCloudEvents(String httpFeedUrl, String lastProcessedId) {
-    final var urlWithLongPolling = httpFeedUrl + "?timeout=" + LONG_POLLING_TIMEOUT.toMillis();
     final var urlWithLastProcessedId = Optional.ofNullable(lastProcessedId)
-      .map(id -> urlWithLongPolling + "&lastEventId=" + id)
-      .orElse(urlWithLongPolling);
+      .map(id -> httpFeedUrl + "?lastEventId=" + id)
+      .orElse(httpFeedUrl);
 
     final URI uri;
     try {
@@ -49,7 +48,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
 
     final var request = HttpRequest.newBuilder()
       .uri(uri)
-      .timeout(LONG_POLLING_TIMEOUT)
+      .timeout(HTTP_TIMEOUT)
       .GET()
       .build();
 
