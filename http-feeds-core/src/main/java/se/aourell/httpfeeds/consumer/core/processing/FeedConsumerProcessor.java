@@ -35,7 +35,16 @@ public class FeedConsumerProcessor {
 
   private String lastProcessedId;
 
-  public FeedConsumerProcessor(String feedConsumerName, String feedName, String url, ApplicationShutdownDetector applicationShutdownDetector, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessor(
+    String feedConsumerName,
+    String feedName,
+    String url,
+    ApplicationShutdownDetector applicationShutdownDetector,
+    LocalFeedFetcher localFeedFetcher,
+    RemoteFeedFetcher remoteFeedFetcher,
+    DomainEventDeserializer domainEventDeserializer,
+    FeedConsumerRepository feedConsumerRepository
+  ) {
     this.feedConsumerName = feedConsumerName;
     this.feedName = feedName;
     this.url = url;

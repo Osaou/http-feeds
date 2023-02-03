@@ -28,7 +28,13 @@ public class FeedConsumerProcessorGroup {
 
   private long failureCount = 0;
 
-  public FeedConsumerProcessorGroup(ApplicationShutdownDetector applicationShutdownDetector, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessorGroup(
+    ApplicationShutdownDetector applicationShutdownDetector,
+    LocalFeedFetcher localFeedFetcher,
+    RemoteFeedFetcher remoteFeedFetcher,
+    DomainEventDeserializer domainEventDeserializer,
+    FeedConsumerRepository feedConsumerRepository
+  ) {
     this.applicationShutdownDetector = applicationShutdownDetector;
     this.localFeedFetcher = localFeedFetcher;
     this.remoteFeedFetcher = remoteFeedFetcher;

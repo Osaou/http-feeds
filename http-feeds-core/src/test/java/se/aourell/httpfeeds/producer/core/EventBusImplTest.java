@@ -1,10 +1,7 @@
-package se.aourell.httpfeeds.server.core;
+package se.aourell.httpfeeds.producer.core;
 
 import org.junit.jupiter.api.Test;
-import se.aourell.httpfeeds.consumer.spi.LocalFeedConsumerRegistry;
 import se.aourell.httpfeeds.producer.api.DeletionEvent;
-import se.aourell.httpfeeds.producer.core.EventBusImpl;
-import se.aourell.httpfeeds.producer.core.FeedItem;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
