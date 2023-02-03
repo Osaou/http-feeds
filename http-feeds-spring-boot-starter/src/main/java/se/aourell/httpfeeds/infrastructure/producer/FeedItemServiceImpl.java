@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerProperties;
 import se.aourell.httpfeeds.producer.core.FeedItem;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
@@ -17,11 +18,13 @@ public class FeedItemServiceImpl implements FeedItemService {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedItemServiceImpl.class);
 
+  private final ApplicationShutdownDetector applicationShutdownDetector;
   private final FeedItemRepository feedItemRepository;
   private final Duration pollInterval;
   private final int limit;
 
-  public FeedItemServiceImpl(FeedItemRepository feedItemRepository, ProducerProperties producerProperties) {
+  public FeedItemServiceImpl(ApplicationShutdownDetector applicationShutdownDetector, FeedItemRepository feedItemRepository, ProducerProperties producerProperties) {
+    this.applicationShutdownDetector = applicationShutdownDetector;
     this.feedItemRepository = feedItemRepository;
     this.pollInterval = producerProperties.getPollInterval();
     this.limit = producerProperties.getLimit();
@@ -66,7 +69,11 @@ public class FeedItemServiceImpl implements FeedItemService {
         //noinspection BusyWait
         Thread.sleep(pollInterval.toMillis());
       } catch (InterruptedException e) {
-        LOG.trace("Thread was interrupted. Probably a graceful shutdown. Attempting to send empty response.");
+        if (applicationShutdownDetector.isGracefulShutdown()) {
+          return List.of();
+        }
+
+        LOG.warn("Unexpectedly interrupted while sleeping/polling. Sending empty response since unable to recover.");
         return List.of();
       }
     }

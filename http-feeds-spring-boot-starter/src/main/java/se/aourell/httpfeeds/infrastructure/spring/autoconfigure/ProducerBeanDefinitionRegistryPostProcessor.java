@@ -21,6 +21,7 @@ import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 import se.aourell.httpfeeds.producer.spi.FeedItemService;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 
 import static se.aourell.httpfeeds.producer.spi.FeedItemRepository.DEFAULT_TABLE_NAME;
 
@@ -57,8 +58,9 @@ public class ProducerBeanDefinitionRegistryPostProcessor implements BeanDefiniti
       // add bean for this event type's service level needs
       final String serviceBeanName = "service:" + feedName;
       final var serviceBeanArguments = new ConstructorArgumentValues();
-      serviceBeanArguments.addIndexedArgumentValue(0, new RuntimeBeanReference(repositoryBeanName));
-      serviceBeanArguments.addIndexedArgumentValue(1, new RuntimeBeanReference(ProducerProperties.class));
+      serviceBeanArguments.addIndexedArgumentValue(0, new RuntimeBeanReference(ApplicationShutdownDetector.class));
+      serviceBeanArguments.addIndexedArgumentValue(1, new RuntimeBeanReference(repositoryBeanName));
+      serviceBeanArguments.addIndexedArgumentValue(2, new RuntimeBeanReference(ProducerProperties.class));
       final var serviceBeanDefinition = new RootBeanDefinition();
       serviceBeanDefinition.setBeanClass(FeedItemServiceImpl.class);
       serviceBeanDefinition.setTargetType(FeedItemService.class);

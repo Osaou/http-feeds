@@ -6,6 +6,7 @@ import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
 import se.aourell.httpfeeds.consumer.api.ConsumerGroupCreator;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessorGroup;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
@@ -17,15 +18,17 @@ import java.util.function.Consumer;
 public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConsumerGroupCreatorImpl.class);
-  private static final long INITIAL_DELAY_TIMEOUT_MS = 5_000;
-  private static final long POLL_INTERMITTENT_DELAY_MS = 1_000;
+  private static final long INITIAL_DELAY_TIMEOUT_MS = 3_000;
+  private static final long POLL_INTERMITTENT_DELAY_MS = 500;
 
+  private final ApplicationShutdownDetector applicationShutdownDetector;
   private final FeedConsumerProcessorGroup feedConsumerProcessorGroup;
 
   private int manuallyDefinedConsumerIndex = 0;
 
-  public ConsumerGroupCreatorImpl(LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
-    feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+  public ConsumerGroupCreatorImpl(ApplicationShutdownDetector applicationShutdownDetector, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+    this.applicationShutdownDetector = applicationShutdownDetector;
+    this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
   }
 
   @Override
@@ -73,18 +76,32 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
     try {
       Thread.sleep(INITIAL_DELAY_TIMEOUT_MS);
     } catch (InterruptedException e) {
-      LOG.info("Interrupted, shutting down");
-      return;
+      if (applicationShutdownDetector.isGracefulShutdown()) {
+        return;
+      }
+
+      LOG.warn("Unexpectedly interrupted while sleeping");
     }
 
     while (true) {
-      feedConsumerProcessorGroup.batchFetchAndProcessEvents();
+      try {
+        feedConsumerProcessorGroup.batchFetchAndProcessEvents();
+      } catch (Throwable e) {
+        if (applicationShutdownDetector.isGracefulShutdown()) {
+          return;
+        }
+
+        LOG.error("Unexpected error occurred during event processing", e);
+      }
 
       try {
         Thread.sleep(POLL_INTERMITTENT_DELAY_MS);
       } catch (InterruptedException e) {
-        LOG.info("Interrupted, shutting down");
-        return;
+        if (applicationShutdownDetector.isGracefulShutdown()) {
+          return;
+        }
+
+        LOG.warn("Unexpectedly interrupted while sleeping");
       }
     }
   }

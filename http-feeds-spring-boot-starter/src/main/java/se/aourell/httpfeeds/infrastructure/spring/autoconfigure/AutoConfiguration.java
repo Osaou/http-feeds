@@ -9,9 +9,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.infrastructure.ApplicationShutdownDetectorImpl;
 
 @Configuration
 public class AutoConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean
+  public ApplicationShutdownDetector applicationShutdownDetector() {
+    return new ApplicationShutdownDetectorImpl();
+  }
 
   @Bean
   @ConditionalOnMissingBean(name = "cloudEventObjectMapper")

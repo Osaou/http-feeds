@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
@@ -25,6 +26,7 @@ public class FeedConsumerProcessor {
   private final String feedConsumerName;
   private final String feedName;
   private final String url;
+  private final ApplicationShutdownDetector applicationShutdownDetector;
   private final LocalFeedFetcher localFeedFetcher;
   private final RemoteFeedFetcher remoteFeedFetcher;
   private final DomainEventDeserializer domainEventDeserializer;
@@ -33,11 +35,12 @@ public class FeedConsumerProcessor {
 
   private String lastProcessedId;
 
-  public FeedConsumerProcessor(String feedConsumerName, String feedName, String url, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+  public FeedConsumerProcessor(String feedConsumerName, String feedName, String url, ApplicationShutdownDetector applicationShutdownDetector, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
     this.feedConsumerName = feedConsumerName;
     this.feedName = feedName;
     this.url = url;
 
+    this.applicationShutdownDetector = applicationShutdownDetector;
     this.localFeedFetcher = localFeedFetcher;
     this.remoteFeedFetcher = remoteFeedFetcher;
     this.domainEventDeserializer = domainEventDeserializer;
@@ -83,10 +86,16 @@ public class FeedConsumerProcessor {
       .flatMap(events -> {
         try {
           for (final var event : events) {
+            if (applicationShutdownDetector.isGracefulShutdown()) {
+              return Result.success(0L);
+            }
+
             processEvent(event);
           }
         } catch (Exception e) {
-          LOG.error("Exception when processing event", e);
+          if (!applicationShutdownDetector.isGracefulShutdown()) {
+            LOG.error("Exception when processing event", e);
+          }
           return Result.failure(e);
         }
 

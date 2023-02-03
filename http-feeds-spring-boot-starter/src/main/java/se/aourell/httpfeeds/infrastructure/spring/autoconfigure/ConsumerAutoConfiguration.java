@@ -13,6 +13,7 @@ import se.aourell.httpfeeds.consumer.api.ConsumerGroupScheduler;
 import se.aourell.httpfeeds.consumer.core.LocalFeedFetcherImpl;
 import se.aourell.httpfeeds.consumer.core.RemoteFeedFetcherImpl;
 import se.aourell.httpfeeds.consumer.core.creation.ConsumerGroupSchedulerImpl;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.CloudEventArrayDeserializer;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
@@ -39,8 +40,8 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public ConsumerGroupScheduler consumerGroupScheduler(LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
-    return new ConsumerGroupSchedulerImpl(localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+  public ConsumerGroupScheduler consumerGroupScheduler(ApplicationShutdownDetector applicationShutdownDetector, LocalFeedFetcher localFeedFetcher, RemoteFeedFetcher remoteFeedFetcher, DomainEventDeserializer domainEventDeserializer, FeedConsumerRepository feedConsumerRepository) {
+    return new ConsumerGroupSchedulerImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
   }
 
   @Bean
