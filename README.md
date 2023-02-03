@@ -24,7 +24,7 @@ Then add this library to your `pom.xml`:
 <dependency>
   <groupId>se.aourell.httpfeeds</groupId>
   <artifactId>http-feeds-spring-boot-starter</artifactId>
-  <version>0.6.2</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
@@ -85,7 +85,6 @@ create index eventfeeds_idx_id_source on eventfeeds
 Also make sure the server portion of httpfeeds is enabled, and e.g. that your database is running, in your `application.properties`:
 
 ```properties
-eventfeeds.producer.enabled=true
 eventfeeds.producer.publish.patient=true
 
 spring.datasource.url=jdbc:h2:mem:testdb
@@ -190,7 +189,6 @@ etc
 Finally, make sure the correct settings are applied in `application.properties`:
 
 ```properties
-eventfeeds.consumer.enabled=true
 eventfeeds.consumer.sources.patient=http://localhost:8080
 ```
 
