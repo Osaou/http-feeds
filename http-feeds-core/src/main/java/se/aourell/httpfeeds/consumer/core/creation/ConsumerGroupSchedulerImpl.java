@@ -22,13 +22,11 @@ public class ConsumerGroupSchedulerImpl implements ConsumerGroupScheduler {
   private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
 
-  public ConsumerGroupSchedulerImpl(
-    ApplicationShutdownDetector applicationShutdownDetector,
-    LocalFeedFetcher localFeedFetcher,
-    RemoteFeedFetcher remoteFeedFetcher,
-    DomainEventDeserializer domainEventDeserializer,
-    FeedConsumerRepository feedConsumerRepository
-  ) {
+  public ConsumerGroupSchedulerImpl(ApplicationShutdownDetector applicationShutdownDetector,
+                                    LocalFeedFetcher localFeedFetcher,
+                                    RemoteFeedFetcher remoteFeedFetcher,
+                                    DomainEventDeserializer domainEventDeserializer,
+                                    FeedConsumerRepository feedConsumerRepository) {
     this.applicationShutdownDetector = applicationShutdownDetector;
     this.localFeedFetcher = localFeedFetcher;
     this.remoteFeedFetcher = remoteFeedFetcher;

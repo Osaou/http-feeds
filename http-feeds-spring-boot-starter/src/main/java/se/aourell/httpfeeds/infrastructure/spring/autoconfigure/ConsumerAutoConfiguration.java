@@ -40,13 +40,11 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public ConsumerGroupScheduler consumerGroupScheduler(
-    ApplicationShutdownDetector applicationShutdownDetector,
-    LocalFeedFetcher localFeedFetcher,
-    RemoteFeedFetcher remoteFeedFetcher,
-    DomainEventDeserializer domainEventDeserializer,
-    FeedConsumerRepository feedConsumerRepository
-  ) {
+  public ConsumerGroupScheduler consumerGroupScheduler(ApplicationShutdownDetector applicationShutdownDetector,
+                                                       LocalFeedFetcher localFeedFetcher,
+                                                       RemoteFeedFetcher remoteFeedFetcher,
+                                                       DomainEventDeserializer domainEventDeserializer,
+                                                       FeedConsumerRepository feedConsumerRepository) {
     return new ConsumerGroupSchedulerImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
   }
 

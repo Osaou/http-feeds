@@ -10,6 +10,8 @@ import se.aourell.exampleserver.patientfeed.AssessmentStarted;
 import se.aourell.exampleserver.patientfeed.PatientAdded;
 import se.aourell.exampleserver.patientfeed.PatientDeleted;
 import se.aourell.exampleserver.patientfeed.PatientEvent;
+import se.aourell.httpfeeds.producer.api.EventFeedCreator;
+import se.aourell.httpfeeds.producer.api.FeedAvailability;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 
 import java.time.Instant;
@@ -18,12 +20,12 @@ import java.util.Random;
 @Component
 public class RandomDataGenerator {
 
-  private final EventBus<PatientEvent> patientEventBus;
   private final EventBus<HealthDataEvent> healthDataEventBus;
+  private final EventBus<PatientEvent> patientEventBus;
 
-  public RandomDataGenerator(EventBus<PatientEvent> patientEventBus, EventBus<HealthDataEvent> healthDataEventBus) {
+  public RandomDataGenerator(EventFeedCreator eventFeedCreator, EventBus<PatientEvent> patientEventBus) {
+    this.healthDataEventBus = eventFeedCreator.createEventFeed("health-data", HealthDataEvent.class, FeedAvailability.PUBLISH_OVER_HTTP);
     this.patientEventBus = patientEventBus;
-    this.healthDataEventBus = healthDataEventBus;
   }
 
   @Scheduled(initialDelayString = "PT1S", fixedDelayString = "PT0.200S")

@@ -10,9 +10,9 @@ import se.aourell.httpfeeds.consumer.api.EventHandler;
 
 @Service
 @EventFeedConsumer("health-data")
-public class HealthDataFeedConsumer {
+public class SingleFeedConsumer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HealthDataFeedConsumer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SingleFeedConsumer.class);
 
   @EventHandler
   public void on(EkgStreamUploaded event) {

@@ -3,16 +3,21 @@ package se.aourell.exampleserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import se.aourell.exampleserver.healthdatafeed.BloodSugarReadingUploaded;
 import se.aourell.exampleserver.patientfeed.AssessmentEnded;
 import se.aourell.exampleserver.patientfeed.AssessmentStarted;
 import se.aourell.exampleserver.patientfeed.PatientAdded;
 import se.aourell.exampleserver.patientfeed.PatientDeleted;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
+import se.aourell.httpfeeds.consumer.api.EventFeedConsumers;
 import se.aourell.httpfeeds.consumer.api.EventHandler;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 
 @Service
-@EventFeedConsumer("patient")
+@EventFeedConsumers({
+  @EventFeedConsumer("patient"),
+  @EventFeedConsumer("health-data")
+})
 public class LocalPatientFeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalPatientFeedConsumer.class);
@@ -35,5 +40,10 @@ public class LocalPatientFeedConsumer {
   @EventHandler
   public void on(AssessmentEnded event, EventMetaData meta) {
     LOG.info("local event received: {} with metadata: {}", event, meta);
+  }
+
+  @EventHandler
+  public void on(BloodSugarReadingUploaded event) {
+    LOG.info("local health data event received: {}", event);
   }
 }

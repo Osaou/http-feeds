@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class EventBusImpl implements EventBus<Object> {
+public class EventBusImpl<TEvent> implements EventBus<TEvent> {
 
   private final String feedName;
   private final Optional<List<Class<?>>> deletionEventTypes;
@@ -19,7 +19,7 @@ public class EventBusImpl implements EventBus<Object> {
   private final FeedItemIdGenerator feedItemIdGenerator;
   private final DomainEventSerializer domainEventSerializer;
 
-  public EventBusImpl(String feedName, Class<?> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
+  public EventBusImpl(String feedName, Class<TEvent> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
     this.feedName = feedName;
     this.feedItemRepository = feedItemRepository;
     this.feedItemIdGenerator = feedItemIdGenerator;
@@ -31,7 +31,7 @@ public class EventBusImpl implements EventBus<Object> {
   }
 
   @Override
-  public void publish(String subject, Object event, Instant time) {
+  public void publish(String subject, TEvent event, Instant time) {
     final var eventType = event.getClass();
     final var isDeleteEvent = deletionEventTypes
       .map(types -> types.contains(eventType))

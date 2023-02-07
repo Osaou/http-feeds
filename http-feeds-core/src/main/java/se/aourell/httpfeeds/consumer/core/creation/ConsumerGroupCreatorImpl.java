@@ -26,13 +26,11 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   private int manuallyDefinedConsumerIndex = 0;
 
-  public ConsumerGroupCreatorImpl(
-    ApplicationShutdownDetector applicationShutdownDetector,
-    LocalFeedFetcher localFeedFetcher,
-    RemoteFeedFetcher remoteFeedFetcher,
-    DomainEventDeserializer domainEventDeserializer,
-    FeedConsumerRepository feedConsumerRepository
-  ) {
+  public ConsumerGroupCreatorImpl(ApplicationShutdownDetector applicationShutdownDetector,
+                                  LocalFeedFetcher localFeedFetcher,
+                                  RemoteFeedFetcher remoteFeedFetcher,
+                                  DomainEventDeserializer domainEventDeserializer,
+                                  FeedConsumerRepository feedConsumerRepository) {
     this.applicationShutdownDetector = applicationShutdownDetector;
     this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
   }
