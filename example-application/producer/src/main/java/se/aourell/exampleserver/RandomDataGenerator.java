@@ -10,7 +10,7 @@ import se.aourell.exampleserver.patientfeed.AssessmentStarted;
 import se.aourell.exampleserver.patientfeed.PatientAdded;
 import se.aourell.exampleserver.patientfeed.PatientDeleted;
 import se.aourell.exampleserver.patientfeed.PatientEvent;
-import se.aourell.httpfeeds.producer.api.EventFeedCreator;
+import se.aourell.httpfeeds.producer.api.EventFeedsProducerApi;
 import se.aourell.httpfeeds.producer.api.FeedAvailability;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 
@@ -23,8 +23,8 @@ public class RandomDataGenerator {
   private final EventBus<HealthDataEvent> healthDataEventBus;
   private final EventBus<PatientEvent> patientEventBus;
 
-  public RandomDataGenerator(EventFeedCreator eventFeedCreator, EventBus<PatientEvent> patientEventBus) {
-    this.healthDataEventBus = eventFeedCreator.createEventFeed("health-data", HealthDataEvent.class, FeedAvailability.PUBLISH_OVER_HTTP);
+  public RandomDataGenerator(EventFeedsProducerApi eventFeedsProducerApi, EventBus<PatientEvent> patientEventBus) {
+    this.healthDataEventBus = eventFeedsProducerApi.publishEventFeed("health-data", HealthDataEvent.class, FeedAvailability.PUBLISH_OVER_HTTP);
     this.patientEventBus = patientEventBus;
   }
 

@@ -8,7 +8,7 @@ import java.util.List;
 public interface FeedItemService {
 
   Duration DEFAULT_POLL_INTERVAL = Duration.ofSeconds(1);
-  int DEFAULT_LIMIT_COUNT_PER_REQUEST = 1000;
+  int DEFAULT_LIMIT_COUNT_PER_REQUEST = 1_000;
 
   List<FeedItem> fetch(String lastEventId, String subjectId);
 

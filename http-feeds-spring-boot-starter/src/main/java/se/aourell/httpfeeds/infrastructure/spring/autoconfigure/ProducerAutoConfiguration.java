@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import se.aourell.httpfeeds.infrastructure.producer.DomainEventSerializerImpl;
 import se.aourell.httpfeeds.infrastructure.producer.FeedItemIdGeneratorImpl;
-import se.aourell.httpfeeds.infrastructure.producer.creation.EventFeedCreatorImpl;
+import se.aourell.httpfeeds.infrastructure.producer.creation.EventFeedsProducerApiImpl;
 import se.aourell.httpfeeds.infrastructure.spring.http.HttpFeedsServerController;
-import se.aourell.httpfeeds.producer.api.EventFeedCreator;
+import se.aourell.httpfeeds.producer.api.EventFeedsProducerApi;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.EventFeedRegistryImpl;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
@@ -41,14 +41,14 @@ public class ProducerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public EventFeedCreator eventFeedCreator(DefaultListableBeanFactory defaultListableBeanFactory,
-                                           ProducerProperties producerProperties,
-                                           ApplicationShutdownDetector applicationShutdownDetector,
-                                           FeedItemRepositoryFactory feedItemRepositoryFactory,
-                                           FeedItemIdGenerator feedItemIdGenerator,
-                                           DomainEventSerializer domainEventSerializer,
-                                           EventFeedRegistry eventFeedRegistry) {
-    return new EventFeedCreatorImpl(defaultListableBeanFactory, producerProperties, applicationShutdownDetector, feedItemRepositoryFactory, feedItemIdGenerator, domainEventSerializer, eventFeedRegistry);
+  public EventFeedsProducerApi eventFeedsPublisherApi(DefaultListableBeanFactory defaultListableBeanFactory,
+                                                      ProducerProperties producerProperties,
+                                                      ApplicationShutdownDetector applicationShutdownDetector,
+                                                      FeedItemRepositoryFactory feedItemRepositoryFactory,
+                                                      FeedItemIdGenerator feedItemIdGenerator,
+                                                      DomainEventSerializer domainEventSerializer,
+                                                      EventFeedRegistry eventFeedRegistry) {
+    return new EventFeedsProducerApiImpl(defaultListableBeanFactory, producerProperties, applicationShutdownDetector, feedItemRepositoryFactory, feedItemIdGenerator, domainEventSerializer, eventFeedRegistry);
   }
 
   @Bean

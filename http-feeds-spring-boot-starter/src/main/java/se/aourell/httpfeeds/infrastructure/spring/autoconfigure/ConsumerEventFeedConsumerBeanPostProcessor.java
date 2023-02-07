@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
 import se.aourell.httpfeeds.consumer.api.ConsumerGroupCreator;
-import se.aourell.httpfeeds.consumer.api.ConsumerGroupScheduler;
+import se.aourell.httpfeeds.consumer.api.EventFeedsConsumerApi;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumers;
 import se.aourell.httpfeeds.consumer.api.EventHandler;
@@ -20,25 +20,25 @@ import java.util.stream.Stream;
 public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProcessor {
 
   private final ConsumerProperties consumerProperties;
-  private final ConsumerGroupScheduler consumerGroupScheduler;
+  private final EventFeedsConsumerApi eventFeedsConsumerApi;
 
-  public ConsumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, ConsumerGroupScheduler consumerGroupScheduler) {
+  public ConsumerEventFeedConsumerBeanPostProcessor(ConsumerProperties consumerProperties, EventFeedsConsumerApi eventFeedsConsumerApi) {
     this.consumerProperties = consumerProperties;
-    this.consumerGroupScheduler = consumerGroupScheduler;
+    this.eventFeedsConsumerApi = eventFeedsConsumerApi;
   }
 
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
     final EventFeedConsumer feedConsumerDeclaration = bean.getClass().getAnnotation(EventFeedConsumer.class);
     if (feedConsumerDeclaration != null) {
-      consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> defineAnnotatedConsumer(bean, feedConsumerDeclaration, groupCreator));
+      eventFeedsConsumerApi.scheduleConsumerGroup(beanName, groupCreator -> defineAnnotatedConsumer(bean, feedConsumerDeclaration, groupCreator));
     } else {
       final EventFeedConsumers multipleDeclaration = bean.getClass().getAnnotation(EventFeedConsumers.class);
       Optional.ofNullable(multipleDeclaration)
         .map(EventFeedConsumers::value)
         .map(Stream::of)
         .ifPresent(consumers -> {
-          consumerGroupScheduler.scheduleGroup(beanName, groupCreator -> consumers.forEach(consumer -> defineAnnotatedConsumer(bean, consumer, groupCreator)));
+          eventFeedsConsumerApi.scheduleConsumerGroup(beanName, groupCreator -> consumers.forEach(consumer -> defineAnnotatedConsumer(bean, consumer, groupCreator)));
         });
     }
 

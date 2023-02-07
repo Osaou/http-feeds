@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import se.aourell.exampleclient.healthdatafeed.EkgStreamUploaded;
 import se.aourell.exampleclient.patientfeed.AssessmentEnded;
 import se.aourell.exampleclient.patientfeed.AssessmentStarted;
-import se.aourell.httpfeeds.consumer.api.ConsumerGroupScheduler;
+import se.aourell.httpfeeds.consumer.api.EventFeedsConsumerApi;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 
 @Service
@@ -14,9 +14,9 @@ public class ProgrammaticallyRegisteredFeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProgrammaticallyRegisteredFeedConsumer.class);
 
-  public ProgrammaticallyRegisteredFeedConsumer(ConsumerGroupScheduler consumerGroupScheduler) {
-    consumerGroupScheduler
-      .scheduleGroup("ProgrammaticallyRegisteredFeedConsumer", group -> group
+  public ProgrammaticallyRegisteredFeedConsumer(EventFeedsConsumerApi eventFeedsConsumerApi) {
+    eventFeedsConsumerApi
+      .scheduleConsumerGroup("ProgrammaticallyRegisteredFeedConsumer", group -> group
         .defineRemoteConsumer("patient", "http://localhost:8080", consumer -> consumer
           .registerEventHandler(AssessmentStarted.class, this::onAssessmentStarted)
           .registerEventHandler(AssessmentEnded.class, this::onAssessmentEnded)

@@ -24,7 +24,7 @@ Then add this library to your `pom.xml`:
 <dependency>
   <groupId>se.aourell.httpfeeds</groupId>
   <artifactId>http-feeds-spring-boot-starter</artifactId>
-  <version>0.7.1</version>
+  <version>0.8.0</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ Check the [`example-application`](example-application) folder for a full example
 Not a problem. You can simply use the core library, which does not depend on Spring. However, you must then [wire up the necessary infrastructure](http-feeds-spring-boot-starter/src/main/java/se/aourell/httpfeeds/infrastructure/spring/autoconfigure) manually.
 
 
-## Feed definition
+## Feed definition: Java annotations
 
 Define your HTTP Feed using standard Java class hierarchy, for example like the following [ADT](https://en.wikipedia.org/wiki/Algebraic_data_type):
 
@@ -54,6 +54,22 @@ public record AssessmentStarted(String id, String deviceId, OffsetDateTime start
 public record AssessmentEnded(String id) implements PatientEvent { }
 @DeletionEvent
 public record PatientDeleted(String id) implements PatientEvent { }
+```
+
+
+## Publishing events
+
+Finally, make sure that your application adds new feed items by calling the `EventBus<T>::publish()` method.
+
+```java
+@Autowired // ...or preferably, use constructor injection
+private final EventBus<PatientEvent> eventBus;
+
+...
+
+var subject = UUID.randomUUID().toString();
+var event = new PatientAdded(subject, "Scooby", "Doe");
+eventBus.publish(subject, event);
 ```
 
 
@@ -82,7 +98,7 @@ create index eventfeeds_idx_id_source on eventfeeds
 );
 ```
 
-Also make sure the server portion of httpfeeds is enabled, and e.g. that your database is running, in your `application.properties`:
+Also make sure you are publishing your feed, and that a data source is configured, e.g. in your `application.properties`:
 
 ```properties
 eventfeeds.producer.publish.patient=true
@@ -94,19 +110,13 @@ spring.datasource.url=jdbc:h2:mem:testdb
 If you _only_ need in-process consuming support, you can skip this config for any feeds you define. See the section named "Consuming events: in-process" below for more info.
 
 
-## Publishing events
+## Feed definition: Java traditional API
 
-Finally, make sure that your application adds new feed items by calling the `EventBus<T>::publish()` method.
+There is also support for a more traditional API where you don't need to rely on annotations nor property files:
 
 ```java
-@Autowired // ...or preferably, use constructor injection
-private final EventBus<PatientEvent> eventBus;
-
-...
-
-var subject = UUID.randomUUID().toString();
-var event = new PatientAdded(subject, "Scooby", "Doe");
-eventBus.publish(subject, event);
+final EventFeedsProducerApi producerApi = ...
+final EventBus<HealthDataEvent> patientEventBus = producerApi.publishEventFeed("patient", PatientEvent.class, FeedAvailability.PUBLISH_OVER_HTTP);
 ```
 
 
@@ -146,7 +156,7 @@ Content-Type: application/cloudevents-batch+json
 ```
 
 
-## Consuming events: Java
+## Consuming events: Java annotations
 
 There is also a Java API for consuming events, mainly designed to be used from _other_ applications.
 
@@ -195,6 +205,28 @@ eventfeeds.consumer.sources.patient=http://localhost:8080
 `eventfeeds.consumer.sources` is a map where the consumer names are mapped to base urls. In this case, we say that events for the consumer named `patient` can be found at url `http://localhost:8080/feed/patient`.
 
 
+## Consuming events: Java traditional API
+
+Just like for publishing events, there is support for a more traditional API, where all configuration is supplied programmatically:
+
+```java
+final EventFeedsConsumerApi consumerApi = ...
+
+consumerApi
+  .scheduleConsumerGroup("Programmatically Registered Consumer Thread", group -> group
+    .defineRemoteConsumer("patient", "http://localhost:8080", consumer -> consumer
+      .registerEventHandler(AssessmentStarted.class, this::onAssessmentStarted)
+      .registerEventHandler(AssessmentEnded.class, this::onAssessmentEnded)
+    )
+    .defineRemoteConsumer("health-data", "http://localhost:7070", consumer -> consumer
+      .registerEventHandler(EkgStreamUploaded.class, this::onEkgStreamUploaded)
+    )
+  );
+```
+
+There is a `EventFeedsConsumerApi` bean created with the Spring starter module, but this API is also well suited for "core" usage of the library.
+
+
 ## Consuming events: in-process
 
 There is optimized support for when we want to process events from the same JVM process as where we publish them.
@@ -202,8 +234,8 @@ This can be helpful in monolithic architectures, for example.
 
 The Spring implementation ensures events are persisted before they are processed, and additionally no communication is sent over HTTP.
 
-You don't need any additional configuration to benefit from this optimization - the same API as described above is used.
-The framework will detect that we have any `EventFeed` defined in the same class path loader (with matching feed name), and then use this implementation automatically for that consumer.
+You don't need any additional configuration to benefit from this optimization - the same APIs as described above are used.
+The framework will detect if we have an `EventFeed` defined in the same class path loader with a matching feed name, and then use this implementation automatically for that consumer.
 
 
 ## Acknowledgements

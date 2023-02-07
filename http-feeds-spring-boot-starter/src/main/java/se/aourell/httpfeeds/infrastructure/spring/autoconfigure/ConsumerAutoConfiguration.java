@@ -9,10 +9,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import se.aourell.httpfeeds.consumer.api.ConsumerGroupScheduler;
+import se.aourell.httpfeeds.consumer.api.EventFeedsConsumerApi;
 import se.aourell.httpfeeds.consumer.core.LocalFeedFetcherImpl;
 import se.aourell.httpfeeds.consumer.core.RemoteFeedFetcherImpl;
-import se.aourell.httpfeeds.consumer.core.creation.ConsumerGroupSchedulerImpl;
+import se.aourell.httpfeeds.consumer.core.creation.EventFeedsConsumerApiImpl;
 import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.CloudEventArrayDeserializer;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
@@ -34,18 +34,18 @@ import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
 public class ConsumerAutoConfiguration {
 
   @Bean
-  public static BeanPostProcessor beanPostProcessor(ConsumerProperties consumerProperties, ConsumerGroupScheduler consumerGroupScheduler) {
-    return new ConsumerEventFeedConsumerBeanPostProcessor(consumerProperties, consumerGroupScheduler);
+  public static BeanPostProcessor beanPostProcessor(ConsumerProperties consumerProperties, EventFeedsConsumerApi eventFeedsConsumerApi) {
+    return new ConsumerEventFeedConsumerBeanPostProcessor(consumerProperties, eventFeedsConsumerApi);
   }
 
   @Bean
   @ConditionalOnMissingBean
-  public ConsumerGroupScheduler consumerGroupScheduler(ApplicationShutdownDetector applicationShutdownDetector,
-                                                       LocalFeedFetcher localFeedFetcher,
-                                                       RemoteFeedFetcher remoteFeedFetcher,
-                                                       DomainEventDeserializer domainEventDeserializer,
-                                                       FeedConsumerRepository feedConsumerRepository) {
-    return new ConsumerGroupSchedulerImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+  public EventFeedsConsumerApi eventFeedsConsumerApi(ApplicationShutdownDetector applicationShutdownDetector,
+                                                     LocalFeedFetcher localFeedFetcher,
+                                                     RemoteFeedFetcher remoteFeedFetcher,
+                                                     DomainEventDeserializer domainEventDeserializer,
+                                                     FeedConsumerRepository feedConsumerRepository) {
+    return new EventFeedsConsumerApiImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
   }
 
   @Bean

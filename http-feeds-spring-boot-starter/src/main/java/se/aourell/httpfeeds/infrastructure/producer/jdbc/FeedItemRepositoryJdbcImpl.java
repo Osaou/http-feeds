@@ -11,7 +11,6 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
 
   private final JdbcTemplate jdbcTemplate;
   private final FeedItemRowMapper feedItemRowMapper;
-  private final String table;
 
   private final String findAllSql;
   private final String findByIdGreaterThanSql;
@@ -22,7 +21,6 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
   public FeedItemRepositoryJdbcImpl(JdbcTemplate jdbcTemplate, FeedItemRowMapper feedItemRowMapper, String table, String feedName) {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
-    this.table = table;
 
     this.findAllSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' order by id limit ?", table, feedName);
     this.findAllForSubjectSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? order by id limit ?", table, feedName);
