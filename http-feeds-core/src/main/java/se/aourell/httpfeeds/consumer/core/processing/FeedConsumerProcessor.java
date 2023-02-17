@@ -85,6 +85,8 @@ public class FeedConsumerProcessor {
   }
 
   public Result<Boolean> fetchAndProcessEvents() {
+    final String lastIdBeforeProcessing = lastProcessedId;
+
     final Result<Boolean> result = fetch()
       .flatMap(events -> {
         try {
@@ -107,9 +109,10 @@ public class FeedConsumerProcessor {
         return Result.success(true);
       });
 
-    // persist id of last event we were able to process
-    getLastProcessedId()
-      .ifPresent(lastProcessedId -> feedConsumerRepository.storeLastProcessedId(feedConsumerName, lastProcessedId));
+    // persist id of last event we were able to process, if any
+    if (lastProcessedId != null && !lastProcessedId.equals(lastIdBeforeProcessing)) {
+      feedConsumerRepository.storeLastProcessedId(feedConsumerName, lastProcessedId);
+    }
 
     return result;
   }
