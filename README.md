@@ -24,7 +24,7 @@ Then add this library to your `pom.xml`:
 <dependency>
   <groupId>se.aourell.httpfeeds</groupId>
   <artifactId>http-feeds-spring-boot-starter</artifactId>
-  <version>0.8.0</version>
+  <version>0.9.0</version>
 </dependency>
 ```
 
