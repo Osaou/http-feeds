@@ -2,13 +2,15 @@ package se.aourell.httpfeeds.producer.spi;
 
 import se.aourell.httpfeeds.producer.core.FeedItem;
 
-import java.time.Duration;
 import java.util.List;
 
-public interface FeedItemService {
+public interface EventFeedService {
 
-  Duration DEFAULT_POLL_INTERVAL = Duration.ofSeconds(1);
-  int DEFAULT_LIMIT_COUNT_PER_REQUEST = 1_000;
+  String getName();
+
+  String getFeedPath();
+
+  boolean isPublishedOverHttp();
 
   List<FeedItem> fetch(String lastEventId, String subjectId);
 

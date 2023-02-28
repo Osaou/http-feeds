@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
-import se.aourell.httpfeeds.producer.spi.FeedItemService;
+import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -20,8 +20,8 @@ public class ProducerProperties {
   private final Set<String> httpFeedsToPublish;
 
   public ProducerProperties(Duration pollInterval, Integer limit, Map<String, String> publish) {
-    this.pollInterval = Optional.ofNullable(pollInterval).orElse(FeedItemService.DEFAULT_POLL_INTERVAL);
-    this.limit = Optional.ofNullable(limit).orElse(FeedItemService.DEFAULT_LIMIT_COUNT_PER_REQUEST);
+    this.pollInterval = Optional.ofNullable(pollInterval).orElse(EventFeedsUtil.DEFAULT_POLL_INTERVAL);
+    this.limit = Optional.ofNullable(limit).orElse(EventFeedsUtil.DEFAULT_LIMIT_COUNT_PER_REQUEST);
 
     this.httpFeedsToPublish = Optional.ofNullable(publish).orElse(Collections.emptyMap())
       .entrySet()

@@ -1,14 +1,16 @@
 package se.aourell.httpfeeds.producer.core;
 
-import se.aourell.httpfeeds.producer.spi.FeedItemService;
+import java.time.Duration;
 
-public record EventFeedDefinition(String name, String feedPath, FeedItemService feedItemService, boolean publishedHttpFeed) {
+public abstract class EventFeedsUtil {
 
   public static final String PATH_PREFIX = "/feed/";
+  public static final Duration DEFAULT_POLL_INTERVAL = Duration.ofSeconds(1);
+  public static final int DEFAULT_LIMIT_COUNT_PER_REQUEST = 1_000;
 
   public static String validateFeedName(String name) {
     if (name == null || "".equalsIgnoreCase(name.trim())) {
-      throw new IllegalArgumentException("Feed feedPath must not be empty");
+      throw new IllegalArgumentException("Feed name must not be empty");
     }
 
     return name;
@@ -22,6 +24,6 @@ public record EventFeedDefinition(String name, String feedPath, FeedItemService 
   }
 
   public static String urlPathFromFeedName(String name) {
-    return EventFeedDefinition.PATH_PREFIX + name;
+    return EventFeedsUtil.PATH_PREFIX + name;
   }
 }

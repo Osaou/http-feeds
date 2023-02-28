@@ -1,4 +1,10 @@
-package se.aourell.httpfeeds.infrastructure.producer;
+package se.aourell.httpfeeds.producer.core;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import se.aourell.httpfeeds.producer.spi.EventFeedService;
+import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -6,28 +12,46 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
-import se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerProperties;
-import se.aourell.httpfeeds.producer.core.FeedItem;
-import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
-import se.aourell.httpfeeds.producer.spi.FeedItemService;
+public class EventFeedServiceImpl implements EventFeedService {
 
-public class FeedItemServiceImpl implements FeedItemService {
-
-  private static final Logger LOG = LoggerFactory.getLogger(FeedItemServiceImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(EventFeedServiceImpl.class);
 
   private final ApplicationShutdownDetector applicationShutdownDetector;
   private final FeedItemRepository feedItemRepository;
+  private final String name;
+  private final String feedPath;
+  private final boolean isPublishedOverHttp;
   private final Duration pollInterval;
   private final int limit;
 
-  public FeedItemServiceImpl(ApplicationShutdownDetector applicationShutdownDetector, FeedItemRepository feedItemRepository, ProducerProperties producerProperties) {
+  public EventFeedServiceImpl(ApplicationShutdownDetector applicationShutdownDetector,
+                              FeedItemRepository feedItemRepository,
+                              String name,
+                              boolean isPublishedOverHttp,
+                              Duration pollInterval,
+                              int limit) {
     this.applicationShutdownDetector = applicationShutdownDetector;
     this.feedItemRepository = feedItemRepository;
-    this.pollInterval = producerProperties.getPollInterval();
-    this.limit = producerProperties.getLimit();
+    this.name = name;
+    this.feedPath = EventFeedsUtil.urlPathFromFeedName(name);
+    this.isPublishedOverHttp = isPublishedOverHttp;
+    this.pollInterval = pollInterval;
+    this.limit = limit;
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public String getFeedPath() {
+    return feedPath;
+  }
+
+  @Override
+  public boolean isPublishedOverHttp() {
+    return isPublishedOverHttp;
   }
 
   @Override

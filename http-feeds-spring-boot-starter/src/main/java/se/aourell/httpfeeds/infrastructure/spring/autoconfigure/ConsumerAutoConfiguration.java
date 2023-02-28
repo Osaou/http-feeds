@@ -23,9 +23,9 @@ import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.infrastructure.consumer.CloudEventArrayDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.DomainEventDeserializerImpl;
-import se.aourell.httpfeeds.infrastructure.consumer.HttpFeedsClientImpl;
+import se.aourell.httpfeeds.consumer.core.HttpFeedsClientImpl;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
-import se.aourell.httpfeeds.producer.spi.EventFeedRegistry;
+import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
 
 @Configuration
 @AutoConfigureAfter(AutoConfiguration.class)
@@ -50,8 +50,8 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public LocalFeedFetcher localFeedFetcher(EventFeedRegistry eventFeedRegistry, CloudEventMapper cloudEventMapper) {
-    return new LocalFeedFetcherImpl(eventFeedRegistry, cloudEventMapper);
+  public LocalFeedFetcher localFeedFetcher(EventFeedsRegistry eventFeedsRegistry, CloudEventMapper cloudEventMapper) {
+    return new LocalFeedFetcherImpl(eventFeedsRegistry, cloudEventMapper);
   }
 
   @Bean

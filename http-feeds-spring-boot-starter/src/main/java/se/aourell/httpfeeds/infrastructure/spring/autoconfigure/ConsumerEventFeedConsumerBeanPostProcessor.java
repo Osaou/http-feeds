@@ -9,7 +9,7 @@ import se.aourell.httpfeeds.consumer.api.EventFeedConsumer;
 import se.aourell.httpfeeds.consumer.api.EventFeedConsumers;
 import se.aourell.httpfeeds.consumer.api.EventHandler;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
-import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,7 +53,7 @@ public class ConsumerEventFeedConsumerBeanPostProcessor implements BeanPostProce
     if (baseUri == null) {
       groupCreator.defineLocalConsumer(feedName, feedConsumerName, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
     } else {
-      final String feedUrl = EventFeedDefinition.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
+      final String feedUrl = EventFeedsUtil.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
       groupCreator.defineRemoteConsumer(feedName, feedConsumerName, feedUrl, consumerCreator -> registerEventHandlersForBean(bean, consumerCreator));
     }
   }

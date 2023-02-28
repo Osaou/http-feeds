@@ -11,7 +11,7 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
-import se.aourell.httpfeeds.producer.core.EventFeedDefinition;
+import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 
 import java.util.function.Consumer;
 
@@ -56,7 +56,7 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
   @Override
   public ConsumerGroupCreator defineRemoteConsumer(String feedName, String baseUri, Consumer<ConsumerCreator> consumer) {
     final String feedConsumerName = generateUniqueConsumerName(feedName);
-    final String feedUrl = EventFeedDefinition.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
+    final String feedUrl = EventFeedsUtil.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
 
     return defineRemoteConsumer(feedName, feedConsumerName, feedUrl, consumer);
   }

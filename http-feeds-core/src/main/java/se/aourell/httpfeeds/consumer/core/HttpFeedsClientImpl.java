@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.infrastructure.consumer;
+package se.aourell.httpfeeds.consumer.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
