@@ -10,6 +10,10 @@ public abstract class Result<V> {
     return new Success<>(value);
   }
 
+  public static Result<Boolean> success() {
+    return new Success<>(true);
+  }
+
   public static <V> Result<V> failure(String message) {
     return new Failure<>(message);
   }

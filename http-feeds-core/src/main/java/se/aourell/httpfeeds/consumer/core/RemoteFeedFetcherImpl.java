@@ -3,7 +3,7 @@ package se.aourell.httpfeeds.consumer.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
-import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.util.Result;
@@ -21,9 +21,9 @@ public class RemoteFeedFetcherImpl implements RemoteFeedFetcher {
   }
 
   @Override
-  public Result<List<CloudEvent>> fetchRemoteEvents(FeedConsumerProcessor feedConsumerProcessor) {
-    final String url = feedConsumerProcessor.getUrl();
-    return feedConsumerProcessor.getLastProcessedId()
+  public Result<List<CloudEvent>> fetchRemoteEvents(FeedConsumer feedConsumer) {
+    final String url = feedConsumer.getUrl();
+    return feedConsumer.getLastProcessedId()
       .map(lastProcessedId -> httpFeedsClient.pollCloudEvents(url, lastProcessedId))
       .orElseGet(() -> httpFeedsClient.pollCloudEvents(url))
       .peekFailure(e -> LOG.debug("Exception when fetching events", e));

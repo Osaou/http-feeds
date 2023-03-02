@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
 import se.aourell.httpfeeds.consumer.api.ConsumerGroupCreator;
-import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessorGroup;
 import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
@@ -30,9 +30,10 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
                                   LocalFeedFetcher localFeedFetcher,
                                   RemoteFeedFetcher remoteFeedFetcher,
                                   DomainEventDeserializer domainEventDeserializer,
-                                  FeedConsumerRepository feedConsumerRepository) {
+                                  FeedConsumerRepository feedConsumerRepository,
+                                  String groupName) {
     this.applicationShutdownDetector = applicationShutdownDetector;
-    this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+    this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, groupName);
   }
 
   @Override
@@ -44,7 +45,7 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   @Override
   public ConsumerGroupCreator defineLocalConsumer(String feedName, String feedConsumerName, Consumer<ConsumerCreator> consumer) {
-    final FeedConsumerProcessor processor = feedConsumerProcessorGroup.defineLocalConsumer(feedConsumerName, feedName);
+    final FeedConsumer processor = feedConsumerProcessorGroup.defineLocalConsumer(feedConsumerName, feedName);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
 
     LOG.debug("Defining Event Consumer (Local) for feed '{}' with unique name '{}'", feedName, feedConsumerName);
@@ -63,7 +64,7 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   @Override
   public ConsumerGroupCreator defineRemoteConsumer(String feedName, String feedConsumerName, String completeFeedUrl, Consumer<ConsumerCreator> consumer) {
-    final FeedConsumerProcessor processor = feedConsumerProcessorGroup.defineRemoteConsumer(feedConsumerName, feedName, completeFeedUrl);
+    final FeedConsumer processor = feedConsumerProcessorGroup.defineRemoteConsumer(feedConsumerName, feedName, completeFeedUrl);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
 
     LOG.debug("Defined Event Consumer (Remote) for feed '{}' with unique name '{}' for URL '{}'", feedName, feedConsumerName, completeFeedUrl);

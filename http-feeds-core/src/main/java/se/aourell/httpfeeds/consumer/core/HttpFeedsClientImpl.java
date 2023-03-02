@@ -58,7 +58,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
     } catch (HttpTimeoutException e) {
       return Result.success(Collections.emptyList());
     } catch (IOException | InterruptedException e) {
-      final var err = new RuntimeException("Exception when fetching cloud events from url" + urlWithLastProcessedId, e);
+      final var err = new RuntimeException("Exception when fetching cloud events from url " + urlWithLastProcessedId, e);
       return Result.failure(err);
     }
 

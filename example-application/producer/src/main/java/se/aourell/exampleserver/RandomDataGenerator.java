@@ -41,8 +41,10 @@ public class RandomDataGenerator {
     }
   }
 
+  private long id = 0;
+
   private String randomId() {
-    return Integer.toString(new Random().nextInt(10_000_000));
+    return Long.toString(++id);
   }
 
   private Object randomEvent(String id) {

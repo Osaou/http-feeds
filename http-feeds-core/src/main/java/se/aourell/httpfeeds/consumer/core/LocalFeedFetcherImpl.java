@@ -1,7 +1,7 @@
 package se.aourell.httpfeeds.consumer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
-import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessor;
+import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.FeedItem;
@@ -22,12 +22,12 @@ public class LocalFeedFetcherImpl implements LocalFeedFetcher {
   }
 
   @Override
-  public Result<List<CloudEvent>> fetchLocalEvents(FeedConsumerProcessor feedConsumerProcessor) {
+  public Result<List<CloudEvent>> fetchLocalEvents(FeedConsumer feedConsumer) {
     try {
-      final EventFeedService eventFeedService = eventFeedsRegistry.getLocalFeedByName(feedConsumerProcessor.getFeedName())
-        .orElseThrow(() -> new RuntimeException("Unable to find defined feed item service by name: " + feedConsumerProcessor.getFeedName()));
+      final EventFeedService eventFeedService = eventFeedsRegistry.getLocalFeedByName(feedConsumer.getFeedName())
+        .orElseThrow(() -> new RuntimeException("Unable to find defined feed item service by name: " + feedConsumer.getFeedName()));
 
-      final List<FeedItem> feedItems = feedConsumerProcessor.getLastProcessedId()
+      final List<FeedItem> feedItems = feedConsumer.getLastProcessedId()
         .map(lastProcessedId -> eventFeedService.fetch(lastProcessedId, null))
         .orElseGet(() -> eventFeedService.fetch(null, null));
 

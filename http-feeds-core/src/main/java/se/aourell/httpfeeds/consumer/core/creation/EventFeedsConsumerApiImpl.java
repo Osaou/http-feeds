@@ -36,7 +36,7 @@ public class EventFeedsConsumerApiImpl implements EventFeedsConsumerApi {
 
   @Override
   public EventFeedsConsumerApi scheduleConsumerGroup(String groupName, Consumer<ConsumerGroupCreator> consumerGroup) {
-    final var group = new ConsumerGroupCreatorImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+    final var group = new ConsumerGroupCreatorImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, groupName);
 
     LOG.debug("Scheduling new Consumer Group with thread name {}", groupName);
     consumerGroup.accept(group);

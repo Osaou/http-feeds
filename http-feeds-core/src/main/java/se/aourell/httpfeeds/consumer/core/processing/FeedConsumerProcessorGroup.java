@@ -2,15 +2,18 @@ package se.aourell.httpfeeds.consumer.core.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
+import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class FeedConsumerProcessorGroup {
 
@@ -24,7 +27,8 @@ public class FeedConsumerProcessorGroup {
   private final RemoteFeedFetcher remoteFeedFetcher;
   private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
-  private final List<FeedConsumerProcessor> processors = new ArrayList<>();
+  private final String groupName;
+  private final List<FeedConsumer> consumers = new ArrayList<>();
 
   private long failureCount = 0;
 
@@ -32,30 +36,32 @@ public class FeedConsumerProcessorGroup {
                                     LocalFeedFetcher localFeedFetcher,
                                     RemoteFeedFetcher remoteFeedFetcher,
                                     DomainEventDeserializer domainEventDeserializer,
-                                    FeedConsumerRepository feedConsumerRepository) {
+                                    FeedConsumerRepository feedConsumerRepository,
+                                    String groupName) {
     this.applicationShutdownDetector = applicationShutdownDetector;
     this.localFeedFetcher = localFeedFetcher;
     this.remoteFeedFetcher = remoteFeedFetcher;
     this.domainEventDeserializer = domainEventDeserializer;
     this.feedConsumerRepository = feedConsumerRepository;
+    this.groupName = groupName;
   }
 
-  public FeedConsumerProcessor defineLocalConsumer(String feedConsumerName, String feedName) {
-    return addProcessor(feedConsumerName, feedName, null);
+  public FeedConsumer defineLocalConsumer(String feedConsumerName, String feedName) {
+    return addConsumer(feedConsumerName, feedName, null);
   }
 
-  public FeedConsumerProcessor defineRemoteConsumer(String feedConsumerName, String feedName, String feedUrl) {
+  public FeedConsumer defineRemoteConsumer(String feedConsumerName, String feedName, String feedUrl) {
     Objects.requireNonNull(feedUrl);
-    return addProcessor(feedConsumerName, feedName, feedUrl);
+    return addConsumer(feedConsumerName, feedName, feedUrl);
   }
 
-  private FeedConsumerProcessor addProcessor(String feedConsumerName, String feedName, String feedUrl) {
+  private FeedConsumer addConsumer(String feedConsumerName, String feedName, String feedUrl) {
     Objects.requireNonNull(feedConsumerName);
     Objects.requireNonNull(feedName);
-    final var processor = new FeedConsumerProcessor(feedConsumerName, feedName, feedUrl, applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+    final var consumer = new FeedConsumer(feedConsumerName, feedName, feedUrl, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
 
-    processors.add(processor);
-    return processor;
+    consumers.add(consumer);
+    return consumer;
   }
 
   public void batchFetchAndProcessEvents() {
@@ -76,28 +82,91 @@ public class FeedConsumerProcessorGroup {
       }
     }
 
-    for (final var processor : processors) {
+    // fetch events from all registered consumers
+    List<FetchedEventFromConsumer> events = null;
+    Throwable problem = null;
+    long updatedFailureCount = 0;
+    try {
+      events = consumers.parallelStream()
+        .flatMap(consumer -> {
+          if (applicationShutdownDetector.isGracefulShutdown()) {
+            return Stream.empty();
+          }
+
+          return consumer.fetchEvents()
+            .orElseThrow()
+            .stream()
+            .map(event -> new FetchedEventFromConsumer(consumer, event));
+        })
+        .toList();
+    } catch (Throwable e) {
       if (applicationShutdownDetector.isGracefulShutdown()) {
         return;
       }
 
-      final long updatedFailureCount = processor.fetchAndProcessEvents()
-        .map(success -> 0L)
-        .orElseGet(() -> Math.min(failureCount + 1, MAX_FAILURE_COUNT));
-
-      if (applicationShutdownDetector.isGracefulShutdown()) {
-        return;
-      }
-
-      if (updatedFailureCount > 0 && failureCount <= 0) {
-        // going into failure mode
-        LOG.warn("Problem consuming events from feed {}", processor.getFeedName());
-      } else if (updatedFailureCount <= 0 && failureCount > 0) {
-        // exiting failure mode
-        LOG.warn("Successful resume from feed {}", processor.getFeedName());
-      }
-
-      failureCount = updatedFailureCount;
+      updatedFailureCount = increaseFailureCount();
+      problem = e;
     }
+
+    final boolean hasEvents = events != null && !events.isEmpty();
+
+    // sort and then process total stream of events
+    if (hasEvents) {
+      try {
+        // if we are consuming more than one source, we need to ensure correct ordering amongst the event streams
+        if (consumers.size() > 1) {
+          events = events.stream()
+            .sorted(Comparator.comparing(fetched -> fetched.event().id()))
+            .toList();
+        }
+
+        events.stream()
+          .filter(fetched -> !applicationShutdownDetector.isGracefulShutdown())
+          .forEach(fetched -> fetched.consumer.processEvent(fetched.event())
+            .orElseThrow()
+          );
+      } catch (Throwable e) {
+        if (applicationShutdownDetector.isGracefulShutdown()) {
+          return;
+        }
+
+        LOG.error("Exception when processing event", e);
+
+        updatedFailureCount = increaseFailureCount();
+        problem = e;
+      }
+
+      // persist all feed consumers' event consumption progress
+      try {
+        consumers.stream()
+          .filter(fetched -> !applicationShutdownDetector.isGracefulShutdown())
+          .forEach(FeedConsumer::persistProgress);
+      } catch (Throwable e) {
+        if (applicationShutdownDetector.isGracefulShutdown()) {
+          return;
+        }
+
+        if (problem != null) {
+          updatedFailureCount = increaseFailureCount();
+          problem = e;
+        }
+      }
+    }
+
+    if (updatedFailureCount > 0 && failureCount <= 0) {
+      // going into failure mode
+      LOG.warn("Problem consuming events for Consumer Group " + groupName + ": " + problem.getMessage());
+    } else if (updatedFailureCount <= 0 && failureCount > 0) {
+      // exiting failure mode
+      LOG.warn("Successful resume for Consumer Group {}", groupName);
+    }
+
+    failureCount = updatedFailureCount;
   }
+
+  private long increaseFailureCount() {
+    return Math.min(failureCount + 1, MAX_FAILURE_COUNT);
+  }
+
+  private record FetchedEventFromConsumer(FeedConsumer consumer, CloudEvent event) { }
 }
