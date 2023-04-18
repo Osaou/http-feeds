@@ -6,12 +6,14 @@ import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
 import se.aourell.httpfeeds.consumer.api.ConsumerGroupCreator;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumerProcessorGroup;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
+import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 
 import java.util.function.Consumer;
 
@@ -31,9 +33,11 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
                                   RemoteFeedFetcher remoteFeedFetcher,
                                   DomainEventDeserializer domainEventDeserializer,
                                   FeedConsumerRepository feedConsumerRepository,
+                                  DeadLetterQueueService deadLetterQueueService,
+                                  DeadLetterQueueRepository deadLetterQueueRepository,
                                   String groupName) {
     this.applicationShutdownDetector = applicationShutdownDetector;
-    this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, groupName);
+    this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, applicationShutdownDetector, deadLetterQueueService, deadLetterQueueRepository, groupName);
   }
 
   @Override

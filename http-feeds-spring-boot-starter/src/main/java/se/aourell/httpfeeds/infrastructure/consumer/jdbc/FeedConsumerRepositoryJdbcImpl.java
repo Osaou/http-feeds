@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class FeedConsumerRepositoryJdbcImpl implements FeedConsumerRepository {
 
-  public static final String DEFAULT_TABLE_NAME = "eventfeeds_consummation";
+  public static final String DEFAULT_TABLE_NAME = "eventfeeds_processed";
 
   private final JdbcTemplate jdbcTemplate;
   private final String retrieveSql;

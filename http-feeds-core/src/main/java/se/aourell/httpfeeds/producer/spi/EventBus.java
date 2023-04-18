@@ -9,5 +9,15 @@ public interface EventBus<TEvent> {
     publish(subject, event, Instant.now());
   }
 
-  void publish(String subject, TEvent event, Instant time);
+  default
+  void publish(String subject, TEvent event, Instant time) {
+    publish(subject, event, time, subject);
+  }
+
+  default
+  void publish(String subject, TEvent event, String traceId) {
+    publish(subject, event, Instant.now(), traceId);
+  }
+
+  void publish(String subject, TEvent event, Instant time, String traceId);
 }

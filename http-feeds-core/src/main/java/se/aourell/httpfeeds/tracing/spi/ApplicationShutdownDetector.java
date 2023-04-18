@@ -1,4 +1,4 @@
-package se.aourell.httpfeeds.spi;
+package se.aourell.httpfeeds.tracing.spi;
 
 public interface ApplicationShutdownDetector {
 

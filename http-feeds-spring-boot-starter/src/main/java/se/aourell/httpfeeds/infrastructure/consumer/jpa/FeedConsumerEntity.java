@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "eventfeeds_consummation")
+@Table(name = "eventfeeds_processed")
 public class FeedConsumerEntity {
 
   @Id

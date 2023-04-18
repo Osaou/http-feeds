@@ -1,5 +1,6 @@
 package se.aourell.httpfeeds.infrastructure.producer.jpa;
 
+import se.aourell.httpfeeds.infrastructure.spring.JpaEntity;
 import se.aourell.httpfeeds.producer.core.FeedItem;
 
 import javax.persistence.Column;
@@ -11,14 +12,20 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "eventfeeds")
-public class FeedItemEntity {
+public class FeedItemEntity extends JpaEntity<String> {
 
   @Id
   @Column(name = "id")
   private String id;
 
+  @Column(name = "trace_id", nullable = false)
+  private String traceId;
+
   @Column(name = "type", nullable = false)
   private String type;
+
+  @Column(name = "type_version", nullable = false)
+  private int typeVersion;
 
   @Column(name = "feed_name", nullable = false)
   private String feedName;
@@ -40,7 +47,9 @@ public class FeedItemEntity {
 
   public FeedItemEntity(FeedItem feedItem) {
     id = feedItem.id();
+    traceId = feedItem.traceId();
     type = feedItem.type();
+    typeVersion = feedItem.typeVersion();
     feedName = feedItem.feedName();
     time = feedItem.time();
     subject = feedItem.subject();
@@ -48,6 +57,7 @@ public class FeedItemEntity {
     data = feedItem.data();
   }
 
+  @Override
   public String getId() {
     return id;
   }
@@ -56,12 +66,28 @@ public class FeedItemEntity {
     this.id = id;
   }
 
+  public String getTraceId() {
+    return traceId;
+  }
+
+  public void setTraceId(String traceId) {
+    this.traceId = traceId;
+  }
+
   public String getType() {
     return type;
   }
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public int getTypeVersion() {
+    return typeVersion;
+  }
+
+  public void setTypeVersion(int typeVersion) {
+    this.typeVersion = typeVersion;
   }
 
   public String getFeedName() {

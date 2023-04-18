@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>se.aourell.httpfeeds</groupId>
+    <artifactId>bom</artifactId>
+    <version>0.9.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>http-feeds-dashboard</artifactId>
+  <version>0.9.0</version>
+
+  <name>http-feeds-dashboard</name>
+  <description>Internal dashboard for HTTP-feeds for statistical and diagnosis purposes</description>
+
+  <properties>
+    <mvn-resources-plugin.version>3.0.2</mvn-resources-plugin.version>
+
+    <jte.version>2.3.0</jte.version>
+    <jte.build.views-directory>${basedir}/src/main/jte</jte.build.views-directory>
+    <jte.build.output-directory>${basedir}/target/generated-sources/jte</jte.build.output-directory>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>se.aourell.httpfeeds</groupId>
+      <artifactId>http-feeds-spring-boot-starter</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>gg.jte</groupId>
+      <artifactId>jte</artifactId>
+      <version>${jte.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>gg.jte</groupId>
+      <artifactId>jte-runtime</artifactId>
+      <version>${jte.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>gg.jte</groupId>
+        <artifactId>jte-maven-plugin</artifactId>
+        <version>${jte.version}</version>
+        <configuration>
+          <sourceDirectory>${jte.build.views-directory}</sourceDirectory>
+          <targetDirectory>${jte.build.output-directory}</targetDirectory>
+          <contentType>Html</contentType>
+          <binaryStaticContent>true</binaryStaticContent>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Since we use precompiled binary content parts, we need to copy those resources next to the compiled class files (the maven plugin doesn't do that for us) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${mvn-resources-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${jte.build.output-directory}</directory>
+                  <includes>
+                    <include>**/*.bin</include>
+                  </includes>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

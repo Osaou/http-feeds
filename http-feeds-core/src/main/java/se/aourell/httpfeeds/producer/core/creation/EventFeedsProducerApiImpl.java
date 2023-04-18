@@ -12,7 +12,7 @@ import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 
 import java.time.Duration;
 

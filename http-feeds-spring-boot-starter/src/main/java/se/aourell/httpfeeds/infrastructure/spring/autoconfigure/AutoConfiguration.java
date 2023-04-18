@@ -5,12 +5,18 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
-import se.aourell.httpfeeds.infrastructure.ApplicationShutdownDetectorImpl;
+import se.aourell.httpfeeds.infrastructure.producer.CloudEventSerializerImpl;
+import se.aourell.httpfeeds.producer.core.CloudEventMapper;
+import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.infrastructure.tracing.ApplicationShutdownDetectorImpl;
 
 @Configuration
 public class AutoConfiguration {
@@ -29,6 +35,7 @@ public class AutoConfiguration {
       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
       .addModule(new JavaTimeModule())
+      .addModule(new Jdk8Module())
       .build();
   }
 
@@ -40,6 +47,19 @@ public class AutoConfiguration {
       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
       .addModule(new JavaTimeModule())
+      .addModule(new Jdk8Module())
       .build();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CloudEventMapper cloudEventMapper(DomainEventSerializer domainEventSerializer) {
+    return new CloudEventMapper(domainEventSerializer);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CloudEventSerializer cloudEventSerializer(@Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
+    return new CloudEventSerializerImpl(cloudEventObjectMapper);
   }
 }

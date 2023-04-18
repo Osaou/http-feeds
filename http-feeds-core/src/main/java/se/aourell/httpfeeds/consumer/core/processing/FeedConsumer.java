@@ -8,6 +8,9 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.HashMap;
@@ -21,6 +24,8 @@ public class FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumer.class);
 
+  private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 3;
+
   private final String feedConsumerName;
   private final String feedName;
   private final String url;
@@ -28,10 +33,15 @@ public class FeedConsumer {
   private final RemoteFeedFetcher remoteFeedFetcher;
   private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
+  private final ApplicationShutdownDetector applicationShutdownDetector;
+  private final DeadLetterQueueService deadLetterQueueService;
+  private final DeadLetterQueueRepository deadLetterQueueRepository;
   private final Map<String, EventHandlerDefinition> eventHandlers;
 
+  private int processingFailureCount;
   private String lastProcessedId;
   private String updatedLastProcessedId;
+  private boolean isProcessingDlq;
 
   public FeedConsumer(String feedConsumerName,
                       String feedName,
@@ -39,7 +49,10 @@ public class FeedConsumer {
                       LocalFeedFetcher localFeedFetcher,
                       RemoteFeedFetcher remoteFeedFetcher,
                       DomainEventDeserializer domainEventDeserializer,
-                      FeedConsumerRepository feedConsumerRepository) {
+                      FeedConsumerRepository feedConsumerRepository,
+                      ApplicationShutdownDetector applicationShutdownDetector,
+                      DeadLetterQueueService deadLetterQueueService,
+                      DeadLetterQueueRepository deadLetterQueueRepository) {
     this.feedConsumerName = feedConsumerName;
     this.feedName = feedName;
     this.url = url;
@@ -48,7 +61,11 @@ public class FeedConsumer {
     this.remoteFeedFetcher = remoteFeedFetcher;
     this.domainEventDeserializer = domainEventDeserializer;
     this.feedConsumerRepository = feedConsumerRepository;
+    this.applicationShutdownDetector = applicationShutdownDetector;
+    this.deadLetterQueueService = deadLetterQueueService;
+    this.deadLetterQueueRepository = deadLetterQueueRepository;
 
+    this.processingFailureCount = 0;
     this.eventHandlers = new HashMap<>();
     this.lastProcessedId = feedConsumerRepository.retrieveLastProcessedId(feedConsumerName)
       .orElse(null);
@@ -83,12 +100,43 @@ public class FeedConsumer {
   public Result<List<CloudEvent>> fetchEvents() {
     updatedLastProcessedId = lastProcessedId;
 
+    // first work off any re-introduced items from the DLQ
+    final var reintroducedFromDlq = deadLetterQueueService.findReintroduced(feedConsumerName);
+    if (!reintroducedFromDlq.isEmpty()) {
+      isProcessingDlq = true;
+      return Result.success(reintroducedFromDlq);
+    }
+
+    isProcessingDlq = false;
     return url == null
       ? localFeedFetcher.fetchLocalEvents(this)
       : remoteFeedFetcher.fetchRemoteEvents(this);
   }
 
   public Result<Boolean> processEvent(CloudEvent event) {
+    final String eventId = event.id();
+    final String traceId = event.traceId()
+      .orElse(eventId);
+
+    // should we shelve this event on DLQ by association?
+    if (!isProcessingDlq && event.traceId().isPresent() && deadLetterQueueRepository.isTraceShelved(traceId)) {
+      try {
+        LOG.warn("DLQ: Shelving event with ID {} because of matched trace {} being shelved", eventId, traceId);
+        deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
+      } catch (Throwable e) {
+        if (!applicationShutdownDetector.isGracefulShutdown()) {
+          LOG.error("DLQ: Unable to operate on dead-letter queue", e);
+        }
+
+        return Result.failure(e);
+      }
+
+      updatedLastProcessedId = eventId;
+      processingFailureCount = 0;
+      return Result.success();
+    }
+
+    final boolean handled;
     try {
       final var eventTypeName = event.type();
       final var eventHandler = findHandlerForEventType(eventTypeName);
@@ -105,14 +153,65 @@ public class FeedConsumer {
         }
 
         eventHandler.get().invoke(deserializedData, () -> createEventMetaData(event));
+        handled = true;
+      } else {
+        handled = false;
+      }
+    } catch (Throwable e) {
+      if (applicationShutdownDetector.isGracefulShutdown()) {
+        return Result.failure(e);
       }
 
-      updatedLastProcessedId = event.id();
+      ++processingFailureCount;
+      LOG.warn("DLQ: Failure count is now " + processingFailureCount);
 
-      return Result.success();
-    } catch (Throwable e) {
+      try {
+        if (isProcessingDlq) {
+          LOG.warn("DLQ: Re-Shelving all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId);
+          deadLetterQueueRepository.keepShelved(traceId);
+
+          processingFailureCount = 0;
+          return Result.success();
+        }
+
+        // check if it's time to shelve this event in the dead-letter queue
+        if (processingFailureCount >= MAX_RETRIES_BEFORE_SHELVING_IN_DLQ) {
+          LOG.warn("DLQ: Shelving event with ID {} because of too many failed processing attempts", eventId);
+          deadLetterQueueService.shelveFromFeed(event, feedConsumerName, e);
+
+          updatedLastProcessedId = eventId;
+          processingFailureCount = 0;
+          return Result.success();
+        }
+      } catch (Throwable e2) {
+        if (!applicationShutdownDetector.isGracefulShutdown()) {
+          LOG.error("DLQ: Unable to operate on dead-letter queue", e2);
+        }
+      }
+
       return Result.failure(e);
     }
+
+    if (handled) {
+      processingFailureCount = 0;
+
+      if (isProcessingDlq) {
+        try {
+          LOG.warn("DLQ: Successful processing of event with ID {}", eventId);
+          deadLetterQueueRepository.markDelivered(traceId, eventId);
+        } catch (Throwable e) {
+          if (!applicationShutdownDetector.isGracefulShutdown()) {
+            LOG.error("DLQ: Unable to operate on dead-letter queue", e);
+          }
+
+          return Result.failure(e);
+        }
+      } else {
+        updatedLastProcessedId = eventId;
+      }
+    }
+
+    return Result.success();
   }
 
   public Optional<EventHandlerDefinition> findHandlerForEventType(String eventTypeName) {
@@ -120,12 +219,13 @@ public class FeedConsumer {
     return Optional.ofNullable(handler);
   }
 
-  private EventMetaData createEventMetaData(CloudEvent currentCloudEvent) {
+  private EventMetaData createEventMetaData(CloudEvent cloudEvent) {
     return new EventMetaData(
-      currentCloudEvent.id(),
-      currentCloudEvent.subject(),
-      currentCloudEvent.time(),
-      currentCloudEvent.source()
+      cloudEvent.id(),
+      cloudEvent.traceId().orElseGet(cloudEvent::id),
+      cloudEvent.subject(),
+      cloudEvent.time(),
+      cloudEvent.source()
     );
   }
 

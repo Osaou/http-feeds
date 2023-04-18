@@ -65,6 +65,6 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   }
 
   private static FeedItem mapFromEntityToFeedItem(FeedItemEntity entity) {
-    return new FeedItem(entity.getId(), entity.getType(), entity.getFeedName(), entity.getTime(), entity.getSubject(), entity.getMethod(), entity.getData());
+    return new FeedItem(entity.getId(), entity.getTraceId(), entity.getType(), entity.getTypeVersion(), entity.getFeedName(), entity.getTime(), entity.getSubject(), entity.getMethod(), entity.getData());
   }
 }

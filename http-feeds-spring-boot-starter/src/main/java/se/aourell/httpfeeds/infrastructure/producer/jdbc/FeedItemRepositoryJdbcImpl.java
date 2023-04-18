@@ -22,13 +22,13 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
     this.jdbcTemplate = jdbcTemplate;
     this.feedItemRowMapper = feedItemRowMapper;
 
-    this.findAllSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' order by id limit ?", table, feedName);
-    this.findAllForSubjectSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? order by id limit ?", table, feedName);
+    this.findAllSql = String.format("select id, trace_id, type, type_version, feed_name, time, subject, method, data from %s where feed_name = '%s' order by id limit ?", table, feedName);
+    this.findAllForSubjectSql = String.format("select id, trace_id, type, type_version, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? order by id limit ?", table, feedName);
 
-    this.findByIdGreaterThanSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and id > ? order by id limit ?", table, feedName);
-    this.findByIdGreaterThanForSubjectSql = String.format("select id, type, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? and id > ? order by id limit ?", table, feedName);
+    this.findByIdGreaterThanSql = String.format("select id, trace_id, type, type_version, feed_name, time, subject, method, data from %s where feed_name = '%s' and id > ? order by id limit ?", table, feedName);
+    this.findByIdGreaterThanForSubjectSql = String.format("select id, trace_id, type, type_version, feed_name, time, subject, method, data from %s where feed_name = '%s' and subject = ? and id > ? order by id limit ?", table, feedName);
 
-    this.appendSql = String.format("insert into %s (id, type, feed_name, time, subject, method, data) values (?, ?, '%s', ?, ?, ?, ?)", table, feedName);
+    this.appendSql = String.format("insert into %s (id, trace_id, type, type_version, feed_name, time, subject, method, data) values (?, ?, ?, ?, '%s', ?, ?, ?, ?)", table, feedName);
   }
 
   @Override
@@ -53,6 +53,6 @@ public class FeedItemRepositoryJdbcImpl implements FeedItemRepository {
 
   @Override
   public void append(FeedItem feedItem) {
-    jdbcTemplate.update(appendSql, feedItem.id(), feedItem.type(), Timestamp.from(feedItem.time()), feedItem.subject(), feedItem.method(), feedItem.data());
+    jdbcTemplate.update(appendSql, feedItem.id(), feedItem.traceId(), feedItem.type(), feedItem.typeVersion(), Timestamp.from(feedItem.time()), feedItem.subject(), feedItem.method(), feedItem.data());
   }
 }

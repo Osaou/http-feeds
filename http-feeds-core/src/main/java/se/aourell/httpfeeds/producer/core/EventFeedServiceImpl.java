@@ -4,13 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.producer.spi.EventFeedService;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 public class EventFeedServiceImpl implements EventFeedService {
 
@@ -56,26 +55,27 @@ public class EventFeedServiceImpl implements EventFeedService {
 
   @Override
   public List<FeedItem> fetch(String lastEventId, String subjectId) {
-    return Optional.ofNullable(lastEventId)
-      .map(lastId -> fetchFromEventId(lastId, subjectId))
-      .orElseGet(() -> fetchFromBeginning(subjectId));
+    return lastEventId != null
+      ? fetchFromEventId(lastEventId, subjectId)
+      : fetchFromBeginning(subjectId);
   }
 
   private List<FeedItem> fetchFromEventId(String eventId, String subjectId) {
-    return Optional.ofNullable(subjectId)
-      .map(subject -> feedItemRepository.findByIdGreaterThanForSubject(eventId, subject, limit))
-      .orElseGet(() -> feedItemRepository.findByIdGreaterThan(eventId, limit));
+    return subjectId != null
+      ? feedItemRepository.findByIdGreaterThanForSubject(eventId, subjectId, limit)
+      : feedItemRepository.findByIdGreaterThan(eventId, limit);
   }
 
   private List<FeedItem> fetchFromBeginning(String subjectId) {
-    return Optional.ofNullable(subjectId)
-      .map(subject -> feedItemRepository.findAllForSubject(subject, limit))
-      .orElseGet(() -> feedItemRepository.findAll(limit));
+    return subjectId != null
+      ? feedItemRepository.findAllForSubject(subjectId, limit)
+      : feedItemRepository.findAll(limit);
   }
 
   @Override
   public List<FeedItem> fetchWithTimeout(String lastEventId, String subjectId, Long timeoutMillis) {
-    final Instant timeoutTimestamp = Instant.now().plus(timeoutMillis, ChronoUnit.MILLIS);
+    final Instant timeoutTimestamp = Instant.now()
+      .plus(timeoutMillis, ChronoUnit.MILLIS);
 
     while (true) {
       final var items = fetch(lastEventId, subjectId);

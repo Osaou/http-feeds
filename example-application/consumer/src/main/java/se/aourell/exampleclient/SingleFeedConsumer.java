@@ -17,6 +17,7 @@ public class SingleFeedConsumer {
   @EventHandler
   public void on(EkgStreamUploaded event) {
     LOG.info("health data event received: {}", event);
+    throw new RuntimeException("oops");
   }
 
   @EventHandler

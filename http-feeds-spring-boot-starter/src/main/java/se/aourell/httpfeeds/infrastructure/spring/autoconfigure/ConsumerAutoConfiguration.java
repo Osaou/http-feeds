@@ -13,19 +13,21 @@ import se.aourell.httpfeeds.consumer.api.EventFeedsConsumerApi;
 import se.aourell.httpfeeds.consumer.core.LocalFeedFetcherImpl;
 import se.aourell.httpfeeds.consumer.core.RemoteFeedFetcherImpl;
 import se.aourell.httpfeeds.consumer.core.creation.EventFeedsConsumerApiImpl;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
-import se.aourell.httpfeeds.consumer.spi.CloudEventArrayDeserializer;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.consumer.spi.CloudEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepositoryFactory;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
-import se.aourell.httpfeeds.infrastructure.consumer.CloudEventArrayDeserializerImpl;
+import se.aourell.httpfeeds.infrastructure.consumer.CloudEventDeserializerImpl;
 import se.aourell.httpfeeds.infrastructure.consumer.DomainEventDeserializerImpl;
 import se.aourell.httpfeeds.consumer.core.HttpFeedsClientImpl;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
+import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 
 @Configuration
 @AutoConfigureAfter(AutoConfiguration.class)
@@ -44,8 +46,16 @@ public class ConsumerAutoConfiguration {
                                                      LocalFeedFetcher localFeedFetcher,
                                                      RemoteFeedFetcher remoteFeedFetcher,
                                                      DomainEventDeserializer domainEventDeserializer,
-                                                     FeedConsumerRepository feedConsumerRepository) {
-    return new EventFeedsConsumerApiImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
+                                                     FeedConsumerRepository feedConsumerRepository,
+                                                     DeadLetterQueueService deadLetterQueueService,
+                                                     DeadLetterQueueRepository deadLetterQueueRepository) {
+    return new EventFeedsConsumerApiImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, deadLetterQueueService, deadLetterQueueRepository);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public DeadLetterQueueService deadLetterQueueService(DeadLetterQueueRepository deadLetterQueueRepository) {
+    return new DeadLetterQueueService(deadLetterQueueRepository);
   }
 
   @Bean
@@ -74,13 +84,13 @@ public class ConsumerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public CloudEventArrayDeserializer cloudEventArrayDeserializer(@Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
-    return new CloudEventArrayDeserializerImpl(cloudEventObjectMapper);
+  public CloudEventDeserializer cloudEventDeserializer(@Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
+    return new CloudEventDeserializerImpl(cloudEventObjectMapper);
   }
 
   @Bean
   @ConditionalOnMissingBean
-  public HttpFeedsClient httpFeedsClient(CloudEventArrayDeserializer cloudEventArrayDeserializer) {
-    return new HttpFeedsClientImpl(cloudEventArrayDeserializer);
+  public HttpFeedsClient httpFeedsClient(CloudEventDeserializer cloudEventDeserializer) {
+    return new HttpFeedsClientImpl(cloudEventDeserializer);
   }
 }

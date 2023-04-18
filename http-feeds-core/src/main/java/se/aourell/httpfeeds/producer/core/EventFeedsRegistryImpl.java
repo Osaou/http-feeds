@@ -39,10 +39,4 @@ public class EventFeedsRegistryImpl implements EventFeedsRegistry {
     }
     return Optional.of(feedDefinition);
   }
-
-  private void requireNonEmpty(String value) {
-    if (value == null || "".equals(value.trim())) {
-      throw new IllegalArgumentException("Feed values must be defined");
-    }
-  }
 }

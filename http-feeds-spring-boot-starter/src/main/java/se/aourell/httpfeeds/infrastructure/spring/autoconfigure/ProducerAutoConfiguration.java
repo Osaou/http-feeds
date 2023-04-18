@@ -16,11 +16,12 @@ import se.aourell.httpfeeds.producer.api.EventFeedsProducerApi;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.EventFeedsRegistryImpl;
 import se.aourell.httpfeeds.producer.core.creation.EventFeedsProducerApiImpl;
+import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 
 @Configuration
 @AutoConfigureAfter(ConsumerAutoConfiguration.class)
@@ -61,14 +62,8 @@ public class ProducerAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean
-  public CloudEventMapper cloudEventMapper(DomainEventSerializer domainEventSerializer) {
-    return new CloudEventMapper(domainEventSerializer);
-  }
-
-  @Bean
   @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-  public HttpFeedsServerController httpFeedsServerController(EventFeedsRegistry feedRegistry, CloudEventMapper cloudEventMapper, @Qualifier("cloudEventObjectMapper") ObjectMapper cloudEventObjectMapper) {
-    return new HttpFeedsServerController(feedRegistry, cloudEventMapper, cloudEventObjectMapper);
+  public HttpFeedsServerController httpFeedsServerController(EventFeedsRegistry feedRegistry, CloudEventMapper cloudEventMapper, CloudEventSerializer cloudEventSerializer) {
+    return new HttpFeedsServerController(feedRegistry, cloudEventMapper, cloudEventSerializer);
   }
 }

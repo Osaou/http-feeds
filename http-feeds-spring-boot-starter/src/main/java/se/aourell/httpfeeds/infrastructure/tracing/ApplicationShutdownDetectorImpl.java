@@ -1,8 +1,8 @@
-package se.aourell.httpfeeds.infrastructure;
+package se.aourell.httpfeeds.infrastructure.tracing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 
 public class ApplicationShutdownDetectorImpl implements ApplicationShutdownDetector {
 

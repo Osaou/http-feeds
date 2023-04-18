@@ -7,7 +7,9 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
-import se.aourell.httpfeeds.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
+import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,31 +21,39 @@ public class FeedConsumerProcessorGroup {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessorGroup.class);
 
-  private static final long FAILURE_TIMEOUT_MS = 2_000;
+  private static final long FAILURE_TIMEOUT_MS = 15_000;
   private static final long MAX_FAILURE_COUNT = 5;
 
-  private final ApplicationShutdownDetector applicationShutdownDetector;
   private final LocalFeedFetcher localFeedFetcher;
   private final RemoteFeedFetcher remoteFeedFetcher;
   private final DomainEventDeserializer domainEventDeserializer;
   private final FeedConsumerRepository feedConsumerRepository;
+  private final ApplicationShutdownDetector applicationShutdownDetector;
+  private final DeadLetterQueueService deadLetterQueueService;
+  private final DeadLetterQueueRepository deadLetterQueueRepository;
   private final String groupName;
   private final List<FeedConsumer> consumers = new ArrayList<>();
 
-  private long failureCount = 0;
+  private long failureCount;
 
-  public FeedConsumerProcessorGroup(ApplicationShutdownDetector applicationShutdownDetector,
-                                    LocalFeedFetcher localFeedFetcher,
+  public FeedConsumerProcessorGroup(LocalFeedFetcher localFeedFetcher,
                                     RemoteFeedFetcher remoteFeedFetcher,
                                     DomainEventDeserializer domainEventDeserializer,
                                     FeedConsumerRepository feedConsumerRepository,
+                                    ApplicationShutdownDetector applicationShutdownDetector,
+                                    DeadLetterQueueService deadLetterQueueService,
+                                    DeadLetterQueueRepository deadLetterQueueRepository,
                                     String groupName) {
-    this.applicationShutdownDetector = applicationShutdownDetector;
     this.localFeedFetcher = localFeedFetcher;
     this.remoteFeedFetcher = remoteFeedFetcher;
     this.domainEventDeserializer = domainEventDeserializer;
     this.feedConsumerRepository = feedConsumerRepository;
+    this.applicationShutdownDetector = applicationShutdownDetector;
+    this.deadLetterQueueService = deadLetterQueueService;
+    this.deadLetterQueueRepository = deadLetterQueueRepository;
     this.groupName = groupName;
+
+    this.failureCount = 0;
   }
 
   public FeedConsumer defineLocalConsumer(String feedConsumerName, String feedName) {
@@ -58,14 +68,16 @@ public class FeedConsumerProcessorGroup {
   private FeedConsumer addConsumer(String feedConsumerName, String feedName, String feedUrl) {
     Objects.requireNonNull(feedConsumerName);
     Objects.requireNonNull(feedName);
-    final var consumer = new FeedConsumer(feedConsumerName, feedName, feedUrl, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository);
 
+    final var consumer = new FeedConsumer(feedConsumerName, feedName, feedUrl, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, applicationShutdownDetector, deadLetterQueueService, deadLetterQueueRepository);
     consumers.add(consumer);
+
     return consumer;
   }
 
   public void batchFetchAndProcessEvents() {
-    if (failureCount > 0) {
+    final boolean hasPreviousFailure = failureCount > 0;
+    if (hasPreviousFailure) {
       try {
         // employ exponential backoff strategy, with ceiling
         final long effect = (long) Math.pow(2, failureCount);
@@ -123,6 +135,8 @@ public class FeedConsumerProcessorGroup {
         events.stream()
           .filter(fetched -> !applicationShutdownDetector.isGracefulShutdown())
           .forEach(fetched -> fetched.consumer.processEvent(fetched.event())
+            // reset failure count when we succeed in processing an event
+            .ifSuccess(__ -> failureCount = 0)
             .orElseThrow()
           );
       } catch (Throwable e) {
@@ -156,7 +170,7 @@ public class FeedConsumerProcessorGroup {
     if (updatedFailureCount > 0 && failureCount <= 0) {
       // going into failure mode
       LOG.warn("Problem consuming events for Consumer Group " + groupName + ": " + problem.getMessage());
-    } else if (updatedFailureCount <= 0 && failureCount > 0) {
+    } else if (updatedFailureCount <= 0 && hasPreviousFailure) {
       // exiting failure mode
       LOG.warn("Successful resume for Consumer Group {}", groupName);
     }

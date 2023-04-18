@@ -1,6 +1,7 @@
 package se.aourell.httpfeeds.producer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
+import se.aourell.httpfeeds.producer.api.Version;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
@@ -31,20 +32,26 @@ public class EventBusImpl<TEvent> implements EventBus<TEvent> {
   }
 
   @Override
-  public void publish(String subject, TEvent event, Instant time) {
-    final var eventType = event.getClass();
-    final var isDeleteEvent = deletionEventTypes
+  public void publish(String subject, TEvent event, Instant time, String traceId) {
+    final Class<?> eventType = event.getClass();
+    final boolean isDeleteEvent = deletionEventTypes
       .map(types -> types.contains(eventType))
       .orElseGet(() -> EventUtil.isDeletionEvent(eventType));
 
-    final var id = feedItemIdGenerator.generateId();
-    final var type = eventType.getSimpleName();
-    final var method = isDeleteEvent ? CloudEvent.DELETE_METHOD : null;
-    final var dataAsString = domainEventSerializer.toString(event);
+    final String id = feedItemIdGenerator.generateId();
+    final String type = eventType.getSimpleName();
+    final int typeVersion = eventType.isAnnotationPresent(Version.class)
+      ? eventType.getAnnotation(Version.class).value()
+      : Version.DEFAULT;
+
+    final String dataAsString = domainEventSerializer.toString(event);
+    final String method = isDeleteEvent
+      ? CloudEvent.DELETE_METHOD
+      : null;
 
     // first persist the event
     // an exception here means we should not go ahead with local processing
-    final var feedItem = new FeedItem(id, type, feedName, time, subject, method, dataAsString);
+    final var feedItem = new FeedItem(id, traceId, type, typeVersion, feedName, time, subject, method, dataAsString);
     feedItemRepository.append(feedItem);
   }
 }

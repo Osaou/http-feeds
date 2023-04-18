@@ -14,7 +14,7 @@ public class CloudEventMapper {
   }
 
   public CloudEvent mapFeedItem(FeedItem feedItem) {
-    return new CloudEvent(
+    return CloudEvent.of(
       "1.0",
       feedItem.id(),
       feedItem.type(),
@@ -23,7 +23,9 @@ public class CloudEventMapper {
       feedItem.subject(),
       feedItem.method(),
       feedItem.method() != null ? null : "application/json",
-      feedItem.method() != null ? null : domainEventSerializer.toDomainEvent(feedItem.data())
+      feedItem.method() != null ? null : domainEventSerializer.toDomainEvent(feedItem.data()),
+      feedItem.traceId(),
+      feedItem.typeVersion()
     );
   }
 }
