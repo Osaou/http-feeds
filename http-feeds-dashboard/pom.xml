@@ -6,12 +6,12 @@
   <parent>
     <groupId>se.aourell.httpfeeds</groupId>
     <artifactId>bom</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>http-feeds-dashboard</artifactId>
-  <version>0.9.0</version>
+  <version>0.9.1</version>
 
   <name>http-feeds-dashboard</name>
   <description>Internal dashboard for HTTP-feeds for statistical and diagnosis purposes</description>
