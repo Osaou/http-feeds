@@ -5,18 +5,20 @@ import se.aourell.httpfeeds.tracing.core.ShelvedTrace;
 import se.aourell.httpfeeds.util.PagedList;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DeadLetterQueueRepository {
 
+  List<CloudEvent> findReintroduced(String feedConsumerName);
   PagedList<ShelvedTrace> listTracesWithPagination(int page);
-
-  List<ShelvedTrace> findReintroduced(String feedConsumerName);
+  Optional<ShelvedTrace> checkTraceStatus(String traceId);
 
   boolean isTraceShelved(String traceId);
 
   void shelveFromFeed(ShelvedTrace trace);
   void addEventToShelvedTrace(String traceId, CloudEvent event);
 
+  void mendEventData(String eventId, String serializedJsonData);
   void reintroduceForDelivery(String traceId);
 
   void keepShelved(String traceId);

@@ -21,7 +21,7 @@ public class FeedConsumerProcessorGroup {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessorGroup.class);
 
-  private static final long FAILURE_TIMEOUT_MS = 15_000;
+  private static final long FAILURE_TIMEOUT_MS = 1_000;
   private static final long MAX_FAILURE_COUNT = 5;
 
   private final LocalFeedFetcher localFeedFetcher;

@@ -11,6 +11,7 @@ import se.aourell.httpfeeds.util.PagedList;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueRepository {
@@ -18,11 +19,25 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   private final CloudEventSerializer cloudEventSerializer;
   private final CloudEventDeserializer cloudEventDeserializer;
   private final DeadLetterQueueSpringRepository deadLetterQueueSpringRepository;
+  private final DeadLetterQueueEventSpringRepository deadLetterQueueEventSpringRepository;
 
-  public DeadLetterQueueRepositoryJpaImpl(CloudEventSerializer cloudEventSerializer, CloudEventDeserializer cloudEventDeserializer, DeadLetterQueueSpringRepository deadLetterQueueSpringRepository) {
+  public DeadLetterQueueRepositoryJpaImpl(CloudEventSerializer cloudEventSerializer,
+                                          CloudEventDeserializer cloudEventDeserializer,
+                                          DeadLetterQueueSpringRepository deadLetterQueueSpringRepository,
+                                          DeadLetterQueueEventSpringRepository deadLetterQueueEventSpringRepository) {
     this.cloudEventSerializer = cloudEventSerializer;
     this.cloudEventDeserializer = cloudEventDeserializer;
     this.deadLetterQueueSpringRepository = deadLetterQueueSpringRepository;
+    this.deadLetterQueueEventSpringRepository = deadLetterQueueEventSpringRepository;
+  }
+
+  @Override
+  public List<CloudEvent> findReintroduced(String feedConsumerName) {
+    return deadLetterQueueSpringRepository.findTop1ByFeedConsumerNameAndAttemptReprocessingIsTrue(feedConsumerName)
+      .stream()
+      .map(this::mapFromEntityToShelvedTrace)
+      .flatMap(trace -> trace.events().stream())
+      .toList();
   }
 
   @Override
@@ -36,11 +51,9 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   }
 
   @Override
-  public List<ShelvedTrace> findReintroduced(String feedConsumerName) {
-    return deadLetterQueueSpringRepository.findTop10ByFeedConsumerNameAndAttemptReprocessingIsTrue(feedConsumerName)
-      .stream()
-      .map(this::mapFromEntityToShelvedTrace)
-      .toList();
+  public Optional<ShelvedTrace> checkTraceStatus(String traceId) {
+    return deadLetterQueueSpringRepository.findById(traceId)
+      .map(this::mapFromEntityToShelvedTrace);
   }
 
   @Override
@@ -92,11 +105,22 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   }
 
   @Override
+  public void mendEventData(String eventId, String serializedJsonData) {
+    deadLetterQueueEventSpringRepository.findById(eventId)
+      .ifPresent(dlqEvent -> {
+        dlqEvent.setData(serializedJsonData);
+        deadLetterQueueEventSpringRepository.save(dlqEvent);
+      });
+  }
+
+  @Override
   public void reintroduceForDelivery(String traceId) {
     deadLetterQueueSpringRepository.findById(traceId)
-      .ifPresent(dlqTrace -> {
+      .ifPresentOrElse(dlqTrace -> {
         dlqTrace.setAttemptReprocessing(true);
         deadLetterQueueSpringRepository.save(dlqTrace);
+      }, () -> {
+        throw new RuntimeException("No trace with ID " + traceId + " found");
       });
   }
 
@@ -111,21 +135,18 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
 
   @Override
   public void markDelivered(String traceId, String eventId) {
+    deadLetterQueueEventSpringRepository.deleteById(eventId);
+
     deadLetterQueueSpringRepository.findById(traceId)
       .ifPresent(dlqTrace -> {
-        dlqTrace.getEvents()
-          .removeIf(dlqEvent -> dlqEvent.getEventId().equals(eventId));
-
         if (dlqTrace.getEvents().isEmpty()) {
           deadLetterQueueSpringRepository.deleteById(traceId);
-        } else {
-          deadLetterQueueSpringRepository.save(dlqTrace);
         }
       });
   }
 
   private ShelvedTrace mapFromEntityToShelvedTrace(DeadLetterQueueEntity entity) {
-    return new ShelvedTrace(entity.getTraceId(), entity.getFeedConsumerName(), entity.getShelvedTime(), entity.getLastKnownError(), entity.getEvents()
+    return new ShelvedTrace(entity.getTraceId(), entity.getFeedConsumerName(), entity.getShelvedTime(), entity.getLastKnownError(), entity.isAttemptReprocessing(), entity.getEvents()
       .stream()
       .map(this::mapFromEntityToCloudEvent)
       .sorted(Comparator.comparing(CloudEvent::id))

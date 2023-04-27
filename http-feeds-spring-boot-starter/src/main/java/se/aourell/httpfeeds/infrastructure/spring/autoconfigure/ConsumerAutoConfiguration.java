@@ -28,6 +28,7 @@ import se.aourell.httpfeeds.consumer.core.HttpFeedsClientImpl;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.TransactionContext;
 
 @Configuration
 @AutoConfigureAfter(AutoConfiguration.class)
@@ -43,13 +44,14 @@ public class ConsumerAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public EventFeedsConsumerApi eventFeedsConsumerApi(ApplicationShutdownDetector applicationShutdownDetector,
+                                                     TransactionContext transactionContext,
                                                      LocalFeedFetcher localFeedFetcher,
                                                      RemoteFeedFetcher remoteFeedFetcher,
                                                      DomainEventDeserializer domainEventDeserializer,
                                                      FeedConsumerRepository feedConsumerRepository,
                                                      DeadLetterQueueService deadLetterQueueService,
                                                      DeadLetterQueueRepository deadLetterQueueRepository) {
-    return new EventFeedsConsumerApiImpl(applicationShutdownDetector, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, deadLetterQueueService, deadLetterQueueRepository);
+    return new EventFeedsConsumerApiImpl(applicationShutdownDetector, transactionContext, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, deadLetterQueueService, deadLetterQueueRepository);
   }
 
   @Bean

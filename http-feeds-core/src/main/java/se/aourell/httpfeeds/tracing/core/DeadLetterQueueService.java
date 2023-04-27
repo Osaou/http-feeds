@@ -23,18 +23,7 @@ public class DeadLetterQueueService {
     final String traceId = event.traceId()
       .orElseGet(event::id);
 
-    final var trace = new ShelvedTrace(traceId, feedConsumerName, OffsetDateTime.now(), exceptionStringifier.toString(), List.of(event));
+    final var trace = new ShelvedTrace(traceId, feedConsumerName, OffsetDateTime.now(), exceptionStringifier.toString(), false, List.of(event));
     deadLetterQueueRepository.shelveFromFeed(trace);
-  }
-
-  public List<CloudEvent> findReintroduced(String feedConsumerName) {
-    final var reintroduced = deadLetterQueueRepository.findReintroduced(feedConsumerName);
-    if (reintroduced.isEmpty()) {
-      return List.of();
-    }
-
-    return reintroduced.stream()
-      .flatMap(trace -> trace.events().stream())
-      .toList();
   }
 }

@@ -10,5 +10,5 @@ public interface DeadLetterQueueSpringRepository extends PagingAndSortingReposit
 
   Page<DeadLetterQueueEntity> findAllBy(Pageable pageable);
 
-  List<DeadLetterQueueEntity> findTop10ByFeedConsumerNameAndAttemptReprocessingIsTrue(String feedConsumerName);
+  List<DeadLetterQueueEntity> findTop1ByFeedConsumerNameAndAttemptReprocessingIsTrue(String feedConsumerName);
 }

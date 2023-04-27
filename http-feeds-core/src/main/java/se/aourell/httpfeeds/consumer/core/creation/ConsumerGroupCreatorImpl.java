@@ -14,6 +14,7 @@ import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.TransactionContext;
 
 import java.util.function.Consumer;
 
@@ -24,11 +25,13 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
   private static final long POLL_INTERMITTENT_DELAY_MS = 500;
 
   private final ApplicationShutdownDetector applicationShutdownDetector;
+  private final TransactionContext transactionContext;
   private final FeedConsumerProcessorGroup feedConsumerProcessorGroup;
 
   private int manuallyDefinedConsumerIndex = 0;
 
   public ConsumerGroupCreatorImpl(ApplicationShutdownDetector applicationShutdownDetector,
+                                  TransactionContext transactionContext,
                                   LocalFeedFetcher localFeedFetcher,
                                   RemoteFeedFetcher remoteFeedFetcher,
                                   DomainEventDeserializer domainEventDeserializer,
@@ -37,6 +40,7 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
                                   DeadLetterQueueRepository deadLetterQueueRepository,
                                   String groupName) {
     this.applicationShutdownDetector = applicationShutdownDetector;
+    this.transactionContext = transactionContext;
     this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, applicationShutdownDetector, deadLetterQueueService, deadLetterQueueRepository, groupName);
   }
 
@@ -96,7 +100,7 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
     while (true) {
       try {
-        feedConsumerProcessorGroup.batchFetchAndProcessEvents();
+        transactionContext.executeInNewTransaction(feedConsumerProcessorGroup::batchFetchAndProcessEvents);
       } catch (Throwable e) {
         if (applicationShutdownDetector.isGracefulShutdown()) {
           return;

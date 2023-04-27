@@ -24,7 +24,7 @@ public class FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumer.class);
 
-  private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 3;
+  private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 2;
 
   private final String feedConsumerName;
   private final String feedName;
@@ -101,7 +101,7 @@ public class FeedConsumer {
     updatedLastProcessedId = lastProcessedId;
 
     // first work off any re-introduced items from the DLQ
-    final var reintroducedFromDlq = deadLetterQueueService.findReintroduced(feedConsumerName);
+    final List<CloudEvent> reintroducedFromDlq = deadLetterQueueRepository.findReintroduced(feedConsumerName);
     if (!reintroducedFromDlq.isEmpty()) {
       isProcessingDlq = true;
       return Result.success(reintroducedFromDlq);
@@ -118,42 +118,42 @@ public class FeedConsumer {
     final String traceId = event.traceId()
       .orElse(eventId);
 
-    // should we shelve this event on DLQ by association?
-    if (!isProcessingDlq && event.traceId().isPresent() && deadLetterQueueRepository.isTraceShelved(traceId)) {
-      try {
-        LOG.warn("DLQ: Shelving event with ID {} because of matched trace {} being shelved", eventId, traceId);
-        deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
-      } catch (Throwable e) {
-        if (!applicationShutdownDetector.isGracefulShutdown()) {
-          LOG.error("DLQ: Unable to operate on dead-letter queue", e);
-        }
-
-        return Result.failure(e);
-      }
-
-      updatedLastProcessedId = eventId;
-      processingFailureCount = 0;
-      return Result.success();
-    }
-
     final boolean handled;
     try {
-      final var eventTypeName = event.type();
-      final var eventHandler = findHandlerForEventType(eventTypeName);
+      final String eventTypeName = event.type();
+      final Optional<EventHandlerDefinition> eventHandler = findHandlerForEventType(eventTypeName);
 
       if (eventHandler.isPresent()) {
-        final var eventType = eventHandler.get().eventType();
+        // should we shelve this event on DLQ by association?
+        if (!isProcessingDlq && event.traceId().isPresent() && deadLetterQueueRepository.isTraceShelved(traceId)) {
+          try {
+            LOG.warn("DLQ: Shelving event with ID {} because of matched trace {} being shelved", eventId, traceId);
+            deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
+          } catch (Throwable e) {
+            if (!applicationShutdownDetector.isGracefulShutdown()) {
+              LOG.error("DLQ: Unable to operate on dead-letter queue", e);
+            }
+
+            return Result.failure(e);
+          }
+
+          updatedLastProcessedId = eventId;
+          processingFailureCount = 0;
+          return Result.success();
+        }
+
+        handled = true;
+        final Class<?> eventType = eventHandler.get().eventType();
 
         final Object deserializedData;
         if (CloudEvent.DELETE_METHOD.equals(event.method())) {
           deserializedData = eventType.getConstructor(String.class).newInstance(event.subject());
         } else {
-          final var data = event.data();
+          final Object data = event.data();
           deserializedData = domainEventDeserializer.toDomainEvent(data, eventType);
         }
 
         eventHandler.get().invoke(deserializedData, () -> createEventMetaData(event));
-        handled = true;
       } else {
         handled = false;
       }
@@ -215,7 +215,7 @@ public class FeedConsumer {
   }
 
   public Optional<EventHandlerDefinition> findHandlerForEventType(String eventTypeName) {
-    final var handler = eventHandlers.get(eventTypeName);
+    final EventHandlerDefinition handler = eventHandlers.get(eventTypeName);
     return Optional.ofNullable(handler);
   }
 

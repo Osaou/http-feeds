@@ -1,8 +1,10 @@
 package se.aourell.exampleserver.healthdatafeed;
 
 public sealed interface HealthDataEvent
-  permits EkgStreamUploaded, BloodSugarReadingUploaded {
+  permits
+  EkgStreamUploaded,
+  EkgStreamAnalyzed,
+  BloodSugarReadingUploaded {
 
   String id();
-  String deviceId();
 }

@@ -11,12 +11,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 import se.aourell.httpfeeds.infrastructure.producer.CloudEventSerializerImpl;
+import se.aourell.httpfeeds.infrastructure.spring.TransactionContextImpl;
 import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.infrastructure.tracing.ApplicationShutdownDetectorImpl;
+import se.aourell.httpfeeds.TransactionContext;
 
 @Configuration
 public class AutoConfiguration {
@@ -25,6 +28,12 @@ public class AutoConfiguration {
   @ConditionalOnMissingBean
   public ApplicationShutdownDetector applicationShutdownDetector() {
     return new ApplicationShutdownDetectorImpl();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public TransactionContext transactionContext(PlatformTransactionManager platformTransactionManager) {
+    return new TransactionContextImpl(platformTransactionManager);
   }
 
   @Bean

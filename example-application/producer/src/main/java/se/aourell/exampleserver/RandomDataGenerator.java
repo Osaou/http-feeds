@@ -3,6 +3,7 @@ package se.aourell.exampleserver;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import se.aourell.exampleserver.healthdatafeed.BloodSugarReadingUploaded;
+import se.aourell.exampleserver.healthdatafeed.EkgStreamAnalyzed;
 import se.aourell.exampleserver.healthdatafeed.EkgStreamUploaded;
 import se.aourell.exampleserver.healthdatafeed.HealthDataEvent;
 import se.aourell.exampleserver.patientfeed.AssessmentEnded;
@@ -16,6 +17,7 @@ import se.aourell.httpfeeds.producer.spi.EventBus;
 
 import java.time.Instant;
 import java.util.Random;
+import java.util.UUID;
 
 @Component
 public class RandomDataGenerator {
@@ -35,10 +37,30 @@ public class RandomDataGenerator {
 
     if (event instanceof PatientEvent patientEvent) {
       patientEventBus.publish(eventId, patientEvent);
+    } else if (event instanceof HealthDataEvent healthDataEvent) {
+      if (healthDataEvent instanceof EkgStreamUploaded) {
+        final var traceId = UUID.randomUUID().toString();
+        healthDataEventBus.publish(eventId, healthDataEvent, traceId);
+
+        final var eventId2 = randomId();
+        final var event2 = new EkgStreamAnalyzed(eventId2, 500, "SVES:" + randomInt(10) + ", VES:" + randomInt(10));
+        healthDataEventBus.publish(eventId2, event2, traceId);
+      } else {
+        healthDataEventBus.publish(eventId, healthDataEvent);
+      }
     }
-    else if (event instanceof HealthDataEvent healthDataEvent) {
-      healthDataEventBus.publish(eventId, healthDataEvent);
-    }
+  }
+
+  private Object randomEvent(String id) {
+    return switch (randomInt(6)) {
+      case 0 -> new PatientAdded(id, "Scooby", "Doe");
+      case 1 -> new AssessmentStarted(id, "a001", Instant.now(), Instant.now().plusSeconds(60*60*24*7));
+      case 2 -> new AssessmentEnded(id);
+      case 3 -> new PatientDeleted(id);
+      case 4 -> new EkgStreamUploaded(id, "b001", "https://object-storage.domain.com/b001");
+      case 5 -> new BloodSugarReadingUploaded(id, "c001", randomInt(1_000));
+      default -> null;
+    };
   }
 
   private long id = 0;
@@ -47,15 +69,7 @@ public class RandomDataGenerator {
     return Long.toString(++id);
   }
 
-  private Object randomEvent(String id) {
-    return switch (new Random().nextInt(0, 6)) {
-      case 0 -> new PatientAdded(id, "Scooby", "Doe");
-      case 1 -> new AssessmentStarted(id, "a001", Instant.now(), Instant.now().plusSeconds(60*60*24*7));
-      case 2 -> new AssessmentEnded(id);
-      case 3 -> new PatientDeleted(id);
-      case 4 -> new EkgStreamUploaded(id, "b001", 500, new byte[]{ 1,2,3,4,5 });
-      case 5 -> new BloodSugarReadingUploaded(id, "c001", new Random().nextInt(1_000));
-      default -> null;
-    };
+  private int randomInt(int upperBound) {
+    return new Random().nextInt(upperBound);
   }
 }
