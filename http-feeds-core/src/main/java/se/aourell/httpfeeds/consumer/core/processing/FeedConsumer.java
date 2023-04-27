@@ -127,8 +127,8 @@ public class FeedConsumer {
         // should we shelve this event on DLQ by association?
         if (!isProcessingDlq && event.traceId().isPresent() && deadLetterQueueRepository.isTraceShelved(traceId)) {
           try {
-            LOG.warn("DLQ: Shelving event with ID {} because of matched trace {} being shelved", eventId, traceId);
             deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
+            LOG.warn("DLQ: Shelved event with ID {} because of matched trace {} being shelved", eventId, traceId);
           } catch (Throwable e) {
             if (!applicationShutdownDetector.isGracefulShutdown()) {
               LOG.error("DLQ: Unable to operate on dead-letter queue", e);
@@ -167,17 +167,17 @@ public class FeedConsumer {
 
       try {
         if (isProcessingDlq) {
-          LOG.warn("DLQ: Re-Shelving all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId);
           deadLetterQueueRepository.keepShelved(traceId);
+          LOG.warn("DLQ: Re-Shelved all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId);
 
           processingFailureCount = 0;
-          return Result.success();
+          return Result.failure();
         }
 
         // check if it's time to shelve this event in the dead-letter queue
         if (processingFailureCount >= MAX_RETRIES_BEFORE_SHELVING_IN_DLQ) {
-          LOG.warn("DLQ: Shelving event with ID {} because of too many failed processing attempts", eventId);
           deadLetterQueueService.shelveFromFeed(event, feedConsumerName, e);
+          LOG.warn("DLQ: Shelved event with ID {} because of too many failed processing attempts", eventId);
 
           updatedLastProcessedId = eventId;
           processingFailureCount = 0;
@@ -197,8 +197,8 @@ public class FeedConsumer {
 
       if (isProcessingDlq) {
         try {
-          LOG.warn("DLQ: Successful processing of event with ID {}", eventId);
           deadLetterQueueRepository.markDelivered(traceId, eventId);
+          LOG.warn("DLQ: Successful processing of event with ID {}", eventId);
         } catch (Throwable e) {
           if (!applicationShutdownDetector.isGracefulShutdown()) {
             LOG.error("DLQ: Unable to operate on dead-letter queue", e);

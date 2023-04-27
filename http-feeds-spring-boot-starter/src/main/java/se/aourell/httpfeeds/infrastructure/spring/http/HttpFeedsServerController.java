@@ -24,7 +24,7 @@ public class HttpFeedsServerController {
     this.cloudEventSerializer = cloudEventSerializer;
   }
 
-  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "**", produces = {"application/cloudevents-batch+json", "application/json"})
+  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "/**", produces = {"application/cloudevents-batch+json", "application/json"})
   public String getFeedItems(@RequestParam(name = "lastEventId", required = false) String lastEventId,
                              @RequestParam(name = "timeout", required = false) Long timeoutMillis,
                              @RequestParam(name = "subject", required = false) String subjectId,

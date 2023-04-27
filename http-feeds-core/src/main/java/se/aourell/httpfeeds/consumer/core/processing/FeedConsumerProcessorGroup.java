@@ -99,7 +99,7 @@ public class FeedConsumerProcessorGroup {
     Throwable problem = null;
     long updatedFailureCount = 0;
     try {
-      events = consumers.parallelStream()
+      events = consumers.stream()
         .flatMap(consumer -> {
           if (applicationShutdownDetector.isGracefulShutdown()) {
             return Stream.empty();

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import se.aourell.httpfeeds.dashboard.jte.JteRenderer;
+import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 import se.aourell.httpfeeds.tracing.core.ShelvedTrace;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 import se.aourell.httpfeeds.util.PagedList;
@@ -25,12 +26,12 @@ public class HttpFeedsDashboardController {
     this.jte = jte;
   }
 
-  @GetMapping(value = "/httpfeeds/dashboard", produces = "text/html")
+  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "/dashboard", produces = "text/html")
   public String dashboard() {
     return jte.view("pages/dashboard");
   }
 
-  @GetMapping(value = "/httpfeeds/dashboard/traces", produces = "text/html")
+  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces", produces = "text/html")
   public String traces(@RequestParam Optional<Integer> page) {
     int p = Math.max(1, page.orElse(1));
     final PagedList<ShelvedTrace> traces = deadLetterQueueRepository.listTracesWithPagination(p);
@@ -38,19 +39,22 @@ public class HttpFeedsDashboardController {
     return jte.view("components/traces", Map.of("traces", traces));
   }
 
-  @PostMapping(value = "/httpfeeds/dashboard/traces/{traceId}/redeliver", produces = "text/html")
+  @PostMapping(value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/redeliver", produces = "text/html")
   public String redeliverTrace(@PathVariable String traceId) {
+    String message;
     try {
       Objects.requireNonNull(traceId);
       deadLetterQueueRepository.reintroduceForDelivery(traceId);
 
-      return jte.view("components/message", Map.of("message", "Successfully re-introduced"));
+      message = "Successfully re-introduced";
     } catch (Exception e) {
-      return jte.view("components/message", Map.of("message", "Failure: " + e.getMessage()));
+      message = "Failure: " + e.getMessage();
     }
+
+    return jte.view("components/message", Map.of("message", message));
   }
 
-  @GetMapping(value = "/httpfeeds/dashboard/traces/{traceId}/status", produces = "text/html")
+  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/status", produces = "text/html")
   public String checkTraceStatus(@PathVariable String traceId, @RequestParam Optional<Boolean> editing) {
     Objects.requireNonNull(traceId);
     final Optional<ShelvedTrace> trace = deadLetterQueueRepository.checkTraceStatus(traceId);
@@ -60,11 +64,9 @@ public class HttpFeedsDashboardController {
       "editing", editing.orElse(false)));
   }
 
-  @PostMapping(value = "/httpfeeds/dashboard/traces/{traceId}/update", produces = "text/html")
+  @PostMapping(value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/update", produces = "text/html")
   public String updateEventData(@PathVariable String traceId) {
     Objects.requireNonNull(traceId);
-    final Optional<ShelvedTrace> trace = deadLetterQueueRepository.checkTraceStatus(traceId);
-
     return checkTraceStatus(traceId, Optional.of(false));
   }
 }

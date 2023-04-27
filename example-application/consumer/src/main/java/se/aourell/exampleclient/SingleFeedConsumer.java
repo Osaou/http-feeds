@@ -30,6 +30,11 @@ public class SingleFeedConsumer {
   @EventHandler
   public void on(EkgStreamAnalyzed event) {
     LOG.info("health data event received: {}", event);
+
+    // simulate failure scenario: 70% chance it will throw an exception
+    if (new Random().nextInt(3) > 0) {
+      throw new RuntimeException("oops");
+    }
   }
 
   @EventHandler

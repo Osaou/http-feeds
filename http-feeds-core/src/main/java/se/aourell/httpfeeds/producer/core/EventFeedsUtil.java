@@ -4,7 +4,7 @@ import java.time.Duration;
 
 public abstract class EventFeedsUtil {
 
-  public static final String PATH_PREFIX = "/feed/";
+  public static final String PATH_PREFIX = "/feed";
   public static final Duration DEFAULT_POLL_INTERVAL = Duration.ofSeconds(1);
   public static final int DEFAULT_LIMIT_COUNT_PER_REQUEST = 1_000;
 
@@ -24,6 +24,6 @@ public abstract class EventFeedsUtil {
   }
 
   public static String urlPathFromFeedName(String name) {
-    return EventFeedsUtil.PATH_PREFIX + name;
+    return EventFeedsUtil.PATH_PREFIX + "/" + name;
   }
 }

@@ -12,9 +12,12 @@ import se.aourell.httpfeeds.util.PagedList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueRepository {
+
+  public static final int TRACES_LISTED_PER_PAGE = 1;
 
   private final CloudEventSerializer cloudEventSerializer;
   private final CloudEventDeserializer cloudEventDeserializer;
@@ -42,7 +45,7 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
 
   @Override
   public PagedList<ShelvedTrace> listTracesWithPagination(int page) {
-    final Page<DeadLetterQueueEntity> pagedTraces = deadLetterQueueSpringRepository.findAllBy(PageRequest.of(page - 1, 3));
+    final Page<DeadLetterQueueEntity> pagedTraces = deadLetterQueueSpringRepository.findAllBy(PageRequest.of(page - 1, TRACES_LISTED_PER_PAGE));
     final List<ShelvedTrace> traces = pagedTraces
       .map(this::mapFromEntityToShelvedTrace)
       .toList();
@@ -139,7 +142,13 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
 
     deadLetterQueueSpringRepository.findById(traceId)
       .ifPresent(dlqTrace -> {
-        if (dlqTrace.getEvents().isEmpty()) {
+        final Set<DeadLetterQueueEventEntity> events = dlqTrace.getEvents();
+
+        events.removeIf(dlqEvent ->
+          dlqEvent.getEventId().equals(eventId));
+        deadLetterQueueSpringRepository.save(dlqTrace);
+
+        if (events.isEmpty()) {
           deadLetterQueueSpringRepository.deleteById(traceId);
         }
       });

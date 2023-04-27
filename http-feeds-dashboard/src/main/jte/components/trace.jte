@@ -11,7 +11,7 @@
 !{String hxSwap = null;}
 
 @if (trace.isRedelivering())
-  !{hxRefreshUrl = "/httpfeeds/dashboard/traces/${trace.traceId()}/status";}
+  !{hxRefreshUrl = "/feed/dashboard/traces/${trace.traceId()}/status";}
   !{hxTrigger = "load delay:10s";}
   !{hxSwap = "outerHTML";}
 @endif
@@ -32,7 +32,7 @@
   </p>
 
   <button type="button"
-          hx-post="/httpfeeds/dashboard/traces/${trace.traceId()}/redeliver"
+          hx-post="/feed/dashboard/traces/${trace.traceId()}/redeliver"
           hx-trigger="click"
           hx-target="next p">
     Re-introduce to event stream
@@ -40,17 +40,17 @@
 
   @if (editing)
     <button type="button"
-            hx-post="/httpfeeds/dashboard/traces/${trace.traceId()}/status"
+            hx-post="/feed/dashboard/traces/${trace.traceId()}/status"
             hx-trigger="click"
-            hx-target="trace-${trace.traceId()}"
+            hx-target="#trace-${trace.traceId()}"
             hx-swap="outerHTML">
       Save event data
     </button>
   @else
     <button type="button"
-            hx-get="/httpfeeds/dashboard/traces/${trace.traceId()}/status/?editing=true"
+            hx-get="/feed/dashboard/traces/${trace.traceId()}/status/?editing=true"
             hx-trigger="click"
-            hx-target="trace-${trace.traceId()}"
+            hx-target="#trace-${trace.traceId()}"
             hx-swap="outerHTML">
       Edit event data
     </button>
@@ -76,7 +76,13 @@
           <td>${event.type()}</td>
           <td>${event.subject()}</td>
           <td>${event.time().format(DateTimeFormatter.RFC_1123_DATE_TIME)}</td>
-          <td><pre>${event.data().toString()}</pre></td>
+          <td>
+            @if (editing)
+              <textarea>${event.data().toString()}</textarea>
+            @else
+              <pre>${event.data().toString()}</pre>
+            @endif
+          </td>
         </tr>
       @endfor
     </tbody>
@@ -107,6 +113,12 @@
     #trace-${trace.traceId()} td {
       padding: 10px;
       outline: 1px solid #ddb;
+    }
+
+    #trace-${trace.traceId()} textarea {
+      padding: 10px;
+      width: 100%;
+      height: 200px;
     }
 
     #trace-${trace.traceId()} .last-error {
