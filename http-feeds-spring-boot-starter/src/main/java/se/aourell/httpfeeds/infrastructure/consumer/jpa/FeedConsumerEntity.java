@@ -6,8 +6,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "eventfeeds_processed")
+@Table(name = FeedConsumerEntity.TABLE_NAME)
 public class FeedConsumerEntity {
+
+  public static final String TABLE_NAME = "eventfeeds_processed";
 
   @Id
   @Column(name = "feed_consumer_name")

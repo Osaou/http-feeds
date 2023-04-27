@@ -14,8 +14,10 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "eventfeeds_dlq")
+@Table(name = DeadLetterQueueEntity.TABLE_NAME)
 public class DeadLetterQueueEntity extends JpaEntity<String> {
+
+  public static final String TABLE_NAME = "eventfeeds_dlq";
 
   @Id
   @Column(name = "trace_id", nullable = false)

@@ -2,9 +2,6 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.AutoConfiguration,\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ConsumerAutoConfiguration,\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ConsumerJpaAutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ConsumerJdbcAutoConfiguration,\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerAutoConfiguration,\
   se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerJpaAutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.ProducerJdbcAutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.TracingJpaAutoConfiguration,\
-  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.TracingJdbcAutoConfiguration
+  se.aourell.httpfeeds.infrastructure.spring.autoconfigure.TracingJpaAutoConfiguration

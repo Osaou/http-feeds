@@ -2,7 +2,7 @@ package se.aourell.httpfeeds.infrastructure.spring.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
-import se.aourell.httpfeeds.infrastructure.consumer.jdbc.FeedConsumerRepositoryJdbcImpl;
+import se.aourell.httpfeeds.infrastructure.consumer.jpa.FeedConsumerEntity;
 
 import java.util.Collections;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class ConsumerProperties {
   private final Map<String, String> sources;
 
   public ConsumerProperties(String tableName, Map<String, String> sources) {
-    this.tableName = Optional.ofNullable(tableName).orElse(FeedConsumerRepositoryJdbcImpl.DEFAULT_TABLE_NAME);
+    this.tableName = Optional.ofNullable(tableName).orElse(FeedConsumerEntity.TABLE_NAME);
     this.sources = Optional.ofNullable(sources).orElse(Collections.emptyMap());
   }
 

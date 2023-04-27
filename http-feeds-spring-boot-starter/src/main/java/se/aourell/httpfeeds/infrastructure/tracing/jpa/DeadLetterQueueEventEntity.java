@@ -11,8 +11,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "eventfeeds_dlq_event")
+@Table(name = DeadLetterQueueEventEntity.TABLE_NAME)
 public class DeadLetterQueueEventEntity extends JpaEntity<String> {
+
+  public static final String TABLE_NAME = "eventfeeds_dlq_event";
 
   @Id
   @Column(name = "event_id")

@@ -18,7 +18,7 @@ import javax.persistence.EntityManager;
 @Configuration
 @ConditionalOnClass(EntityManager.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
-@AutoConfigureBefore({ TransactionAutoConfiguration.class, ConsumerJdbcAutoConfiguration.class })
+@AutoConfigureBefore(TransactionAutoConfiguration.class)
 @Import(ConsumerJpaRepositoryAutoConfiguration.class)
 public class ConsumerJpaAutoConfiguration {
 

@@ -11,8 +11,10 @@ import javax.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "eventfeeds")
+@Table(name = FeedItemEntity.TABLE_NAME)
 public class FeedItemEntity extends JpaEntity<String> {
+
+  public static final String TABLE_NAME = "eventfeeds";
 
   @Id
   @Column(name = "id")
