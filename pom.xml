@@ -12,7 +12,7 @@
 
   <groupId>se.aourell.httpfeeds</groupId>
   <artifactId>bom</artifactId>
-  <version>0.9.1</version>
+  <version>0.10.0</version>
   <packaging>pom</packaging>
 
   <name>bom</name>
@@ -45,12 +45,12 @@
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-core</artifactId>
-        <version>0.9.1</version>
+        <version>0.10.0</version>
       </dependency>
       <dependency>
         <groupId>se.aourell.httpfeeds</groupId>
         <artifactId>http-feeds-spring-boot-starter</artifactId>
-        <version>0.9.1</version>
+        <version>0.10.0</version>
       </dependency>
 
       <dependency>
