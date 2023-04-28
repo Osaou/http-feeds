@@ -8,10 +8,6 @@ import java.util.function.Supplier;
 final class Failure<V> extends Result<V> {
   private final RuntimeException exception;
 
-  Failure() {
-    this.exception = new IllegalStateException();
-  }
-
   Failure(String message) {
     this.exception = new IllegalStateException(message);
   }

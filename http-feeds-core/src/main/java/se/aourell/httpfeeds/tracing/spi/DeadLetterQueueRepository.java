@@ -19,8 +19,8 @@ public interface DeadLetterQueueRepository {
   void addEventToShelvedTrace(String traceId, CloudEvent event);
 
   void mendEventData(String eventId, String serializedJsonData);
-  void reintroduceForDelivery(String traceId);
+  void reIntroduceForDelivery(String traceId);
 
-  void keepShelved(String traceId);
+  void reShelveAndUpdateCause(String traceId, String updatedError);
   void markDelivered(String traceId, String eventId);
 }

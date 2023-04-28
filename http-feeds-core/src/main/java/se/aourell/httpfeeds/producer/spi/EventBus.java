@@ -6,18 +6,18 @@ public interface EventBus<TEvent> {
 
   default
   void publish(String subject, TEvent event) {
-    publish(subject, event, Instant.now());
+    publish(subject, subject, event, Instant.now());
   }
 
   default
   void publish(String subject, TEvent event, Instant time) {
-    publish(subject, event, time, subject);
+    publish(subject, subject, event, time);
   }
 
   default
-  void publish(String subject, TEvent event, String traceId) {
-    publish(subject, event, Instant.now(), traceId);
+  void publish(String subject, String traceId, TEvent event) {
+    publish(subject, traceId, event, Instant.now());
   }
 
-  void publish(String subject, TEvent event, Instant time, String traceId);
+  void publish(String subject, String traceId, TEvent event, Instant time);
 }

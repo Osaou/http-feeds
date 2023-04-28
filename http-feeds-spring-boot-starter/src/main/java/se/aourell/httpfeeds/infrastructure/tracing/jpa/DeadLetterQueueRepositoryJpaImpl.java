@@ -117,7 +117,7 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   }
 
   @Override
-  public void reintroduceForDelivery(String traceId) {
+  public void reIntroduceForDelivery(String traceId) {
     deadLetterQueueSpringRepository.findById(traceId)
       .ifPresentOrElse(dlqTrace -> {
         dlqTrace.setAttemptReprocessing(true);
@@ -128,10 +128,11 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   }
 
   @Override
-  public void keepShelved(String traceId) {
+  public void reShelveAndUpdateCause(String traceId, String updatedError) {
     deadLetterQueueSpringRepository.findById(traceId)
       .ifPresent(dlqTrace -> {
         dlqTrace.setAttemptReprocessing(false);
+        dlqTrace.setLastKnownError(updatedError);
         deadLetterQueueSpringRepository.save(dlqTrace);
       });
   }

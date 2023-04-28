@@ -40,11 +40,11 @@ public class RandomDataGenerator {
     } else if (event instanceof HealthDataEvent healthDataEvent) {
       if (healthDataEvent instanceof EkgStreamUploaded) {
         final var traceId = UUID.randomUUID().toString();
-        healthDataEventBus.publish(eventId, healthDataEvent, traceId);
+        healthDataEventBus.publish(eventId, traceId, healthDataEvent);
 
         final var eventId2 = randomId();
         final var event2 = new EkgStreamAnalyzed(eventId2, 500, "SVES:" + randomInt(10) + ", VES:" + randomInt(10));
-        healthDataEventBus.publish(eventId2, event2, traceId);
+        healthDataEventBus.publish(eventId2, traceId, event2);
       } else {
         healthDataEventBus.publish(eventId, healthDataEvent);
       }

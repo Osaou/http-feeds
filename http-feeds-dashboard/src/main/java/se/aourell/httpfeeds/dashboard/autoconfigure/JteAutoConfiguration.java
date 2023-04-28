@@ -1,5 +1,7 @@
 package se.aourell.httpfeeds.dashboard.autoconfigure;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +14,8 @@ import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 public class JteAutoConfiguration {
 
   @Bean
-  public HttpFeedsDashboardController httpFeedsDashboardController(DeadLetterQueueRepository deadLetterQueueRepository, JteRenderer jteRenderer) {
-    return new HttpFeedsDashboardController(deadLetterQueueRepository, jteRenderer);
+  public HttpFeedsDashboardController httpFeedsDashboardController(DeadLetterQueueRepository deadLetterQueueRepository, JteRenderer jteRenderer, @Qualifier("jsonValidator") ObjectMapper jsonValidator) {
+    return new HttpFeedsDashboardController(deadLetterQueueRepository, jteRenderer, jsonValidator);
   }
 
   @Bean

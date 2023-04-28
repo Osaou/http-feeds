@@ -6,7 +6,7 @@
 <section id="traces">
   <%-- pagination --%>
   @if (traces.totalPages() > 1)
-    <div>
+    <div class="paging">
       @if (traces.page() > 1)
         <button hx-get="/feed/dashboard/traces/?page=${traces.page() - 1}"
                 hx-target="#traces"
@@ -20,6 +20,10 @@
                 hx-target="#traces"
                 hx-swap="outerHTML">Next</button>
       @endif
+
+      <p>
+        <i>Total count: ${traces.totalElements()}</i>
+      </p>
     </div>
   @endif
 
@@ -27,18 +31,20 @@
   @if (traces.list().isEmpty())
     <i>No traces...</i>
   @else
-    <i>Total count: ${traces.totalElements()}</i>
     @for (ShelvedTrace trace : traces.list())
       @template.components.trace(trace = trace, editing = false)
     @endfor
   @endif
 
   <style>
-    #traces h3 {
-      margin: 40px 0 20px;
+    #traces .paging button:first-child {
+      margin-right: 10px;
+    }
+    #traces .paging button:last-child {
+      margin-left: 10px;
     }
 
-    #traces i {
+    #traces .paging i {
       color: #666;
     }
   </style>

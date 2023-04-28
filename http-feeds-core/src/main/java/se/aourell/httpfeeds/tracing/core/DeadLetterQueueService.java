@@ -26,4 +26,11 @@ public class DeadLetterQueueService {
     final var trace = new ShelvedTrace(traceId, feedConsumerName, OffsetDateTime.now(), exceptionStringifier.toString(), false, List.of(event));
     deadLetterQueueRepository.shelveFromFeed(trace);
   }
+
+  public void reShelveAndUpdateCause(String traceId, Throwable updatedError) {
+    final var exceptionStringifier = new StringWriter();
+    updatedError.printStackTrace(new PrintWriter(exceptionStringifier));
+
+    deadLetterQueueRepository.reShelveAndUpdateCause(traceId, exceptionStringifier.toString());
+  }
 }

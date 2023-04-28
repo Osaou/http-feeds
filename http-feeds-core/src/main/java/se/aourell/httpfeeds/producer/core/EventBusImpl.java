@@ -32,7 +32,7 @@ public class EventBusImpl<TEvent> implements EventBus<TEvent> {
   }
 
   @Override
-  public void publish(String subject, TEvent event, Instant time, String traceId) {
+  public void publish(String subject, String traceId, TEvent event, Instant time) {
     final Class<?> eventType = event.getClass();
     final boolean isDeleteEvent = deletionEventTypes
       .map(types -> types.contains(eventType))
@@ -49,8 +49,6 @@ public class EventBusImpl<TEvent> implements EventBus<TEvent> {
       ? CloudEvent.DELETE_METHOD
       : null;
 
-    // first persist the event
-    // an exception here means we should not go ahead with local processing
     final var feedItem = new FeedItem(id, traceId, type, typeVersion, feedName, time, subject, method, dataAsString);
     feedItemRepository.append(feedItem);
   }

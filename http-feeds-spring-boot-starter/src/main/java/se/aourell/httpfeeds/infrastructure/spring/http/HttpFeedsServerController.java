@@ -1,5 +1,6 @@
 package se.aourell.httpfeeds.infrastructure.spring.http;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,9 @@ public class HttpFeedsServerController {
     this.cloudEventSerializer = cloudEventSerializer;
   }
 
-  @GetMapping(value = EventFeedsUtil.PATH_PREFIX + "/**", produces = {"application/cloudevents-batch+json", "application/json"})
+  @GetMapping(
+    value = EventFeedsUtil.PATH_PREFIX + "/**",
+    produces = { "application/cloudevents-batch+json", MediaType.APPLICATION_JSON_VALUE })
   public String getFeedItems(@RequestParam(name = "lastEventId", required = false) String lastEventId,
                              @RequestParam(name = "timeout", required = false) Long timeoutMillis,
                              @RequestParam(name = "subject", required = false) String subjectId,

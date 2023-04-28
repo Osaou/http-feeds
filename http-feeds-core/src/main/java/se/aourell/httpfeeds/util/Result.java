@@ -14,10 +14,6 @@ public abstract class Result<V> {
     return new Success<>(true);
   }
 
-  public static <V> Result<V> failure() {
-    return new Failure<>();
-  }
-
   public static <V> Result<V> failure(String message) {
     return new Failure<>(message);
   }

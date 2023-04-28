@@ -8,6 +8,7 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueException;
 import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
@@ -24,6 +25,7 @@ public class FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumer.class);
 
+  // TODO: set to final value
   private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 2;
 
   private final String feedConsumerName;
@@ -163,15 +165,14 @@ public class FeedConsumer {
       }
 
       ++processingFailureCount;
-      LOG.warn("DLQ: Failure count is now " + processingFailureCount);
 
       try {
         if (isProcessingDlq) {
-          deadLetterQueueRepository.keepShelved(traceId);
-          LOG.warn("DLQ: Re-Shelved all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId);
+          deadLetterQueueService.reShelveAndUpdateCause(traceId, e);
+          LOG.error("DLQ: Re-Shelved all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId, e);
 
           processingFailureCount = 0;
-          return Result.failure();
+          return Result.failure(new DeadLetterQueueException(e));
         }
 
         // check if it's time to shelve this event in the dead-letter queue

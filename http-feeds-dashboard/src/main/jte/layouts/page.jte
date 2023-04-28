@@ -15,6 +15,8 @@
   <style>
     main {
       margin: 15px;
+      font-family: sans-serif;
+      font-size: 14px;
     }
   </style>
 </head>

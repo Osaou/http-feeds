@@ -7,6 +7,7 @@ import se.aourell.httpfeeds.consumer.spi.DomainEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
 import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
+import se.aourell.httpfeeds.tracing.core.DeadLetterQueueException;
 import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
@@ -22,7 +23,7 @@ public class FeedConsumerProcessorGroup {
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumerProcessorGroup.class);
 
   private static final long FAILURE_TIMEOUT_MS = 1_000;
-  private static final long MAX_FAILURE_COUNT = 5;
+  private static final long MAX_FAILURE_COUNT_FOR_EXPONENTIAL_BACKOFF_EFFECT = 5;
 
   private final LocalFeedFetcher localFeedFetcher;
   private final RemoteFeedFetcher remoteFeedFetcher;
@@ -139,6 +140,9 @@ public class FeedConsumerProcessorGroup {
             .ifSuccess(__ -> failureCount = 0)
             .orElseThrow()
           );
+      } catch (DeadLetterQueueException e) {
+        // neither increase nor decrease current failure count when processing DLQ
+        updatedFailureCount = failureCount;
       } catch (Throwable e) {
         if (applicationShutdownDetector.isGracefulShutdown()) {
           return;
@@ -160,16 +164,18 @@ public class FeedConsumerProcessorGroup {
           return;
         }
 
-        if (problem != null) {
+        if (problem == null) {
           updatedFailureCount = increaseFailureCount();
           problem = e;
         }
       }
     }
 
-    if (updatedFailureCount > 0 && failureCount <= 0) {
-      // going into failure mode
-      LOG.warn("Problem consuming events for Consumer Group " + groupName + ": " + problem.getMessage());
+    if (updatedFailureCount > 0 && !hasPreviousFailure) {
+      if (problem != null) {
+        // going into failure mode
+        LOG.warn("Problem consuming events for Consumer Group " + groupName + ": " + problem.getMessage());
+      }
     } else if (updatedFailureCount <= 0 && hasPreviousFailure) {
       // exiting failure mode
       LOG.warn("Successful resume for Consumer Group {}", groupName);
@@ -179,7 +185,7 @@ public class FeedConsumerProcessorGroup {
   }
 
   private long increaseFailureCount() {
-    return Math.min(failureCount + 1, MAX_FAILURE_COUNT);
+    return Math.min(failureCount + 1, MAX_FAILURE_COUNT_FOR_EXPONENTIAL_BACKOFF_EFFECT);
   }
 
   private record FetchedEventFromConsumer(FeedConsumer consumer, CloudEvent event) { }
