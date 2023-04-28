@@ -51,4 +51,20 @@ public record CloudEvent(
       Optional.of(typeVersion)
     );
   }
+
+  public static CloudEvent withUpdatedData(CloudEvent other, Object data) {
+    return new CloudEvent(
+      other.specversion,
+      other.id,
+      other.type,
+      other.source,
+      other.time,
+      other.subject,
+      other.method,
+      other.datacontenttype,
+      data,
+      other.traceId,
+      other.typeVersion
+    );
+  }
 }

@@ -1,6 +1,7 @@
 package se.aourell.httpfeeds.infrastructure.consumer.jpa;
 
 import se.aourell.httpfeeds.consumer.spi.FeedConsumerRepository;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.Optional;
 
@@ -9,7 +10,7 @@ public class FeedConsumerRepositoryJpaImpl implements FeedConsumerRepository {
   private final FeedConsumerSpringRepository feedConsumerSpringRepository;
 
   public FeedConsumerRepositoryJpaImpl(FeedConsumerSpringRepository feedConsumerSpringRepository) {
-    this.feedConsumerSpringRepository = feedConsumerSpringRepository;
+    this.feedConsumerSpringRepository = Assert.notNull(feedConsumerSpringRepository);
   }
 
   @Override

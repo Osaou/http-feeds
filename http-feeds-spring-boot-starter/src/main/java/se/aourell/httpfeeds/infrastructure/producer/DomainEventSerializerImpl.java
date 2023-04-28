@@ -3,13 +3,14 @@ package se.aourell.httpfeeds.infrastructure.producer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.util.Assert;
 
 public class DomainEventSerializerImpl implements DomainEventSerializer {
 
   private final ObjectMapper domainEventObjectMapper;
 
   public DomainEventSerializerImpl(ObjectMapper domainEventObjectMapper) {
-    this.domainEventObjectMapper = domainEventObjectMapper;
+    this.domainEventObjectMapper = Assert.notNull(domainEventObjectMapper);
   }
 
   @Override

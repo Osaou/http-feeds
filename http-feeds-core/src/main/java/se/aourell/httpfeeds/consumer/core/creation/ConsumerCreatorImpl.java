@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.consumer.api.ConsumerCreator;
 import se.aourell.httpfeeds.consumer.core.EventMetaData;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -21,6 +22,9 @@ public class ConsumerCreatorImpl implements ConsumerCreator {
 
   @Override
   public <EventType> ConsumerCreator registerEventHandler(Class<EventType> eventType, Consumer<EventType> handler) {
+    Assert.notNull(eventType);
+    Assert.notNull(handler);
+
     LOG.debug("Registering Event Handler for event type {}", eventType.getSimpleName());
     feedConsumer.registerEventHandler(eventType, handler);
     return this;
@@ -28,6 +32,9 @@ public class ConsumerCreatorImpl implements ConsumerCreator {
 
   @Override
   public <EventType> ConsumerCreator registerEventHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
+    Assert.notNull(eventType);
+    Assert.notNull(handler);
+
     LOG.debug("Registering Event Handler for event type {}", eventType.getSimpleName());
     feedConsumer.registerEventHandler(eventType, handler);
     return this;

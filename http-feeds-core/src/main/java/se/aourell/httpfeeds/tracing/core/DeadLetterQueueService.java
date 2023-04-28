@@ -2,6 +2,7 @@ package se.aourell.httpfeeds.tracing.core;
 
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -13,7 +14,7 @@ public class DeadLetterQueueService {
   private final DeadLetterQueueRepository deadLetterQueueRepository;
 
   public DeadLetterQueueService(DeadLetterQueueRepository deadLetterQueueRepository) {
-    this.deadLetterQueueRepository = deadLetterQueueRepository;
+    this.deadLetterQueueRepository = Assert.notNull(deadLetterQueueRepository);
   }
 
   public void shelveFromFeed(CloudEvent event, String feedConsumerName, Throwable lastError) {

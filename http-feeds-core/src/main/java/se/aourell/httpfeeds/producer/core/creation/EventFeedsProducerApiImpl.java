@@ -13,6 +13,7 @@ import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.time.Duration;
 
@@ -29,19 +30,25 @@ public class EventFeedsProducerApiImpl implements EventFeedsProducerApi {
                                    FeedItemIdGenerator feedItemIdGenerator,
                                    DomainEventSerializer domainEventSerializer,
                                    EventFeedsRegistry eventFeedsRegistry) {
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.feedItemRepositoryFactory = feedItemRepositoryFactory;
-    this.feedItemIdGenerator = feedItemIdGenerator;
-    this.domainEventSerializer = domainEventSerializer;
-    this.eventFeedsRegistry = eventFeedsRegistry;
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.feedItemRepositoryFactory = Assert.notNull(feedItemRepositoryFactory);
+    this.feedItemIdGenerator = Assert.notNull(feedItemIdGenerator);
+    this.domainEventSerializer = Assert.notNull(domainEventSerializer);
+    this.eventFeedsRegistry = Assert.notNull(eventFeedsRegistry);
   }
 
   @Override
   public <EventBaseType> EventBus<EventBaseType> publishEventFeed(String feedName, Class<EventBaseType> feedEventBaseType, FeedAvailability availability, String persistenceName) {
+    Assert.hasStringValue(feedName);
+    Assert.notNull(feedEventBaseType);
+    Assert.notNull(availability);
+    Assert.hasStringValue(persistenceName);
+
     final boolean shouldPublish = switch (availability) {
       case PUBLISH_OVER_HTTP -> true;
       case APPLICATION_INTERNAL -> false;
     };
+
     final Duration pollInterval = EventFeedsUtil.DEFAULT_POLL_INTERVAL;
     final int limit = EventFeedsUtil.DEFAULT_LIMIT_COUNT_PER_REQUEST;
 

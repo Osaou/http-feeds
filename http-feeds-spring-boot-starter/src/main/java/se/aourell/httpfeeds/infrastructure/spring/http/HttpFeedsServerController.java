@@ -8,6 +8,7 @@ import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
+import se.aourell.httpfeeds.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -20,9 +21,9 @@ public class HttpFeedsServerController {
   private final CloudEventSerializer cloudEventSerializer;
 
   public HttpFeedsServerController(EventFeedsRegistry feedRegistry, CloudEventMapper cloudEventMapper, CloudEventSerializer cloudEventSerializer) {
-    this.feedRegistry = feedRegistry;
-    this.cloudEventMapper = cloudEventMapper;
-    this.cloudEventSerializer = cloudEventSerializer;
+    this.feedRegistry = Assert.notNull(feedRegistry);
+    this.cloudEventMapper = Assert.notNull(cloudEventMapper);
+    this.cloudEventSerializer = Assert.notNull(cloudEventSerializer);
   }
 
   @GetMapping(

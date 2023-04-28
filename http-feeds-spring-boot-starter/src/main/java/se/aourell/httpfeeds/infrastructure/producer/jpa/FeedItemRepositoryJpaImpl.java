@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import se.aourell.httpfeeds.producer.core.FeedItem;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.List;
 
@@ -14,8 +15,8 @@ public class FeedItemRepositoryJpaImpl implements FeedItemRepository {
   private final String feedName;
 
   public FeedItemRepositoryJpaImpl(FeedItemSpringRepository feedItemSpringRepository, String feedName) {
-    this.feedItemSpringRepository = feedItemSpringRepository;
-    this.feedName = feedName;
+    this.feedItemSpringRepository = Assert.notNull(feedItemSpringRepository);
+    this.feedName = Assert.hasStringValue(feedName);
   }
 
   @Override

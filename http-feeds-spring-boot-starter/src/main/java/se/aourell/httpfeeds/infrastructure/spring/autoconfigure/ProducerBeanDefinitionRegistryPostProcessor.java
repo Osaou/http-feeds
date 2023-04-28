@@ -14,7 +14,6 @@ import org.springframework.core.ResolvableType;
 import se.aourell.httpfeeds.producer.api.EventFeed;
 import se.aourell.httpfeeds.producer.core.EventBusImpl;
 import se.aourell.httpfeeds.producer.core.EventFeedServiceImpl;
-import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 import se.aourell.httpfeeds.producer.spi.EventFeedService;
@@ -23,6 +22,7 @@ import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepositoryFactory;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.time.Duration;
 
@@ -32,11 +32,11 @@ public class ProducerBeanDefinitionRegistryPostProcessor implements BeanDefiniti
   public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
     // find all annotated http feeds in domain code and add their configurations and necessary beans
     for (final Class<?> feedEventBaseType : ClassIndex.getAnnotated(EventFeed.class)) {
-      final var feedDeclaration = feedEventBaseType.getAnnotation(EventFeed.class);
-      final var feedName = EventFeedsUtil.validateFeedName(feedDeclaration.value());
+      final EventFeed feedDeclaration = feedEventBaseType.getAnnotation(EventFeed.class);
+      final String feedName = Assert.hasStringValue(feedDeclaration.value());
 
       String persistenceName = feedDeclaration.persistenceName();
-      if (persistenceName == null || "".equals(persistenceName.trim())) {
+      if (persistenceName == null || persistenceName.isBlank()) {
         persistenceName = FeedItemRepository.DEFAULT_TABLE_NAME;
       }
 

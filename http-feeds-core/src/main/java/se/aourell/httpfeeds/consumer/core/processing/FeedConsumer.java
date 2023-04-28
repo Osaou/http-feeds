@@ -12,6 +12,7 @@ import se.aourell.httpfeeds.tracing.core.DeadLetterQueueException;
 import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumer.class);
 
-  // TODO: set to final value
+  // TO-DO: set to final value
   private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 2;
 
   private final String feedConsumerName;
@@ -55,17 +56,17 @@ public class FeedConsumer {
                       ApplicationShutdownDetector applicationShutdownDetector,
                       DeadLetterQueueService deadLetterQueueService,
                       DeadLetterQueueRepository deadLetterQueueRepository) {
-    this.feedConsumerName = feedConsumerName;
-    this.feedName = feedName;
+    this.feedConsumerName = Assert.hasStringValue(feedConsumerName);
+    this.feedName = Assert.hasStringValue(feedName);
     this.url = url;
 
-    this.localFeedFetcher = localFeedFetcher;
-    this.remoteFeedFetcher = remoteFeedFetcher;
-    this.domainEventDeserializer = domainEventDeserializer;
-    this.feedConsumerRepository = feedConsumerRepository;
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.deadLetterQueueService = deadLetterQueueService;
-    this.deadLetterQueueRepository = deadLetterQueueRepository;
+    this.localFeedFetcher = Assert.notNull(localFeedFetcher);
+    this.remoteFeedFetcher = Assert.notNull(remoteFeedFetcher);
+    this.domainEventDeserializer = Assert.notNull(domainEventDeserializer);
+    this.feedConsumerRepository = Assert.notNull(feedConsumerRepository);
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.deadLetterQueueService = Assert.notNull(deadLetterQueueService);
+    this.deadLetterQueueRepository = Assert.notNull(deadLetterQueueRepository);
 
     this.processingFailureCount = 0;
     this.eventHandlers = new HashMap<>();
@@ -90,11 +91,17 @@ public class FeedConsumer {
   }
 
   public <EventType> void registerEventHandler(Class<EventType> eventType, Consumer<EventType> handler) {
+    Assert.notNull(eventType);
+    Assert.notNull(handler);
+
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEvent<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
   }
 
   public <EventType> void registerEventHandler(Class<EventType> eventType, BiConsumer<EventType, EventMetaData> handler) {
+    Assert.notNull(eventType);
+    Assert.notNull(handler);
+
     final EventHandlerDefinition callable = new EventHandlerDefinition.RegisteredForEventAndMeta<>(eventType, handler);
     eventHandlers.put(eventType.getSimpleName(), callable);
   }

@@ -20,11 +20,11 @@
                 hx-target="#traces"
                 hx-swap="outerHTML">Next</button>
       @endif
-
-      <p>
-        <i>Total count: ${traces.totalElements()}</i>
-      </p>
     </div>
+
+    <p>
+      <i>Total count: ${traces.totalElements()}</i>
+    </p>
   @endif
 
   <%-- listed traces --%>
@@ -32,7 +32,7 @@
     <i>No traces...</i>
   @else
     @for (ShelvedTrace trace : traces.list())
-      @template.components.trace(trace = trace, editing = false)
+      @template.components.trace(trace = trace)
     @endfor
   @endif
 
@@ -44,7 +44,7 @@
       margin-left: 10px;
     }
 
-    #traces .paging i {
+    #traces i {
       color: #666;
     }
   </style>

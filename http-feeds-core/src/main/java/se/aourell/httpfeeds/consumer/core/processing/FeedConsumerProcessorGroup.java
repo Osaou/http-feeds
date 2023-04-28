@@ -11,11 +11,11 @@ import se.aourell.httpfeeds.tracing.core.DeadLetterQueueException;
 import se.aourell.httpfeeds.tracing.core.DeadLetterQueueService;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 public class FeedConsumerProcessorGroup {
@@ -45,31 +45,34 @@ public class FeedConsumerProcessorGroup {
                                     DeadLetterQueueService deadLetterQueueService,
                                     DeadLetterQueueRepository deadLetterQueueRepository,
                                     String groupName) {
-    this.localFeedFetcher = localFeedFetcher;
-    this.remoteFeedFetcher = remoteFeedFetcher;
-    this.domainEventDeserializer = domainEventDeserializer;
-    this.feedConsumerRepository = feedConsumerRepository;
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.deadLetterQueueService = deadLetterQueueService;
-    this.deadLetterQueueRepository = deadLetterQueueRepository;
-    this.groupName = groupName;
+    this.localFeedFetcher = Assert.notNull(localFeedFetcher);
+    this.remoteFeedFetcher = Assert.notNull(remoteFeedFetcher);
+    this.domainEventDeserializer = Assert.notNull(domainEventDeserializer);
+    this.feedConsumerRepository = Assert.notNull(feedConsumerRepository);
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.deadLetterQueueService = Assert.notNull(deadLetterQueueService);
+    this.deadLetterQueueRepository = Assert.notNull(deadLetterQueueRepository);
+    this.groupName = Assert.hasStringValue(groupName);
 
     this.failureCount = 0;
   }
 
   public FeedConsumer defineLocalConsumer(String feedConsumerName, String feedName) {
+    Assert.notNull(feedConsumerName);
+    Assert.notNull(feedName);
+
     return addConsumer(feedConsumerName, feedName, null);
   }
 
   public FeedConsumer defineRemoteConsumer(String feedConsumerName, String feedName, String feedUrl) {
-    Objects.requireNonNull(feedUrl);
+    Assert.notNull(feedConsumerName);
+    Assert.notNull(feedName);
+    Assert.notNull(feedUrl);
+
     return addConsumer(feedConsumerName, feedName, feedUrl);
   }
 
   private FeedConsumer addConsumer(String feedConsumerName, String feedName, String feedUrl) {
-    Objects.requireNonNull(feedConsumerName);
-    Objects.requireNonNull(feedName);
-
     final var consumer = new FeedConsumer(feedConsumerName, feedName, feedUrl, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, applicationShutdownDetector, deadLetterQueueService, deadLetterQueueRepository);
     consumers.add(consumer);
 

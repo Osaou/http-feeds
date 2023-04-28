@@ -14,6 +14,7 @@ import se.aourell.httpfeeds.infrastructure.tracing.jpa.DeadLetterQueueEventSprin
 import se.aourell.httpfeeds.infrastructure.tracing.jpa.DeadLetterQueueRepositoryJpaImpl;
 import se.aourell.httpfeeds.infrastructure.tracing.jpa.DeadLetterQueueSpringRepository;
 import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 
 import javax.persistence.EntityManager;
@@ -29,8 +30,9 @@ public class TracingJpaAutoConfiguration {
   @ConditionalOnMissingBean
   public DeadLetterQueueRepository deadLetterQueueRepository(CloudEventSerializer cloudEventSerializer,
                                                              CloudEventDeserializer cloudEventDeserializer,
+                                                             DomainEventSerializer domainEventSerializer,
                                                              DeadLetterQueueSpringRepository deadLetterQueueSpringRepository,
                                                              DeadLetterQueueEventSpringRepository deadLetterQueueEventSpringRepository) {
-    return new DeadLetterQueueRepositoryJpaImpl(cloudEventSerializer, cloudEventDeserializer, deadLetterQueueSpringRepository, deadLetterQueueEventSpringRepository);
+    return new DeadLetterQueueRepositoryJpaImpl(cloudEventSerializer, cloudEventDeserializer, domainEventSerializer, deadLetterQueueSpringRepository, deadLetterQueueEventSpringRepository);
   }
 }

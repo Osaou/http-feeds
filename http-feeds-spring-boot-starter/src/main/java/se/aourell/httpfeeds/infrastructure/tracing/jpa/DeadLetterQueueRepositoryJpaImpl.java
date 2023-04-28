@@ -5,8 +5,10 @@ import org.springframework.data.domain.PageRequest;
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.spi.CloudEventDeserializer;
 import se.aourell.httpfeeds.producer.spi.CloudEventSerializer;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.tracing.core.ShelvedTrace;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.PagedList;
 
 import java.util.Comparator;
@@ -21,17 +23,20 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
 
   private final CloudEventSerializer cloudEventSerializer;
   private final CloudEventDeserializer cloudEventDeserializer;
+  private final DomainEventSerializer domainEventSerializer;
   private final DeadLetterQueueSpringRepository deadLetterQueueSpringRepository;
   private final DeadLetterQueueEventSpringRepository deadLetterQueueEventSpringRepository;
 
   public DeadLetterQueueRepositoryJpaImpl(CloudEventSerializer cloudEventSerializer,
                                           CloudEventDeserializer cloudEventDeserializer,
+                                          DomainEventSerializer domainEventSerializer,
                                           DeadLetterQueueSpringRepository deadLetterQueueSpringRepository,
                                           DeadLetterQueueEventSpringRepository deadLetterQueueEventSpringRepository) {
-    this.cloudEventSerializer = cloudEventSerializer;
-    this.cloudEventDeserializer = cloudEventDeserializer;
-    this.deadLetterQueueSpringRepository = deadLetterQueueSpringRepository;
-    this.deadLetterQueueEventSpringRepository = deadLetterQueueEventSpringRepository;
+    this.cloudEventSerializer = Assert.notNull(cloudEventSerializer);
+    this.cloudEventDeserializer = Assert.notNull(cloudEventDeserializer);
+    this.domainEventSerializer = Assert.notNull(domainEventSerializer);
+    this.deadLetterQueueSpringRepository = Assert.notNull(deadLetterQueueSpringRepository);
+    this.deadLetterQueueEventSpringRepository = Assert.notNull(deadLetterQueueEventSpringRepository);
   }
 
   @Override
@@ -111,7 +116,12 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
   public void mendEventData(String eventId, String serializedJsonData) {
     deadLetterQueueEventSpringRepository.findById(eventId)
       .ifPresent(dlqEvent -> {
-        dlqEvent.setData(serializedJsonData);
+        final CloudEvent cloudEvent = mapFromEntityToCloudEvent(dlqEvent);
+        final Object updatedDomainEvent = domainEventSerializer.toDomainEvent(serializedJsonData);
+        final CloudEvent updatedCloudEvent = CloudEvent.withUpdatedData(cloudEvent, updatedDomainEvent);
+
+        final String reSerialized = cloudEventSerializer.toString(updatedCloudEvent);
+        dlqEvent.setData(reSerialized);
         deadLetterQueueEventSpringRepository.save(dlqEvent);
       });
   }

@@ -15,6 +15,7 @@ import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 import se.aourell.httpfeeds.TransactionContext;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.function.Consumer;
 
@@ -39,13 +40,16 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
                                   DeadLetterQueueService deadLetterQueueService,
                                   DeadLetterQueueRepository deadLetterQueueRepository,
                                   String groupName) {
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.transactionContext = transactionContext;
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.transactionContext = Assert.notNull(transactionContext);
     this.feedConsumerProcessorGroup = new FeedConsumerProcessorGroup(localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, applicationShutdownDetector, deadLetterQueueService, deadLetterQueueRepository, groupName);
   }
 
   @Override
   public ConsumerGroupCreator defineLocalConsumer(String feedName, Consumer<ConsumerCreator> consumer) {
+    Assert.hasStringValue(feedName);
+    Assert.notNull(consumer);
+
     final String feedConsumerName = generateUniqueConsumerName(feedName);
 
     return defineLocalConsumer(feedName, feedConsumerName, consumer);
@@ -53,6 +57,10 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   @Override
   public ConsumerGroupCreator defineLocalConsumer(String feedName, String feedConsumerName, Consumer<ConsumerCreator> consumer) {
+    Assert.hasStringValue(feedName);
+    Assert.hasStringValue(feedConsumerName);
+    Assert.notNull(consumer);
+
     final FeedConsumer processor = feedConsumerProcessorGroup.defineLocalConsumer(feedConsumerName, feedName);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
 
@@ -64,6 +72,10 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   @Override
   public ConsumerGroupCreator defineRemoteConsumer(String feedName, String baseUri, Consumer<ConsumerCreator> consumer) {
+    Assert.hasStringValue(feedName);
+    Assert.hasStringValue(baseUri);
+    Assert.notNull(consumer);
+
     final String feedConsumerName = generateUniqueConsumerName(feedName);
     final String feedUrl = EventFeedsUtil.fullUrlFromBaseUriAndFeedName(baseUri, feedName);
 
@@ -72,6 +84,11 @@ public class ConsumerGroupCreatorImpl implements ConsumerGroupCreator, Runnable 
 
   @Override
   public ConsumerGroupCreator defineRemoteConsumer(String feedName, String feedConsumerName, String completeFeedUrl, Consumer<ConsumerCreator> consumer) {
+    Assert.hasStringValue(feedName);
+    Assert.hasStringValue(feedConsumerName);
+    Assert.hasStringValue(completeFeedUrl);
+    Assert.notNull(consumer);
+
     final FeedConsumer processor = feedConsumerProcessorGroup.defineRemoteConsumer(feedConsumerName, feedName, completeFeedUrl);
     final ConsumerCreator consumerCreator = new ConsumerCreatorImpl(processor);
 

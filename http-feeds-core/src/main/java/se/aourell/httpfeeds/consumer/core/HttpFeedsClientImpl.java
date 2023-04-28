@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.spi.CloudEventDeserializer;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.Result;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class HttpFeedsClientImpl implements HttpFeedsClient {
   private final HttpClient httpClient = HttpClient.newHttpClient();
 
   public HttpFeedsClientImpl(CloudEventDeserializer cloudEventDeserializer) {
-    this.cloudEventDeserializer = cloudEventDeserializer;
+    this.cloudEventDeserializer = Assert.notNull(cloudEventDeserializer);
   }
 
   @Override

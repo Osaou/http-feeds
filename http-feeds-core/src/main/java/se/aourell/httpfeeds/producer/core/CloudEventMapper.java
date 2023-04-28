@@ -2,6 +2,7 @@ package se.aourell.httpfeeds.producer.core;
 
 import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.time.ZoneOffset;
 
@@ -10,7 +11,7 @@ public class CloudEventMapper {
   private final DomainEventSerializer domainEventSerializer;
 
   public CloudEventMapper(DomainEventSerializer domainEventSerializer) {
-    this.domainEventSerializer = domainEventSerializer;
+    this.domainEventSerializer = Assert.notNull(domainEventSerializer);
   }
 
   public CloudEvent mapFeedItem(FeedItem feedItem) {

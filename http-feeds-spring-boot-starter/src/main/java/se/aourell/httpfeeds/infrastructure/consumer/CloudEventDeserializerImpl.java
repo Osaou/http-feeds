@@ -4,13 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import se.aourell.httpfeeds.consumer.spi.CloudEventDeserializer;
 import se.aourell.httpfeeds.CloudEvent;
+import se.aourell.httpfeeds.util.Assert;
 
 public class CloudEventDeserializerImpl implements CloudEventDeserializer {
 
   private final ObjectMapper cloudEventObjectMapper;
 
   public CloudEventDeserializerImpl(ObjectMapper cloudEventObjectMapper) {
-    this.cloudEventObjectMapper = cloudEventObjectMapper;
+    this.cloudEventObjectMapper = Assert.notNull(cloudEventObjectMapper);
   }
 
   @Override

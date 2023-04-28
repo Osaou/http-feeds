@@ -7,6 +7,7 @@ import se.aourell.httpfeeds.producer.core.CloudEventMapper;
 import se.aourell.httpfeeds.producer.core.FeedItem;
 import se.aourell.httpfeeds.producer.spi.EventFeedService;
 import se.aourell.httpfeeds.producer.spi.EventFeedsRegistry;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public class LocalFeedFetcherImpl implements LocalFeedFetcher {
   private final CloudEventMapper cloudEventMapper;
 
   public LocalFeedFetcherImpl(EventFeedsRegistry eventFeedsRegistry, CloudEventMapper cloudEventMapper) {
-    this.eventFeedsRegistry = eventFeedsRegistry;
-    this.cloudEventMapper = cloudEventMapper;
+    this.eventFeedsRegistry = Assert.notNull(eventFeedsRegistry);
+    this.cloudEventMapper = Assert.notNull(cloudEventMapper);
   }
 
   @Override

@@ -6,6 +6,7 @@ import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.producer.spi.EventBus;
 import se.aourell.httpfeeds.producer.spi.FeedItemIdGenerator;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -21,18 +22,23 @@ public class EventBusImpl<TEvent> implements EventBus<TEvent> {
   private final DomainEventSerializer domainEventSerializer;
 
   public EventBusImpl(String feedName, Class<TEvent> eventBaseType, FeedItemRepository feedItemRepository, FeedItemIdGenerator feedItemIdGenerator, DomainEventSerializer domainEventSerializer) {
-    this.feedName = feedName;
-    this.feedItemRepository = feedItemRepository;
-    this.feedItemIdGenerator = feedItemIdGenerator;
-    this.domainEventSerializer = domainEventSerializer;
+    this.feedName = Assert.hasStringValue(feedName);
+    this.feedItemRepository = Assert.notNull(feedItemRepository);
+    this.feedItemIdGenerator = Assert.notNull(feedItemIdGenerator);
+    this.domainEventSerializer = Assert.notNull(domainEventSerializer);
 
-    this.deletionEventTypes = eventBaseType.isSealed()
+    this.deletionEventTypes = Assert.notNull(eventBaseType).isSealed()
       ? Optional.of(Arrays.stream(eventBaseType.getPermittedSubclasses()).filter(EventUtil::isDeletionEvent).toList())
       : Optional.empty();
   }
 
   @Override
   public void publish(String subject, String traceId, TEvent event, Instant time) {
+    Assert.hasStringValue(subject);
+    Assert.hasStringValue(traceId);
+    Assert.notNull(event);
+    Assert.notNull(time);
+
     final Class<?> eventType = event.getClass();
     final boolean isDeleteEvent = deletionEventTypes
       .map(types -> types.contains(eventType))

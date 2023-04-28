@@ -7,37 +7,37 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriUtils;
+import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.dashboard.jte.JteRenderer;
 import se.aourell.httpfeeds.producer.core.EventFeedsUtil;
+import se.aourell.httpfeeds.producer.spi.DomainEventSerializer;
 import se.aourell.httpfeeds.tracing.core.ShelvedTrace;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.PagedList;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
 public class HttpFeedsDashboardController {
 
-  private static ObjectMapper jsonSerializer;
+  private static DomainEventSerializer domainEventSerializer;
 
   private final DeadLetterQueueRepository deadLetterQueueRepository;
   private final JteRenderer jte;
   private final ObjectMapper jsonValidator;
 
-  public HttpFeedsDashboardController(DeadLetterQueueRepository deadLetterQueueRepository, JteRenderer jte, ObjectMapper jsonValidator) {
-    this.deadLetterQueueRepository = deadLetterQueueRepository;
-    this.jte = jte;
-    this.jsonValidator = jsonValidator;
+  public HttpFeedsDashboardController(DeadLetterQueueRepository deadLetterQueueRepository, JteRenderer jte, ObjectMapper jsonValidator, DomainEventSerializer domainEventSerializer) {
+    this.deadLetterQueueRepository = Assert.notNull(deadLetterQueueRepository);
+    this.jte = Assert.notNull(jte);
+    this.jsonValidator = Assert.notNull(jsonValidator);
 
-    jsonSerializer = jsonValidator;
+    // yuck, but apparently I prefer this to creating specific viewmodels for now...
+    HttpFeedsDashboardController.domainEventSerializer = Assert.notNull(domainEventSerializer);
   }
 
   @GetMapping(
@@ -61,7 +61,7 @@ public class HttpFeedsDashboardController {
     value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/redeliver",
     produces = MediaType.TEXT_HTML_VALUE)
   public String redeliverTrace(@PathVariable String traceId) {
-    Objects.requireNonNull(traceId);
+    Assert.notNull(traceId);
 
     String message;
     try {
@@ -75,56 +75,73 @@ public class HttpFeedsDashboardController {
   }
 
   @GetMapping(
-    value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/status",
+    value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}",
     produces = MediaType.TEXT_HTML_VALUE)
-  public String checkTraceStatus(@PathVariable String traceId,
-                                 @RequestParam Optional<Boolean> editing) {
-    Objects.requireNonNull(traceId);
-    final Optional<ShelvedTrace> trace = deadLetterQueueRepository.checkTraceStatus(traceId);
+  public String traceData(@PathVariable String traceId) {
+    Assert.notNull(traceId);
+
+    final ShelvedTrace trace = deadLetterQueueRepository.checkTraceStatus(traceId)
+      .orElseThrow();
 
     return jte.view("components/trace", Map.of(
-      "trace", trace.orElseThrow(),
-      "editing", editing.orElse(false)));
+      "trace", trace));
+  }
+
+  @GetMapping(
+    value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/events/{eventId}",
+    produces = MediaType.TEXT_HTML_VALUE)
+  public String eventData(@PathVariable String traceId,
+                          @PathVariable String eventId,
+                          @RequestParam Optional<Boolean> edit) {
+    Assert.notNull(traceId);
+    Assert.notNull(traceId);
+
+    final CloudEvent updated = deadLetterQueueRepository.checkTraceStatus(traceId)
+      .orElseThrow()
+      .events()
+      .stream()
+      .filter(event -> event.id().equals(eventId))
+      .findFirst()
+      .orElseThrow();
+
+    return jte.view("components/event", Map.of(
+      "traceId", traceId,
+      "event", updated,
+      "isEditing", edit.orElse(false)));
   }
 
   @PutMapping(
-    value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/mend",
+    value = EventFeedsUtil.PATH_PREFIX + "/dashboard/traces/{traceId}/events/{eventId}",
     consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
     produces = MediaType.TEXT_HTML_VALUE)
   public String updateEventData(@PathVariable String traceId,
-                                @RequestBody UpdatedEvents events
-                                /*@RequestParam("id") List<String> eventIds,
-                                @RequestParam("data") List<String> eventData*/) throws JsonProcessingException {
-    Objects.requireNonNull(traceId);
-    Objects.requireNonNull(events);
-    Objects.requireNonNull(events.ids);
-    Objects.requireNonNull(events.datas);
-    assert events.ids.size() > 0;
-    assert events.ids.size() == events.datas.size();
+                                @PathVariable String eventId,
+                                String data) throws IOException {
+    Assert.notNull(traceId);
+    Assert.notNull(traceId);
+    Assert.notNull(data);
 
-    for (int i = 0; i < events.ids.size(); ++i) {
-      final String id = events.ids.get(i);
-      final String data = decodeAndValidateJson(events.datas.get(i));
-      deadLetterQueueRepository.mendEventData(id, data);
+    decodeAndValidateJson(data).ifPresent(json ->
+      deadLetterQueueRepository.mendEventData(eventId, json));
+
+    return eventData(traceId, eventId, Optional.of(false));
+  }
+
+  private Optional<String> decodeAndValidateJson(String json) throws JsonProcessingException {
+    if (json == null) {
+      return Optional.empty();
     }
 
-    return checkTraceStatus(traceId, Optional.of(false));
+    //final String decoded = UriUtils.decode(json, StandardCharsets.UTF_8);
+    jsonValidator.readTree(json);
+    return Optional.of(json);
   }
 
-  private String decodeAndValidateJson(String json) throws JsonProcessingException {
-    final String decoded = UriUtils.decode(json, StandardCharsets.UTF_8);
-    jsonValidator.readTree(decoded);
-
-    return decoded;
-  }
-
-  public static String serializeEventDataAsJson(Object data) {
+  public static String serializeEventDataForEditing(Object data) {
     try {
-      return jsonSerializer.writeValueAsString(data);
-    } catch (JsonProcessingException e) {
+      return domainEventSerializer.toString(data);
+    } catch (Exception e) {
       return "<Unable to serialize data!>";
     }
   }
-
-  private record UpdatedEvents(List<String> ids, List<String> datas) { }
 }

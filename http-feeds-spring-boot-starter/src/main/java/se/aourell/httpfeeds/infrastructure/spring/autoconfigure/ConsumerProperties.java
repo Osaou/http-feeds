@@ -16,8 +16,11 @@ public class ConsumerProperties {
   private final Map<String, String> sources;
 
   public ConsumerProperties(String tableName, Map<String, String> sources) {
-    this.tableName = Optional.ofNullable(tableName).orElse(FeedConsumerEntity.TABLE_NAME);
-    this.sources = Optional.ofNullable(sources).orElse(Collections.emptyMap());
+    this.tableName = Optional.ofNullable(tableName)
+      .orElse(FeedConsumerEntity.TABLE_NAME);
+
+    this.sources = Optional.ofNullable(sources)
+      .orElse(Collections.emptyMap());
   }
 
   /**

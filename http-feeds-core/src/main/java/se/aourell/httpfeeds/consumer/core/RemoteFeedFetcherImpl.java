@@ -6,6 +6,7 @@ import se.aourell.httpfeeds.CloudEvent;
 import se.aourell.httpfeeds.consumer.core.processing.FeedConsumer;
 import se.aourell.httpfeeds.consumer.spi.HttpFeedsClient;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
+import se.aourell.httpfeeds.util.Assert;
 import se.aourell.httpfeeds.util.Result;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class RemoteFeedFetcherImpl implements RemoteFeedFetcher {
   private final HttpFeedsClient httpFeedsClient;
 
   public RemoteFeedFetcherImpl(HttpFeedsClient httpFeedsClient) {
-    this.httpFeedsClient = httpFeedsClient;
+    this.httpFeedsClient = Assert.notNull(httpFeedsClient);
   }
 
   @Override

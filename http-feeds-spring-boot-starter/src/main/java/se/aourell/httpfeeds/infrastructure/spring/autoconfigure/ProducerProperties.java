@@ -20,10 +20,14 @@ public class ProducerProperties {
   private final Set<String> httpFeedsToPublish;
 
   public ProducerProperties(Duration pollInterval, Integer limit, Map<String, String> publish) {
-    this.pollInterval = Optional.ofNullable(pollInterval).orElse(EventFeedsUtil.DEFAULT_POLL_INTERVAL);
-    this.limit = Optional.ofNullable(limit).orElse(EventFeedsUtil.DEFAULT_LIMIT_COUNT_PER_REQUEST);
+    this.pollInterval = Optional.ofNullable(pollInterval)
+      .orElse(EventFeedsUtil.DEFAULT_POLL_INTERVAL);
 
-    this.httpFeedsToPublish = Optional.ofNullable(publish).orElse(Collections.emptyMap())
+    this.limit = Optional.ofNullable(limit)
+      .orElse(EventFeedsUtil.DEFAULT_LIMIT_COUNT_PER_REQUEST);
+
+    this.httpFeedsToPublish = Optional.ofNullable(publish)
+      .orElse(Collections.emptyMap())
       .entrySet()
       .stream()
       .filter(entry -> "true".equalsIgnoreCase(entry.getValue().trim()))

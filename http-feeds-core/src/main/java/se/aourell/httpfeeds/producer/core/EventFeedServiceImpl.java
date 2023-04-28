@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import se.aourell.httpfeeds.producer.spi.EventFeedService;
 import se.aourell.httpfeeds.producer.spi.FeedItemRepository;
 import se.aourell.httpfeeds.tracing.spi.ApplicationShutdownDetector;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,12 +30,12 @@ public class EventFeedServiceImpl implements EventFeedService {
                               boolean isPublishedOverHttp,
                               Duration pollInterval,
                               int limit) {
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.feedItemRepository = feedItemRepository;
-    this.name = name;
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.feedItemRepository = Assert.notNull(feedItemRepository);
+    this.name = Assert.hasStringValue(name);
     this.feedPath = EventFeedsUtil.urlPathFromFeedName(name);
     this.isPublishedOverHttp = isPublishedOverHttp;
-    this.pollInterval = pollInterval;
+    this.pollInterval = Assert.notNull(pollInterval);
     this.limit = limit;
   }
 

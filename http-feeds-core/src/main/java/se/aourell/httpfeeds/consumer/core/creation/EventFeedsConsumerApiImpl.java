@@ -12,6 +12,7 @@ import se.aourell.httpfeeds.consumer.spi.LocalFeedFetcher;
 import se.aourell.httpfeeds.consumer.spi.RemoteFeedFetcher;
 import se.aourell.httpfeeds.tracing.spi.DeadLetterQueueRepository;
 import se.aourell.httpfeeds.TransactionContext;
+import se.aourell.httpfeeds.util.Assert;
 
 import java.util.function.Consumer;
 
@@ -36,18 +37,21 @@ public class EventFeedsConsumerApiImpl implements EventFeedsConsumerApi {
                                    FeedConsumerRepository feedConsumerRepository,
                                    DeadLetterQueueService deadLetterQueueService,
                                    DeadLetterQueueRepository deadLetterQueueRepository) {
-    this.applicationShutdownDetector = applicationShutdownDetector;
-    this.transactionContext = transactionContext;
-    this.localFeedFetcher = localFeedFetcher;
-    this.remoteFeedFetcher = remoteFeedFetcher;
-    this.domainEventDeserializer = domainEventDeserializer;
-    this.feedConsumerRepository = feedConsumerRepository;
-    this.deadLetterQueueService = deadLetterQueueService;
-    this.deadLetterQueueRepository = deadLetterQueueRepository;
+    this.applicationShutdownDetector = Assert.notNull(applicationShutdownDetector);
+    this.transactionContext = Assert.notNull(transactionContext);
+    this.localFeedFetcher = Assert.notNull(localFeedFetcher);
+    this.remoteFeedFetcher = Assert.notNull(remoteFeedFetcher);
+    this.domainEventDeserializer = Assert.notNull(domainEventDeserializer);
+    this.feedConsumerRepository = Assert.notNull(feedConsumerRepository);
+    this.deadLetterQueueService = Assert.notNull(deadLetterQueueService);
+    this.deadLetterQueueRepository = Assert.notNull(deadLetterQueueRepository);
   }
 
   @Override
   public EventFeedsConsumerApi scheduleConsumerGroup(String groupName, Consumer<ConsumerGroupCreator> consumerGroup) {
+    Assert.hasStringValue(groupName);
+    Assert.notNull(consumerGroup);
+
     final var group = new ConsumerGroupCreatorImpl(applicationShutdownDetector, transactionContext, localFeedFetcher, remoteFeedFetcher, domainEventDeserializer, feedConsumerRepository, deadLetterQueueService, deadLetterQueueRepository, groupName);
 
     LOG.debug("Scheduling new Consumer Group with thread name {}", groupName);
