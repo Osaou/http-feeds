@@ -1,7 +1,8 @@
-drop table eventfeeds_processing if exists;
-drop table eventfeeds_processing_dlq if exists;
+drop table eventfeeds_processed if exists;
+drop table eventfeeds_dlq if exists;
+drop table eventfeeds_dlq_event if exists;
 
-create table eventfeeds_processing
+create table eventfeeds_processed
 (
   feed_consumer_name  varchar(128) primary key,
   last_processed_id   varchar(64) null
@@ -13,7 +14,6 @@ create table eventfeeds_dlq
   feed_consumer_name    varchar(128) not null,
   shelved_time          timestamp not null,
   last_known_error      clob not null,
-  -- process_attempts      int not null,
   attempt_reprocessing  bit not null
 );
 
