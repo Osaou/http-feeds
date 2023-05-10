@@ -26,6 +26,7 @@ public class TransactionContextImpl implements TransactionContext {
       platformTransactionManager.commit(tx);
     } catch (Throwable e) {
       platformTransactionManager.rollback(tx);
+      throw e;
     }
   }
 }
