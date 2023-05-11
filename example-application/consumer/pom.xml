@@ -25,12 +25,12 @@
     <dependency>
       <groupId>se.aourell.httpfeeds</groupId>
       <artifactId>http-feeds-spring-boot-starter</artifactId>
-      <version>0.10.0</version>
+      <version>0.10.1</version>
     </dependency>
     <dependency>
       <groupId>se.aourell.httpfeeds</groupId>
       <artifactId>http-feeds-dashboard</artifactId>
-      <version>0.10.0</version>
+      <version>0.10.1</version>
     </dependency>
 
     <dependency>
