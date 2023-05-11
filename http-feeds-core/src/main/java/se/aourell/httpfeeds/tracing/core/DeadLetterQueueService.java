@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DeadLetterQueueService {
 
@@ -22,6 +23,7 @@ public class DeadLetterQueueService {
     lastError.printStackTrace(new PrintWriter(exceptionStringifier));
 
     final String traceId = event.traceId()
+      .filter(Predicate.not(String::isBlank))
       .orElseGet(event::id);
 
     final var trace = new ShelvedTrace(traceId, feedConsumerName, OffsetDateTime.now(), exceptionStringifier.toString(), false, List.of(event));

@@ -136,13 +136,16 @@ public class FeedConsumerProcessorGroup {
             .toList();
         }
 
-        events.stream()
-          .filter(fetched -> !applicationShutdownDetector.isGracefulShutdown())
-          .forEach(fetched -> fetched.consumer.processEvent(fetched.event())
-            // reset failure count when we succeed in processing an event
-            .ifSuccess(__ -> failureCount = 0)
-            .orElseThrow()
-          );
+        for (FetchedEventFromConsumer event : events) {
+          if (applicationShutdownDetector.isGracefulShutdown()) {
+            return;
+          }
+
+          event.process();
+
+          // reset failure count when we succeed in processing an event
+          failureCount = 0;
+        }
       } catch (DeadLetterQueueException e) {
         // neither increase nor decrease current failure count when processing DLQ
         updatedFailureCount = failureCount;
@@ -191,5 +194,10 @@ public class FeedConsumerProcessorGroup {
     return Math.min(failureCount + 1, MAX_FAILURE_COUNT_FOR_EXPONENTIAL_BACKOFF_EFFECT);
   }
 
-  private record FetchedEventFromConsumer(FeedConsumer consumer, CloudEvent event) { }
+  private record FetchedEventFromConsumer(FeedConsumer consumer, CloudEvent event) {
+
+    private void process() throws Exception {
+      consumer.processEvent(event);
+    }
+  }
 }

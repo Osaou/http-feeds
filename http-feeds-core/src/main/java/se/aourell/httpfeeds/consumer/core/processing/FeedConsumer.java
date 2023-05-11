@@ -21,13 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class FeedConsumer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FeedConsumer.class);
 
   // TO-DO: set to final value
-  private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 2;
+  private static final int MAX_RETRIES_BEFORE_SHELVING_IN_DLQ = 3;
 
   private final String feedConsumerName;
   private final String feedName;
@@ -122,9 +123,10 @@ public class FeedConsumer {
       : remoteFeedFetcher.fetchRemoteEvents(this);
   }
 
-  public Result<Boolean> processEvent(CloudEvent event) {
+  public void processEvent(CloudEvent event) throws Exception {
     final String eventId = event.id();
     final String traceId = event.traceId()
+      .filter(Predicate.not(String::isBlank))
       .orElse(eventId);
 
     final boolean handled;
@@ -143,12 +145,12 @@ public class FeedConsumer {
               LOG.error("DLQ: Unable to operate on dead-letter queue", e);
             }
 
-            return Result.failure(e);
+            throw e;
           }
 
           updatedLastProcessedId = eventId;
           processingFailureCount = 0;
-          return Result.success();
+          return;
         }
 
         handled = true;
@@ -168,7 +170,7 @@ public class FeedConsumer {
       }
     } catch (Throwable e) {
       if (applicationShutdownDetector.isGracefulShutdown()) {
-        return Result.failure(e);
+        throw e;
       }
 
       ++processingFailureCount;
@@ -179,7 +181,7 @@ public class FeedConsumer {
           LOG.error("DLQ: Re-Shelved all remaining events in trace {}, starting with event ID {}, because of failed processing attempt", traceId, eventId, e);
 
           processingFailureCount = 0;
-          return Result.failure(new DeadLetterQueueException(e));
+          throw new DeadLetterQueueException(e);
         }
 
         // check if it's time to shelve this event in the dead-letter queue
@@ -189,7 +191,7 @@ public class FeedConsumer {
 
           updatedLastProcessedId = eventId;
           processingFailureCount = 0;
-          return Result.success();
+          return;
         }
       } catch (Throwable e2) {
         if (!applicationShutdownDetector.isGracefulShutdown()) {
@@ -197,7 +199,7 @@ public class FeedConsumer {
         }
       }
 
-      return Result.failure(e);
+      throw e;
     }
 
     if (handled) {
@@ -212,14 +214,12 @@ public class FeedConsumer {
             LOG.error("DLQ: Unable to operate on dead-letter queue", e);
           }
 
-          return Result.failure(e);
+          throw e;
         }
       } else {
         updatedLastProcessedId = eventId;
       }
     }
-
-    return Result.success();
   }
 
   public Optional<EventHandlerDefinition> findHandlerForEventType(String eventTypeName) {
