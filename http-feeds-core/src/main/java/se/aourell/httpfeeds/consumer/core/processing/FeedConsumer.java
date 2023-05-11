@@ -136,7 +136,7 @@ public class FeedConsumer {
 
       if (eventHandler.isPresent()) {
         // should we shelve this event on DLQ by association?
-        if (!isProcessingDlq && event.traceId().isPresent() && deadLetterQueueRepository.isTraceShelved(traceId)) {
+        if (!isProcessingDlq && !eventId.equals(traceId) && deadLetterQueueRepository.isTraceShelved(traceId)) {
           try {
             deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
             LOG.warn("DLQ: Shelved event with ID {} because of matched trace {} being shelved", eventId, traceId);
@@ -230,7 +230,9 @@ public class FeedConsumer {
   private EventMetaData createEventMetaData(CloudEvent cloudEvent) {
     return new EventMetaData(
       cloudEvent.id(),
-      cloudEvent.traceId().orElseGet(cloudEvent::id),
+      cloudEvent.traceId()
+        .filter(Predicate.not(String::isBlank))
+        .orElseGet(cloudEvent::id),
       cloudEvent.subject(),
       cloudEvent.time(),
       cloudEvent.source()
