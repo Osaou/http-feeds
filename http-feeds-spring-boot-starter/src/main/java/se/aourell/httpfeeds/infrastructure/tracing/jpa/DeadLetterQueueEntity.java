@@ -36,7 +36,7 @@ public class DeadLetterQueueEntity extends JpaEntity<String> {
   @Column(name = "attempt_reprocessing", nullable = false)
   private boolean attemptReprocessing;
 
-  @OneToMany(mappedBy = "trace", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "trace", fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
   private Set<DeadLetterQueueEventEntity> events;
 
   @Override

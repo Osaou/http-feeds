@@ -107,8 +107,7 @@ public class DeadLetterQueueRepositoryJpaImpl implements DeadLetterQueueReposito
         dlqEvent.setTrace(dlqTrace);
         dlqEvent.setData(serializedEvent);
 
-        dlqTrace.getEvents().add(dlqEvent);
-        deadLetterQueueSpringRepository.save(dlqTrace);
+        deadLetterQueueEventSpringRepository.save(dlqEvent);
       });
   }
 

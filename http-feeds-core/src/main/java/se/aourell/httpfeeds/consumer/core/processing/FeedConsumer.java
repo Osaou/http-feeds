@@ -131,28 +131,28 @@ public class FeedConsumer {
 
     final boolean handled;
     try {
+      // should we shelve this event on DLQ by association?
+      if (!isProcessingDlq && !eventId.equals(traceId) && deadLetterQueueRepository.isTraceShelved(traceId)) {
+        try {
+          deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
+          LOG.warn("DLQ: Shelved event with ID {} because of matched trace {} being shelved", eventId, traceId);
+        } catch (Throwable e) {
+          if (!applicationShutdownDetector.isGracefulShutdown()) {
+            LOG.error("DLQ: Unable to operate on dead-letter queue", e);
+          }
+
+          throw e;
+        }
+
+        updatedLastProcessedId = eventId;
+        processingFailureCount = 0;
+        return;
+      }
+
       final String eventTypeName = event.type();
       final Optional<EventHandlerDefinition> eventHandler = findHandlerForEventType(eventTypeName);
 
       if (eventHandler.isPresent()) {
-        // should we shelve this event on DLQ by association?
-        if (!isProcessingDlq && !eventId.equals(traceId) && deadLetterQueueRepository.isTraceShelved(traceId)) {
-          try {
-            deadLetterQueueRepository.addEventToShelvedTrace(traceId, event);
-            LOG.warn("DLQ: Shelved event with ID {} because of matched trace {} being shelved", eventId, traceId);
-          } catch (Throwable e) {
-            if (!applicationShutdownDetector.isGracefulShutdown()) {
-              LOG.error("DLQ: Unable to operate on dead-letter queue", e);
-            }
-
-            throw e;
-          }
-
-          updatedLastProcessedId = eventId;
-          processingFailureCount = 0;
-          return;
-        }
-
         handled = true;
         final Class<?> eventType = eventHandler.get().eventType();
 
@@ -193,6 +193,8 @@ public class FeedConsumer {
           processingFailureCount = 0;
           return;
         }
+      } catch (DeadLetterQueueException e1) {
+        throw e1;
       } catch (Throwable e2) {
         if (!applicationShutdownDetector.isGracefulShutdown()) {
           LOG.error("DLQ: Unable to operate on dead-letter queue", e2);
